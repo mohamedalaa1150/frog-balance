@@ -2,6 +2,7 @@ import { BaseScene } from './BaseScene';
 import { CONFIG } from '../config';
 import { formatNumber } from '../core/numerals';
 import { t } from '../services/strings';
+import { coversText } from '../services/fontCoverage';
 
 export class BootScene extends BaseScene {
   constructor() {
@@ -19,7 +20,9 @@ export class BootScene extends BaseScene {
     let fallback:
       { reason: 'timeout' | 'failure'; message: string } | undefined;
     const requestedFaces = Array.from(document.fonts).filter(
-      (face) => face.family.replace(/["']/g, '') === CONFIG.fontFamily,
+      (face) =>
+        face.family.replace(/["']/g, '') === CONFIG.fontFamily &&
+        coversText(face.unicodeRange, sample),
     );
     try {
       await Promise.race([
