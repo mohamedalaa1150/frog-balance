@@ -18,6 +18,9 @@ export class BootScene extends BaseScene {
     let timer: number | undefined;
     let fallback:
       { reason: 'timeout' | 'failure'; message: string } | undefined;
+    const requestedFaces = Array.from(document.fonts).filter(
+      (face) => face.family.replace(/["']/g, '') === CONFIG.fontFamily,
+    );
     try {
       await Promise.race([
         Promise.all(
@@ -28,6 +31,11 @@ export class BootScene extends BaseScene {
             ),
           ),
         ),
+        // WebKit may leave FontFaceSet.load pending after a network abort.
+        // Individual faces still expose their failure through loaded/status.
+        new Promise<never>((_, reject) => {
+          for (const face of requestedFaces) void face.loaded.catch(reject);
+        }),
         new Promise<never>((_, reject) => {
           timer = window.setTimeout(
             () => reject(new Error('Font load timed out')),
@@ -37,9 +45,15 @@ export class BootScene extends BaseScene {
       ]);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
+      const resourceFailed = requestedFaces.some(
+        (face) => face.status === 'error',
+      );
       fallback = {
-        reason: message === 'Font load timed out' ? 'timeout' : 'failure',
-        message,
+        reason:
+          message === 'Font load timed out' && !resourceFailed
+            ? 'timeout'
+            : 'failure',
+        message: resourceFailed ? 'Font resource failed to load' : message,
       };
     } finally {
       window.clearTimeout(timer);
