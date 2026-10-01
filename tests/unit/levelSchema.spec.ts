@@ -84,4 +84,43 @@ describe('level content schema', () => {
       false,
     );
   });
+
+  it.each([
+    { showEqation: true },
+    { fixed: { ...content.levels[0]!.fixed, lef: [] } },
+    { tray: { ...content.levels[0]!.tray, frog: true } },
+    { childLimits: { ...content.levels[0]!.childLimits, maxNumber: 1 } },
+    { vo: { ...content.levels[0]!.vo, succes: 'success_1' } },
+    { goal: { type: 'balance', typo: true } },
+    { goal: { type: 'predict', typo: true } },
+    {
+      goal: {
+        type: 'balanceMulti',
+        requiredSolutions: 2,
+        childNumbersExactly: 2,
+        typo: true,
+      },
+    },
+  ])('rejects unknown level/nested keys %j', (patch) => {
+    const result = Level.safeParse({ ...content.levels[0], ...patch });
+    expect(result.success).toBe(false);
+    expect(
+      result.error?.issues.some((issue) => issue.code === 'unrecognized_keys'),
+    ).toBe(true);
+    const issue = result.error?.issues.find(
+      (issue) => issue.code === 'unrecognized_keys',
+    );
+    if (issue?.code !== 'unrecognized_keys')
+      throw new Error('Expected unknown-key error');
+    for (const key of issue.keys) expect(issue.message).toContain(key);
+  });
+
+  it('reports the unknown key in both item and file-root errors', () => {
+    expect(Item.safeParse({ kind: 'frog', vaule: 1 }).error?.message).toContain(
+      'vaule',
+    );
+    expect(
+      LevelsFile.safeParse({ ...content, verson: 1 }).error?.message,
+    ).toContain('verson');
+  });
 });

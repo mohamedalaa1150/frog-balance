@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const Item = z
-  .object({
+  .strictObject({
     kind: z.enum(['frog', 'number']),
     value: z.number().int().min(1).max(10).optional(),
   })
@@ -9,25 +9,25 @@ export const Item = z
     item.kind === 'frog' ? item.value === undefined : item.value !== undefined,
   );
 
-export const Level = z.object({
+export const Level = z.strictObject({
   id: z.string().regex(/^(w[1-6]-l[1-8]|practice-\d+)$/),
   world: z.number().int().min(1).max(6),
   index: z.number().int().min(1).max(8),
   mode: z.enum(['count', 'compare', 'bond', 'missing', 'equation']),
-  fixed: z.object({ left: z.array(Item), right: z.array(Item) }),
+  fixed: z.strictObject({ left: z.array(Item), right: z.array(Item) }),
   workPan: z.enum(['left', 'right']).nullable(),
-  tray: z.object({
+  tray: z.strictObject({
     frogs: z.boolean(),
     numbers: z.array(z.number().int().min(1).max(10)),
   }),
-  childLimits: z.object({
+  childLimits: z.strictObject({
     maxNumbers: z.number().int().min(0).max(3),
     maxFrogs: z.number().int().min(0).max(10),
   }),
   goal: z.discriminatedUnion('type', [
-    z.object({ type: z.literal('balance') }),
-    z.object({ type: z.literal('predict') }),
-    z.object({
+    z.strictObject({ type: z.literal('balance') }),
+    z.strictObject({ type: z.literal('predict') }),
+    z.strictObject({
       type: z.literal('balanceMulti'),
       requiredSolutions: z.number().int().min(1).max(4),
       childNumbersExactly: z.number().int().min(1).max(2),
@@ -35,11 +35,11 @@ export const Level = z.object({
   ]),
   showEquation: z.boolean(),
   guideArrow: z.boolean(),
-  vo: z.object({ intro: z.string(), success: z.string().optional() }),
+  vo: z.strictObject({ intro: z.string(), success: z.string().optional() }),
 });
 
 export const LevelsFile = z
-  .object({ version: z.literal(1), levels: z.array(Level).length(48) })
+  .strictObject({ version: z.literal(1), levels: z.array(Level).length(48) })
   .refine(
     (file) =>
       file.levels.every(
