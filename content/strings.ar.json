@@ -1,6 +1,7 @@
 {
   "_note": "Each key = one VO audio file at public/assets/audio/vo/<key>.mp3. Text is the recording script AND the dev subtitle. Register: simplified Modern Standard Arabic with a warm tone (content team may switch to Egyptian colloquial by editing text + re-recording; keys stay the same).",
 
+  "game_title": "ميزان ضفدوع",
   "title_welcome": "أهلًا! أنا ضفدوع، وهذا ميزاني السحري. هيّا نلعب!",
   "map_choose_world": "اختر جزيرة لنبدأ المغامرة.",
   "map_choose_level": "اختر زهرة اللوتس لتبدأ.",
