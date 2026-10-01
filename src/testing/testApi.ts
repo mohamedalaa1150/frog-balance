@@ -66,6 +66,9 @@ export function installTestApi(game: Phaser.Game): void {
     });
   });
   game.events.on('title-ready', (data: unknown) => record('title-ready', data));
+  game.events.on('font-fallback', (data: unknown) =>
+    record('font-fallback', data),
+  );
 
   window.__FROG__ = {
     ready,

@@ -1,5 +1,7 @@
 export const CONFIG = {
   fontFamily: 'Baloo Bhaijaan 2',
+  fontStack: '"Baloo Bhaijaan 2", "Noto Naskh Arabic", "Tahoma", sans-serif',
+  fontTimeoutMs: 2500,
   maxRenderScale: 2,
   design: {
     landscape: { width: 1280, height: 720 },

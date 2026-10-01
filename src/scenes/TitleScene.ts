@@ -16,7 +16,7 @@ export class TitleScene extends Phaser.Scene {
     this.pond = this.add.graphics().setName('title-pond');
     this.title = this.add
       .text(0, 0, document.title, {
-        fontFamily: `"${CONFIG.fontFamily}"`,
+        fontFamily: CONFIG.fontStack,
         fontSize: '96px',
         fontStyle: '800',
         color: '#fff6e5',
@@ -33,7 +33,7 @@ export class TitleScene extends Phaser.Scene {
           formatNumber(index + 1, 'arabic-indic'),
         ).join(''),
         {
-          fontFamily: `"${CONFIG.fontFamily}"`,
+          fontFamily: CONFIG.fontStack,
           fontSize: '64px',
           fontStyle: '700',
           color: '#fff6e5',
