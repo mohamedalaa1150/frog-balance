@@ -1,6 +1,13 @@
 import Phaser from 'phaser';
 import { version } from '../../package.json';
 import type { ItemKind, LevelState, Side } from '../core/types';
+import type { SceneReadyEvent } from '../scenes/BaseScene';
+import { TestReadyScene, TestSilentScene } from './scenes';
+
+const FORWARDS: Readonly<Record<string, string>> = {
+  BootScene: 'PreloadScene',
+  PreloadScene: 'TitleScene',
+};
 
 export interface TestEvent {
   t: number;
@@ -54,6 +61,11 @@ export function installTestApi(game: Phaser.Game): void {
   )
     return;
 
+  if (new URLSearchParams(window.location.search).get('test') === '1') {
+    game.scene.add('TestReadyScene', TestReadyScene);
+    game.scene.add('TestSilentScene', TestSilentScene);
+  }
+
   const events: TestEvent[] = [];
   const record = (type: string, data?: unknown) => {
     if (events.length === 2000) events.shift();
@@ -76,14 +88,45 @@ export function installTestApi(game: Phaser.Game): void {
     events,
     toCssPoint: (x, y) => toCssPoint(game, x, y),
     async gotoScene(key) {
-      await ready;
       const target = game.scene.getScene(key);
       if (!target) throw new Error(`Unknown scene: ${key}`);
-      // Boot/Preload immediately transition, so always wait for the rendered title.
-      await new Promise<void>((resolve) => {
-        game.events.once('title-ready', resolve);
-        record('gotoScene', { key });
-        game.scene.getScene('TitleScene').scene.start(key);
+      const allowed = new Set([key]);
+      for (let next = FORWARDS[key]; next; next = FORWARDS[next])
+        allowed.add(next);
+      await new Promise<void>((resolve, reject) => {
+        let started = false;
+        let settled = false;
+        const finish = (error?: Error) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          game.events.off('scene-ready', onReady);
+          if (error) reject(error);
+          else resolve();
+        };
+        const onReady = (data: SceneReadyEvent) => {
+          if (started && allowed.has(data.key)) finish();
+        };
+        const timer = setTimeout(
+          () =>
+            finish(
+              new Error(`Scene readiness timed out after 10000 ms: ${key}`),
+            ),
+          10_000,
+        );
+        game.events.on('scene-ready', onReady);
+        void ready
+          .then(() => {
+            if (settled) return;
+            started = true;
+            record('gotoScene', { key });
+            for (const scene of game.scene.getScenes(true))
+              game.scene.stop(scene.scene.key);
+            game.scene.start(key);
+          })
+          .catch((error: unknown) =>
+            finish(error instanceof Error ? error : new Error(String(error))),
+          );
       });
     },
     setFastMode: notImplemented,
@@ -100,4 +143,7 @@ export function installTestApi(game: Phaser.Game): void {
     solveCurrent: notImplemented,
     getPointerTarget: notImplemented,
   };
+  game.events.on('scene-ready', (data: SceneReadyEvent) =>
+    record('scene-ready', data),
+  );
 }

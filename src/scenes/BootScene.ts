@@ -1,9 +1,9 @@
-import Phaser from 'phaser';
+import { BaseScene } from './BaseScene';
 import { CONFIG } from '../config';
 import { formatNumber } from '../core/numerals';
 import { t } from '../services/strings';
 
-export class BootScene extends Phaser.Scene {
+export class BootScene extends BaseScene {
   constructor() {
     super('BootScene');
   }

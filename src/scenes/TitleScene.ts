@@ -3,8 +3,9 @@ import { CONFIG } from '../config';
 import { formatNumber } from '../core/numerals';
 import { getLayout } from '../layout/layout';
 import { t } from '../services/strings';
+import { BaseScene, type SceneReadyEvent } from './BaseScene';
 
-export class TitleScene extends Phaser.Scene {
+export class TitleScene extends BaseScene {
   private pond!: Phaser.GameObjects.Graphics;
   private title!: Phaser.GameObjects.Text;
   private numerals!: Phaser.GameObjects.Text;
@@ -46,22 +47,26 @@ export class TitleScene extends Phaser.Scene {
       .setName('numerals-text');
     this.relayout();
     this.scale.on(Phaser.Scale.Events.RESIZE, this.relayout, this);
-    const shown = () =>
-      this.game.events.emit('title-ready', {
-        scene: 'TitleScene',
-        title: this.title.text,
-        numerals: this.numerals.text,
-        rtl: this.title.style.rtl,
-        visible: this.title.visible && this.numerals.visible,
-        titleBounds: this.title.getBounds(),
-        numeralBounds: this.numerals.getBounds(),
-        viewport: { width: this.scale.width, height: this.scale.height },
-      });
-    this.game.events.once(Phaser.Core.Events.POST_RENDER, shown);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.scale.off(Phaser.Scale.Events.RESIZE, this.relayout, this);
-      this.game.events.off(Phaser.Core.Events.POST_RENDER, shown);
     });
+  }
+
+  protected getReadyData(): Record<string, unknown> {
+    return {
+      scene: 'TitleScene',
+      title: this.title.text,
+      numerals: this.numerals.text,
+      rtl: this.title.style.rtl,
+      visible: this.title.visible && this.numerals.visible,
+      titleBounds: this.title.getBounds(),
+      numeralBounds: this.numerals.getBounds(),
+      viewport: { width: this.scale.width, height: this.scale.height },
+    };
+  }
+
+  protected onReady(data: SceneReadyEvent): void {
+    this.game.events.emit('title-ready', data);
   }
 
   private relayout(): void {

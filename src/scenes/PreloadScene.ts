@@ -1,6 +1,6 @@
-import Phaser from 'phaser';
+import { BaseScene } from './BaseScene';
 
-export class PreloadScene extends Phaser.Scene {
+export class PreloadScene extends BaseScene {
   constructor() {
     super('PreloadScene');
   }
