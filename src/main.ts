@@ -8,13 +8,14 @@ import { BootScene } from './scenes/BootScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { TitleScene } from './scenes/TitleScene';
 import { installTestApi } from './testing/testApi';
+import { validateVoKeys } from './services/strings';
 
 if (import.meta.env.DEV) {
   const [{ LevelsFile }, { default: levels }] = await Promise.all([
     import('./core/levelSchema'),
     import('../content/levels.json'),
   ]);
-  LevelsFile.parse(levels);
+  validateVoKeys(LevelsFile.parse(levels).levels);
 }
 
 const parent = document.getElementById('game');

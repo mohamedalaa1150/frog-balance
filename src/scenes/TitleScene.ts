@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { CONFIG } from '../config';
 import { formatNumber } from '../core/numerals';
 import { getLayout } from '../layout/layout';
+import { t } from '../services/strings';
 
 export class TitleScene extends Phaser.Scene {
   private pond!: Phaser.GameObjects.Graphics;
@@ -15,7 +16,7 @@ export class TitleScene extends Phaser.Scene {
   create(): void {
     this.pond = this.add.graphics().setName('title-pond');
     this.title = this.add
-      .text(0, 0, document.title, {
+      .text(0, 0, t('game_title'), {
         fontFamily: CONFIG.fontStack,
         fontSize: '96px',
         fontStyle: '800',

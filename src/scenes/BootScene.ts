@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { CONFIG } from '../config';
 import { formatNumber } from '../core/numerals';
+import { t } from '../services/strings';
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -8,6 +9,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
+    document.title = t('game_title');
     void this.loadFonts();
   }
 
