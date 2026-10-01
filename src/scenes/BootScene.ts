@@ -2,7 +2,7 @@ import { BaseScene } from './BaseScene';
 import { CONFIG } from '../config';
 import { formatNumber } from '../core/numerals';
 import { t } from '../services/strings';
-import { coversText } from '../services/fontCoverage';
+import { coversText, failedFontRequest } from '../services/fontCoverage';
 
 export class BootScene extends BaseScene {
   constructor() {
@@ -15,6 +15,7 @@ export class BootScene extends BaseScene {
   }
 
   private async loadFonts(): Promise<void> {
+    const started = performance.now();
     const sample = `${document.title} ${formatNumber(1234567890, 'arabic-indic')}`;
     let timer: number | undefined;
     let fallback:
@@ -48,9 +49,11 @@ export class BootScene extends BaseScene {
       ]);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      const resourceFailed = requestedFaces.some(
-        (face) => face.status === 'error',
-      );
+      const resourceFailed = performance
+        .getEntriesByType('resource')
+        .some((entry) =>
+          failedFontRequest(entry as PerformanceResourceTiming, started),
+        );
       fallback = {
         reason:
           message === 'Font load timed out' && !resourceFailed

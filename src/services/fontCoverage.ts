@@ -11,3 +11,15 @@ export function coversText(unicodeRange: string, text: string): boolean {
     return points.some((point) => point >= first && point <= last);
   });
 }
+
+/** Completed/aborted local font requests have timing entries; pending requests do not. */
+export function failedFontRequest(
+  entry: { name: string; startTime: number; decodedBodySize: number },
+  started: number,
+): boolean {
+  return (
+    entry.startTime >= started &&
+    /\.woff2?(?:[?#]|$)/.test(entry.name) &&
+    entry.decodedBodySize === 0
+  );
+}
