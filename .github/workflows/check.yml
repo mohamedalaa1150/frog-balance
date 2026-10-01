@@ -20,6 +20,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium webkit
+      - name: Cross-check TypeScript and Python solvability
+        run: |
+          npm run validate:content
+          python3 tools/build_levels.py --check
+          npm run validate:cross-check
       - run: npm run test:coverage
       - run: npm run check
       - uses: actions/upload-artifact@v4

@@ -11,7 +11,8 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "validate:content": "node --import tsx tools/validate-content.ts",
-    "check": "npm run lint && npm run test && npm run validate:content && npm run build && npm run test:e2e"
+    "check": "npm run lint && npm run test && npm run validate:content && npm run build && npm run test:e2e",
+    "validate:cross-check": "python3 tools/build_levels.py --check --json | node --import tsx tools/cross-check-levels.ts"
   },
   "repository": {
     "type": "git",

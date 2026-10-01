@@ -1,8 +1,8 @@
 # Frog Balance — Mizan Dofdou
 
 An Arabic educational math game for children aged 4–8, built with Phaser 3,
-strict TypeScript, and Vite. Phase 0 provides the title screen and tooling;
-gameplay, audio, persistence, and offline PWA support arrive in later phases.
+strict TypeScript, and Vite. Phase 1 adds fully tested pure core logic to the Phase 0 title screen and tooling.
+Gameplay rendering, audio, storage adapters, and offline PWA support arrive in later phases.
 
 ## Setup
 
@@ -24,17 +24,18 @@ if fonts fail or time out.
 
 ## Scripts
 
-| Command                    | Purpose                                                                                                                  |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `npm run dev`              | Development server on port 5173, accessible on the local network.                                                        |
-| `npm run build`            | Strict type checking, production build into `dist/`, and a total JavaScript gzip-size report.                            |
-| `npm run preview`          | Serve the production build on port 4173. Run `build` first.                                                              |
-| `npm run lint`             | ESLint and Prettier checks.                                                                                              |
-| `npm test`                 | Run unit tests with Vitest.                                                                                              |
-| `npm run test:coverage`    | V8 coverage; at least 90% lines, branches, functions, and statements in `src/core/**`.                                   |
-| `npm run validate:content` | Strictly validate 48 levels, unique IDs matching world/index, and VO string references. Solvability is added in Phase 1. |
-| `npm run test:e2e`         | Run Playwright against production preview; builds must already exist.                                                    |
-| `npm run check`            | Lint, unit tests, content validation, build, and E2E in order.                                                           |
+| Command                        | Purpose                                                                                          |
+| ------------------------------ | ------------------------------------------------------------------------------------------------ |
+| `npm run dev`                  | Development server on port 5173, accessible on the local network.                                |
+| `npm run build`                | Strict type checking, production build into `dist/`, and a total JavaScript gzip-size report.    |
+| `npm run preview`              | Serve the production build on port 4173. Run `build` first.                                      |
+| `npm run lint`                 | ESLint and Prettier checks.                                                                      |
+| `npm test`                     | Run unit tests with Vitest.                                                                      |
+| `npm run test:coverage`        | V8 coverage; at least 90% lines, branches, functions, and statements in `src/core/**`.           |
+| `npm run validate:content`     | Validate schema, matching IDs, VO keys, and solvability; print the 48-level solution table.      |
+| `npm run validate:cross-check` | Compare all 48 solution counts and solvability results against the independent Python validator. |
+| `npm run test:e2e`             | Run Playwright against production preview; builds must already exist.                            |
+| `npm run check`                | Lint, unit tests, content validation, build, and E2E in order.                                   |
 
 Playwright starts and stops `npm run preview` itself on port 4173. Keep that port
 free. Its four projects are desktop Chromium (1366×768), iPad gen 7 landscape
@@ -101,3 +102,46 @@ levels remain unchanged. Strict schemas and VO string references are validated
 in development before boot and by the CLI/unit tests.
 See `AGENTS.md` and `docs/02-technical-spec.md` for binding implementation rules,
 and `docs/03-roadmap.md` for acceptance criteria.
+
+## Pure core API (Phase 1)
+
+`createLevelState(level, { now, idleHintSec })` builds independent fixed items and
+starts play. `applyAction(state, action)` returns a new state for place, remove,
+predict, requestHint, settle, and tick. Action `at` values are monotonic milliseconds;
+omitting `at` preserves the current time. There are no wall-clock reads. Forward
+`dragging` on tick/settle; releasing starts a new full 1,000 ms quiet interval.
+Only changed positions are evaluated, once per change. Fixed items, wrong pans,
+unavailable sources, child limits, and physical capacities are enforced here.
+
+`enumerateSolutions(level)` returns legal child `items`, canonical bond strings,
+or the correct comparison `prediction`. Bond solutions clear child items and
+preserve locks; `outcome: 'duplicate'` reports repeat answers. Wrong comparisons
+enter `revealing` with `outcome: 'wrongPrediction'`. After the explanation, the
+future scene layer starts a sibling via `generateLevel(seed, ['compare'], band,
+index)` and `createLevelState`. Revealing and success states freeze input.
+
+Hint state uses `updateHint(state, event, idleHintSec, clock)` with an injectable
+clock. Activity restarts idle timing; improvement resets unsuccessful attempts
+and fades the visible hint. Maximum assistance and usage survive fading for
+`stars(hintsUsed, hint.maxLevel)`. New levels reset all hint state. Idle=0 disables
+only automatic idle hints. Three failures without improvement escalate one step.
+
+`generateLevel(seed, unlockedModes, band, index)` creates strict, solvable
+`practice-<index>` levels; `unlockedModes(save)` supplies eligible modes.
+`adaptBand(practice, correct)` uses a signed consecutive streak, raises the
+1–10 band after three correct results, and lowers it after two wrong results.
+`defaults()` and `migrate(raw)` handle versioned plain save data without storage
+access. Version 0/unversioned saves with the same field layout receive missing
+field defaults; corrupt or unsupported future saves reset to defaults.
+
+`formatEquation(leftTerms, rightTerms, system)` returns separate, labelled
+on-screen left/right groups and a central equals sign. Terms retain placement
+order with RTL metadata, and `'?'` formats as the Arabic question-mark symbol.
+Rendering can position each group over its own pan without swapping screen sides.
+
+Core imports are restricted to sibling core modules, plain `src/config.ts`, and
+zod. Vitest covers all runtime core modules, all 48 authored reducer playthroughs,
+five intentionally broken levels, and 1,000 generator seeds per mode (5,000
+levels total). `python3 tools/build_levels.py --check` validates authored content
+without rewriting it; its original default invocation still builds the file.
+CI runs both validators and checks their exact solution-count agreement.
