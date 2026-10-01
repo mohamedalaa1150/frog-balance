@@ -1,0 +1,1905 @@
+{
+  "version": 1,
+  "levels": [
+    {
+      "id": "w1-l1",
+      "world": 1,
+      "index": 1,
+      "mode": "count",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 1
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 10
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": true,
+      "vo": {
+        "intro": "intro_count_first"
+      }
+    },
+    {
+      "id": "w1-l2",
+      "world": 1,
+      "index": 2,
+      "mode": "count",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 2
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 10
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": true,
+      "vo": {
+        "intro": "intro_count"
+      }
+    },
+    {
+      "id": "w1-l3",
+      "world": 1,
+      "index": 3,
+      "mode": "count",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 3
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 10
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_count"
+      }
+    },
+    {
+      "id": "w1-l4",
+      "world": 1,
+      "index": 4,
+      "mode": "count",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 4
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 10
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_count"
+      }
+    },
+    {
+      "id": "w1-l5",
+      "world": 1,
+      "index": 5,
+      "mode": "count",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 5
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 10
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_count"
+      }
+    },
+    {
+      "id": "w1-l6",
+      "world": 1,
+      "index": 6,
+      "mode": "count",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 3
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 10
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_count"
+      }
+    },
+    {
+      "id": "w1-l7",
+      "world": 1,
+      "index": 7,
+      "mode": "count",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 5
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 10
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_count"
+      }
+    },
+    {
+      "id": "w1-l8",
+      "world": 1,
+      "index": 8,
+      "mode": "count",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 4
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 10
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_count"
+      }
+    },
+    {
+      "id": "w2-l1",
+      "world": 2,
+      "index": 1,
+      "mode": "count",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 6
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 10
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_count"
+      }
+    },
+    {
+      "id": "w2-l2",
+      "world": 2,
+      "index": 2,
+      "mode": "count",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 7
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 10
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_count"
+      }
+    },
+    {
+      "id": "w2-l3",
+      "world": 2,
+      "index": 3,
+      "mode": "count",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 8
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 10
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_count"
+      }
+    },
+    {
+      "id": "w2-l4",
+      "world": 2,
+      "index": 4,
+      "mode": "count",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 9
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 10
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_count"
+      }
+    },
+    {
+      "id": "w2-l5",
+      "world": 2,
+      "index": 5,
+      "mode": "count",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 10
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 10
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_count"
+      }
+    },
+    {
+      "id": "w2-l6",
+      "world": 2,
+      "index": 6,
+      "mode": "missing",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 6
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 2
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 6
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_missing_frogs"
+      }
+    },
+    {
+      "id": "w2-l7",
+      "world": 2,
+      "index": 7,
+      "mode": "missing",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 8
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 5
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 6
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_missing_frogs"
+      }
+    },
+    {
+      "id": "w2-l8",
+      "world": 2,
+      "index": 8,
+      "mode": "missing",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 10
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 6
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 6
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_missing_frogs"
+      }
+    },
+    {
+      "id": "w3-l1",
+      "world": 3,
+      "index": 1,
+      "mode": "compare",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 9
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 2
+          }
+        ]
+      },
+      "workPan": null,
+      "tray": {
+        "frogs": false,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "predict"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_compare"
+      }
+    },
+    {
+      "id": "w3-l2",
+      "world": 3,
+      "index": 2,
+      "mode": "compare",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 1
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 6
+          }
+        ]
+      },
+      "workPan": null,
+      "tray": {
+        "frogs": false,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "predict"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_compare"
+      }
+    },
+    {
+      "id": "w3-l3",
+      "world": 3,
+      "index": 3,
+      "mode": "compare",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 8
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 3
+          }
+        ]
+      },
+      "workPan": null,
+      "tray": {
+        "frogs": false,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "predict"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_compare"
+      }
+    },
+    {
+      "id": "w3-l4",
+      "world": 3,
+      "index": 4,
+      "mode": "compare",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 5
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 5
+          }
+        ]
+      },
+      "workPan": null,
+      "tray": {
+        "frogs": false,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "predict"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_compare"
+      }
+    },
+    {
+      "id": "w3-l5",
+      "world": 3,
+      "index": 5,
+      "mode": "compare",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 4
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 7
+          }
+        ]
+      },
+      "workPan": null,
+      "tray": {
+        "frogs": false,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "predict"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_compare"
+      }
+    },
+    {
+      "id": "w3-l6",
+      "world": 3,
+      "index": 6,
+      "mode": "compare",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 6
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 5
+          }
+        ]
+      },
+      "workPan": null,
+      "tray": {
+        "frogs": false,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "predict"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_compare"
+      }
+    },
+    {
+      "id": "w3-l7",
+      "world": 3,
+      "index": 7,
+      "mode": "compare",
+      "fixed": {
+        "left": [
+          {
+            "kind": "frog"
+          },
+          {
+            "kind": "frog"
+          },
+          {
+            "kind": "frog"
+          },
+          {
+            "kind": "frog"
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 4
+          }
+        ]
+      },
+      "workPan": null,
+      "tray": {
+        "frogs": false,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "predict"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_compare"
+      }
+    },
+    {
+      "id": "w3-l8",
+      "world": 3,
+      "index": 8,
+      "mode": "compare",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 9
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 8
+          }
+        ]
+      },
+      "workPan": null,
+      "tray": {
+        "frogs": false,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "predict"
+      },
+      "showEquation": false,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_compare"
+      }
+    },
+    {
+      "id": "w4-l1",
+      "world": 4,
+      "index": 1,
+      "mode": "bond",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 3
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 1
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 1,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balanceMulti",
+        "requiredSolutions": 1,
+        "childNumbersExactly": 1
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_bond_single"
+      }
+    },
+    {
+      "id": "w4-l2",
+      "world": 4,
+      "index": 2,
+      "mode": "bond",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 4
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 3
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 1,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balanceMulti",
+        "requiredSolutions": 1,
+        "childNumbersExactly": 1
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_bond_single"
+      }
+    },
+    {
+      "id": "w4-l3",
+      "world": 4,
+      "index": 3,
+      "mode": "bond",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 5
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 2
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 1,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balanceMulti",
+        "requiredSolutions": 1,
+        "childNumbersExactly": 1
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_bond_single"
+      }
+    },
+    {
+      "id": "w4-l4",
+      "world": 4,
+      "index": 4,
+      "mode": "bond",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 6
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 2,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balanceMulti",
+        "requiredSolutions": 1,
+        "childNumbersExactly": 2
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_bond_multi"
+      }
+    },
+    {
+      "id": "w4-l5",
+      "world": 4,
+      "index": 5,
+      "mode": "bond",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 5
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 2,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balanceMulti",
+        "requiredSolutions": 2,
+        "childNumbersExactly": 2
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_bond_multi"
+      }
+    },
+    {
+      "id": "w4-l6",
+      "world": 4,
+      "index": 6,
+      "mode": "bond",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 7
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 2,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balanceMulti",
+        "requiredSolutions": 2,
+        "childNumbersExactly": 2
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_bond_multi"
+      }
+    },
+    {
+      "id": "w4-l7",
+      "world": 4,
+      "index": 7,
+      "mode": "bond",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 8
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 2,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balanceMulti",
+        "requiredSolutions": 3,
+        "childNumbersExactly": 2
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_bond_multi"
+      }
+    },
+    {
+      "id": "w4-l8",
+      "world": 4,
+      "index": 8,
+      "mode": "bond",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 10
+          }
+        ],
+        "right": []
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 2,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balanceMulti",
+        "requiredSolutions": 3,
+        "childNumbersExactly": 2
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_bond_multi"
+      }
+    },
+    {
+      "id": "w5-l1",
+      "world": 5,
+      "index": 1,
+      "mode": "missing",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 7
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 4
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 6
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_missing_frogs"
+      }
+    },
+    {
+      "id": "w5-l2",
+      "world": 5,
+      "index": 2,
+      "mode": "missing",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 9
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 5
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 6
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_missing_frogs"
+      }
+    },
+    {
+      "id": "w5-l3",
+      "world": 5,
+      "index": 3,
+      "mode": "missing",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 10
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 5
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 6
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_missing_frogs"
+      }
+    },
+    {
+      "id": "w5-l4",
+      "world": 5,
+      "index": 4,
+      "mode": "missing",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 8
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 6
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 1,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_missing_number"
+      }
+    },
+    {
+      "id": "w5-l5",
+      "world": 5,
+      "index": 5,
+      "mode": "missing",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 6
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 2
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 1,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_missing_number"
+      }
+    },
+    {
+      "id": "w5-l6",
+      "world": 5,
+      "index": 6,
+      "mode": "missing",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 10
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 3
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 1,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_missing_number"
+      }
+    },
+    {
+      "id": "w5-l7",
+      "world": 5,
+      "index": 7,
+      "mode": "missing",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 9
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 1
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 1,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_missing_number"
+      }
+    },
+    {
+      "id": "w5-l8",
+      "world": 5,
+      "index": 8,
+      "mode": "missing",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 10
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 4
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 1,
+        "maxFrogs": 6
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_missing_number"
+      }
+    },
+    {
+      "id": "w6-l1",
+      "world": 6,
+      "index": 1,
+      "mode": "equation",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 2
+          },
+          {
+            "kind": "number",
+            "value": 3
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 4
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 6
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_equation"
+      }
+    },
+    {
+      "id": "w6-l2",
+      "world": 6,
+      "index": 2,
+      "mode": "equation",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 3
+          },
+          {
+            "kind": "number",
+            "value": 4
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 5
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": true,
+        "numbers": []
+      },
+      "childLimits": {
+        "maxNumbers": 0,
+        "maxFrogs": 6
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_equation"
+      }
+    },
+    {
+      "id": "w6-l3",
+      "world": 6,
+      "index": 3,
+      "mode": "equation",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 4
+          },
+          {
+            "kind": "number",
+            "value": 4
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 6
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 1,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_equation"
+      }
+    },
+    {
+      "id": "w6-l4",
+      "world": 6,
+      "index": 4,
+      "mode": "equation",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 5
+          },
+          {
+            "kind": "number",
+            "value": 2
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 3
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 1,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_equation"
+      }
+    },
+    {
+      "id": "w6-l5",
+      "world": 6,
+      "index": 5,
+      "mode": "equation",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 6
+          },
+          {
+            "kind": "number",
+            "value": 3
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 7
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 1,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_equation"
+      }
+    },
+    {
+      "id": "w6-l6",
+      "world": 6,
+      "index": 6,
+      "mode": "equation",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 1
+          },
+          {
+            "kind": "number",
+            "value": 8
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 4
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 1,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_equation"
+      }
+    },
+    {
+      "id": "w6-l7",
+      "world": 6,
+      "index": 7,
+      "mode": "equation",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 5
+          },
+          {
+            "kind": "number",
+            "value": 5
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 2
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 1,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_equation"
+      }
+    },
+    {
+      "id": "w6-l8",
+      "world": 6,
+      "index": 8,
+      "mode": "equation",
+      "fixed": {
+        "left": [
+          {
+            "kind": "number",
+            "value": 2
+          },
+          {
+            "kind": "number",
+            "value": 7
+          }
+        ],
+        "right": [
+          {
+            "kind": "number",
+            "value": 3
+          }
+        ]
+      },
+      "workPan": "right",
+      "tray": {
+        "frogs": false,
+        "numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "childLimits": {
+        "maxNumbers": 1,
+        "maxFrogs": 0
+      },
+      "goal": {
+        "type": "balance"
+      },
+      "showEquation": true,
+      "guideArrow": false,
+      "vo": {
+        "intro": "intro_equation"
+      }
+    }
+  ]
+}
