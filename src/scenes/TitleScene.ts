@@ -66,8 +66,9 @@ export class TitleScene extends Phaser.Scene {
   private relayout(): void {
     const { width, height } = this.scale.gameSize;
     const { centerX, uiScale } = getLayout(width, height);
-    this.title.setPosition(centerX, height * 0.38).setScale(uiScale);
-    this.numerals.setPosition(centerX, height * 0.53).setScale(uiScale);
+    // Rasterize text at the physical font size instead of enlarging a low-DPI texture.
+    this.title.setPosition(centerX, height * 0.38).setFontSize(96 * uiScale);
+    this.numerals.setPosition(centerX, height * 0.53).setFontSize(64 * uiScale);
     this.pond.clear();
     // Solid strips provide a smooth gradient in both WebGL and Canvas renderers.
     const top = Phaser.Display.Color.ValueToColor('#87c9be');

@@ -24,6 +24,7 @@ export interface FrogTestApi {
   getHintLevel(): number;
   solveCurrent(): Promise<void>;
   events: TestEvent[];
+  toCssPoint(x: number, y: number): { x: number; y: number };
   getPointerTarget(name: string): { x: number; y: number } | null;
 }
 
@@ -35,6 +36,15 @@ declare global {
 
 function notImplemented(): never {
   throw new Error('not implemented in phase 0');
+}
+
+/** Convert game coordinates to viewport CSS coordinates, including safe-area offsets. */
+export function toCssPoint(game: Phaser.Game, x: number, y: number) {
+  const bounds = game.canvas.getBoundingClientRect();
+  return {
+    x: bounds.left + (x * bounds.width) / game.scale.gameSize.width,
+    y: bounds.top + (y * bounds.height) / game.scale.gameSize.height,
+  };
 }
 
 export function installTestApi(game: Phaser.Game): void {
@@ -55,11 +65,13 @@ export function installTestApi(game: Phaser.Game): void {
       resolve();
     });
   });
+  game.events.on('title-ready', (data: unknown) => record('title-ready', data));
 
   window.__FROG__ = {
     ready,
     version,
     events,
+    toCssPoint: (x, y) => toCssPoint(game, x, y),
     async gotoScene(key) {
       await ready;
       const target = game.scene.getScene(key);

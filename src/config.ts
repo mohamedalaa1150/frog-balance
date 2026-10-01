@@ -1,5 +1,6 @@
 export const CONFIG = {
   fontFamily: 'Baloo Bhaijaan 2',
+  maxRenderScale: 2,
   design: {
     landscape: { width: 1280, height: 720 },
     portrait: { width: 720, height: 1280 },

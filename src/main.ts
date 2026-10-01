@@ -3,7 +3,7 @@ import '@fontsource/baloo-bhaijaan-2/700.css';
 import '@fontsource/baloo-bhaijaan-2/800.css';
 import './styles.css';
 import Phaser from 'phaser';
-import { CONFIG } from './config';
+import { getViewport, installViewportController } from './layout/viewport';
 import { BootScene } from './scenes/BootScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { TitleScene } from './scenes/TitleScene';
@@ -17,6 +17,9 @@ if (import.meta.env.DEV) {
   LevelsFile.parse(levels);
 }
 
+const parent = document.getElementById('game');
+if (!parent) throw new Error('Missing game container');
+const viewport = getViewport(parent);
 const game = new Phaser.Game({
   // Phase 0 only draws Graphics/Text; Canvas avoids GPU readback probes on software renderers.
   // TODO: Phase 2: evaluate WebGL when adding atlases and gameplay effects.
@@ -25,9 +28,10 @@ const game = new Phaser.Game({
   backgroundColor: '#174d52',
   banner: false,
   scale: {
-    mode: Phaser.Scale.RESIZE,
-    width: CONFIG.design.landscape.width,
-    height: CONFIG.design.landscape.height,
+    mode: Phaser.Scale.NONE,
+    width: viewport.width,
+    height: viewport.height,
+    zoom: 1 / viewport.renderScale,
   },
   scene: [BootScene, PreloadScene, TitleScene],
   input: { activePointers: 2 },
@@ -39,3 +43,4 @@ document
   .getElementById('game')
   ?.addEventListener('contextmenu', (event) => event.preventDefault());
 installTestApi(game);
+installViewportController(game, parent);
