@@ -4,7 +4,7 @@
   "description": "Arabic educational math game — Mizan Dofdou (Frog Balance).",
   "scripts": {
     "dev": "vite --host --port 5173",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && node --import tsx tools/size-report.ts",
     "preview": "vite preview --host --port 4173",
     "lint": "eslint . && prettier --check .",
     "test": "vitest run",

@@ -17,20 +17,24 @@ npm run dev
 Open http://localhost:5173. The title screen uses connected Arabic text,
 self-hosted Baloo Bhaijaan 2 (500/700/800), Arabic-Indic digits, and a responsive
 pond background. No external font requests are made.
+Rendering uses a physical-pixel backing store capped at 2× device resolution;
+resize, rotation, and visual viewport changes preserve the CSS layout. Font loading
+has a 2.5-second deadline and continues with an Arabic-capable system font stack
+if fonts fail or time out.
 
 ## Scripts
 
-| Command                    | Purpose                                                                                                               |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`              | Development server on port 5173, accessible on the local network.                                                     |
-| `npm run build`            | Strict type checking and production build into `dist/`.                                                               |
-| `npm run preview`          | Serve the production build on port 4173. Run `build` first.                                                           |
-| `npm run lint`             | ESLint and Prettier checks.                                                                                           |
-| `npm test`                 | Run unit tests with Vitest.                                                                                           |
-| `npm run test:coverage`    | V8 coverage; at least 90% lines, branches, functions, and statements in `src/core/**`.                                |
-| `npm run validate:content` | Validate the 48 authored levels with Zod, including unique IDs matching world/index. Solvability is added in Phase 1. |
-| `npm run test:e2e`         | Run Playwright against production preview; builds must already exist.                                                 |
-| `npm run check`            | Lint, unit tests, content validation, build, and E2E in order.                                                        |
+| Command                    | Purpose                                                                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `npm run dev`              | Development server on port 5173, accessible on the local network.                                                        |
+| `npm run build`            | Strict type checking, production build into `dist/`, and a total JavaScript gzip-size report.                            |
+| `npm run preview`          | Serve the production build on port 4173. Run `build` first.                                                              |
+| `npm run lint`             | ESLint and Prettier checks.                                                                                              |
+| `npm test`                 | Run unit tests with Vitest.                                                                                              |
+| `npm run test:coverage`    | V8 coverage; at least 90% lines, branches, functions, and statements in `src/core/**`.                                   |
+| `npm run validate:content` | Strictly validate 48 levels, unique IDs matching world/index, and VO string references. Solvability is added in Phase 1. |
+| `npm run test:e2e`         | Run Playwright against production preview; builds must already exist.                                                    |
+| `npm run check`            | Lint, unit tests, content validation, build, and E2E in order.                                                           |
 
 Playwright starts and stops `npm run preview` itself on port 4173. Keep that port
 free. Its four projects are desktop Chromium (1366×768), iPad gen 7 landscape
@@ -69,10 +73,18 @@ await window.__FROG__.gotoScene('TitleScene');
 window.__FROG__.events; // timestamped local readiness/navigation events
 ```
 
-`ready` resolves after fonts load, preload completes, and the title's first frame
-renders. Phase 0 registers `BootScene`, `PreloadScene`, and `TitleScene`;
-`gotoScene` supports these keys and resolves when the title renders again.
-Unknown scene keys reject. Events are capped at 2,000 entries and stay local.
+`ready` resolves after bounded font loading, preload, and the title's first frame.
+Font failures/timeouts produce a `font-fallback` event with a reason.
+`gotoScene` resolves when the requested scene (or its declared Boot → Preload →
+Title forward chain) renders, and rejects after ten seconds if readiness is absent.
+Unknown keys reject immediately. Scenes deriving from `BaseScene` automatically
+emit `scene-ready` after `create`; an `init` override must call `super.init()`.
+Events are capped at 2,000 entries and stay local.
+
+`toCssPoint(x, y)` converts physical game coordinates to CSS viewport coordinates,
+including safe-area offsets, for future pointer tests. With `?test=1`, the
+regression fixtures `TestReadyScene` and `TestSilentScene` are also registered
+to check non-title readiness and timeout recovery.
 The remaining API methods throw `not implemented in phase 0` until their phases
 are implemented. Test mode is a local QA convenience, not an authentication gate.
 
@@ -83,8 +95,9 @@ imports. `src/scenes/` renders the game, `src/layout/` computes responsive scali
 and `src/testing/` implements the test bridge. Other modules and asset folders
 from technical spec §3 contain TODOs or tracked placeholders for later phases.
 
-The title label is read from `index.html` because the supplied VO content has no
-title key; `content/levels.json` and `content/strings.ar.json` remain unchanged.
-Level content is validated in development before boot and by the CLI/unit tests.
+The title label comes from `game_title` in `content/strings.ar.json`, through the
+typed `t()` helper; the HTML title is the pre-JavaScript fallback. The 48 authored
+levels remain unchanged. Strict schemas and VO string references are validated
+in development before boot and by the CLI/unit tests.
 See `AGENTS.md` and `docs/02-technical-spec.md` for binding implementation rules,
 and `docs/03-roadmap.md` for acceptance criteria.
