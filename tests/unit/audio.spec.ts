@@ -25,7 +25,7 @@ class Sound {
 function setup(cached: string[] = []) {
   const sounds: Sound[] = [];
   const scene = {
-    game: { events: { emit: vi.fn() } },
+    game: { events: { on: vi.fn(), off: vi.fn(), emit: vi.fn() } },
     cache: { audio: { exists: (key: string) => cached.includes(key) } },
     sound: {
       add: vi.fn(() => {

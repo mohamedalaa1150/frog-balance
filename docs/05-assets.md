@@ -27,7 +27,7 @@
 | `lock_badge` | 40×40 | قفل صغير لطيف بيتحط على العناصر الثابتة. |
 | `peg_lock` | 90×90 | وتد خشب بيقفل الميزان في وضع المقارنة. |
 | `tray_bg` | 1280×170 | رف خشب أو ورقة لوتس طويلة للصينية. |
-| `btn_play`، `btn_home`، `btn_hint`، `btn_replay`، `btn_next`، `btn_sound_on`، `btn_sound_off`، `btn_settings`، `btn_lock`، `btn_read`، `btn_back` | 112×112 | أيقونات دايرية مرسومة بأسلوب واحد، والرموز عالمية ومن غير نص. |
+| `btn_play`، `btn_home`، `btn_hint`، `btn_replay`، `btn_next`، `btn_sound_on`، `btn_sound_off`، `btn_settings`، `btn_lock`، `btn_read`، `btn_back`، `btn_sandbox`، `btn_practice`، `btn_dashboard`، `btn_download` | 112×112 | أيقونات دايرية مرسومة بأسلوب واحد، والرموز عالمية ومن غير نص. |
 | `predict_left`، `predict_right`، `predict_equal` | 160×160 | زرار سهم لتحت فوق كل كفة، وزرار «=» في النص. |
 | `symbol_gt`، `symbol_lt`، `symbol_eq` | 110×110 | الرموز > و< و= بشكل ملوّن وبارز. |
 | `star_full`، `star_empty` | 96×96 | نجوم التقييم. |

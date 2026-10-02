@@ -158,7 +158,7 @@ function changed(state: LevelState, pans: LevelState['pans']): LevelState {
     {
       ...state,
       pans,
-      phase: 'awaitingSettle',
+      phase: state.level.mode === 'sandbox' ? 'playing' : 'awaitingSettle',
       lastChangedAt: state.now,
       pendingEvaluation: true,
       outcome: undefined,

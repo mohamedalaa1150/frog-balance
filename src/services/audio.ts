@@ -17,11 +17,35 @@ export class AudioManager {
   private unlocked = false;
   private generation = 0;
   private fast = false;
+  private visibility = () => {
+    try {
+      if (document.hidden) {
+        this.current?.pause();
+        this.music?.pause();
+        if ('speechSynthesis' in window) window.speechSynthesis.pause();
+      } else {
+        this.current?.resume();
+        this.music?.resume();
+        if ('speechSynthesis' in window) window.speechSynthesis.resume();
+      }
+    } catch {
+      /* Keep silent fallback available. */
+    }
+  };
+  private settingsChanged = (settings: SaveV1['settings']) => {
+    this.settings = settings;
+    this.music?.setVolume?.(settings.music * (this.finish ? 0.3 : 1));
+    this.current?.setVolume?.(settings.vo);
+  };
   constructor(
     private scene: Phaser.Scene,
     private settings: SaveV1['settings'],
     private subtitle: (text: string) => void,
-  ) {}
+  ) {
+    if (typeof document !== 'undefined')
+      document.addEventListener('visibilitychange', this.visibility);
+    scene.game.events.on('settings-changed', this.settingsChanged);
+  }
   unlock(): void {
     this.unlocked = true;
   }
@@ -73,11 +97,13 @@ export class AudioManager {
         : '';
     const generation = this.generation;
     let completed = false;
-    const timer = window.setTimeout(() => done(), 8000);
+    const timer = this.scene.time?.delayedCall(8000, () => done());
+    const fallback = timer ? undefined : window.setTimeout(() => done(), 8000);
     const done = () => {
       if (completed) return;
       completed = true;
-      clearTimeout(timer);
+      timer?.remove();
+      if (fallback !== undefined) clearTimeout(fallback);
       try {
         this.current?.destroy();
         this.music?.setVolume?.(this.settings.music);
@@ -132,6 +158,9 @@ export class AudioManager {
     this.finish?.();
   }
   destroy(): void {
+    if (typeof document !== 'undefined')
+      document.removeEventListener('visibilitychange', this.visibility);
+    this.scene.game.events.off('settings-changed', this.settingsChanged);
     this.stopVoice();
     try {
       this.music?.destroy();

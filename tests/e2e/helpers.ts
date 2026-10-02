@@ -57,6 +57,13 @@ export async function tap(page: Page, name: string, touch = false) {
   const point = await target(page, name);
   if (touch) await page.touchscreen.tap(point.x, point.y);
   else await page.mouse.click(point.x, point.y);
+  // Phaser applies queued scene starts/restarts at the next frame boundary.
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
 }
 
 /** Chromium injects trusted native touches. Playwright WebKit exposes native tap

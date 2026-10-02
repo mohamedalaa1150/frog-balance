@@ -1,0 +1,35 @@
+{
+  "islands": [
+    {
+      "world": 1,
+      "x": 0.712,
+      "y": 0.842
+    },
+    {
+      "world": 2,
+      "x": 0.545,
+      "y": 0.673
+    },
+    {
+      "world": 3,
+      "x": 0.356,
+      "y": 0.563
+    },
+    {
+      "world": 4,
+      "x": 0.53,
+      "y": 0.403
+    },
+    {
+      "world": 5,
+      "x": 0.411,
+      "y": 0.227
+    },
+    {
+      "world": 6,
+      "x": 0.217,
+      "y": 0.104
+    }
+  ],
+  "note": "normalized centre of each island on map_bg (landscape). Islands bottom-anchored ~20 px below centre. Path runs bottom-right (world 1) to top-left (world 6)."
+}

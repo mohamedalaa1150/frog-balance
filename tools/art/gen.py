@@ -145,11 +145,15 @@ G = {
  'back': '<path d="M-24,0 H20 M4,-18 L22,0 L4,18" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>',
  'settings': ''.join(f'<rect x="-6" y="-32" width="12" height="16" rx="3" fill="#fff" transform="rotate({a})"/>' for a in range(0, 360, 45)) + '<circle r="20" fill="#fff"/><circle r="8" fill="currentColor"/>',
  'lock': '<rect x="-22" y="-4" width="44" height="32" rx="7" fill="#fff"/><path d="M-13,-4 V-14 A13,13 0 0 1 13,-14 V-4" fill="none" stroke="#fff" stroke-width="8"/>',
+ 'sandbox': '<path d="M-30,-14 H30" stroke="#fff" stroke-width="7" stroke-linecap="round"/><circle cy="-14" r="6" fill="#fff"/><path d="M0,-12 V22 M-12,24 H12" stroke="#fff" stroke-width="7" stroke-linecap="round"/><path d="M-30,-14 L-40,6 H-20 Z M30,-14 L20,6 H40 Z" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round"/><path d="M-42,6 Q-30,18 -18,6 Z M18,6 Q30,18 42,6 Z" fill="#fff"/>',
+ 'practice': '<path d="M-6,0 C-16,-18 -36,-16 -36,0 C-36,16 -16,18 -6,0 C4,-18 24,-18 24,0 C24,18 4,18 -6,0Z" fill="none" stroke="#fff" stroke-width="8" stroke-linejoin="round"/><path d="M30,-30 l4,9 10,1 -7.5,6.5 2.2,9.8 -8.7,-5 -8.7,5 2.2,-9.8 -7.5,-6.5 10,-1Z" fill="#fff"/>',
+ 'dashboard': '<path d="M-30,28 H30" stroke="#fff" stroke-width="7" stroke-linecap="round"/><rect x="-26" y="2" width="14" height="22" rx="3" fill="#fff"/><rect x="-7" y="-14" width="14" height="38" rx="3" fill="#fff"/><rect x="12" y="-28" width="14" height="52" rx="3" fill="#fff"/>',
+ 'download': '<path d="M0,-30 V8 M-16,-8 L0,8 L16,-8" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M-28,14 V26 H28 V14" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>',
  'read': '<path d="M-30,-22 H30 Q34,-22 34,-18 V12 Q34,16 30,16 H-4 L-18,30 V16 H-30 Q-34,16 -34,12 V-18 Q-34,-22 -30,-22Z" fill="#fff"/><path d="M-14,-8 H14 M-14,4 H14" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>',
 }
-BTN = dict(home='coral', sound_on='coral', sound_off='coral', read='teal', hint='gold', replay='gold', play='green', next='green', back='navy', settings='navy', lock='navy')
+BTN = dict(home='coral', sound_on='coral', sound_off='coral', read='teal', hint='gold', replay='gold', play='green', next='green', back='navy', settings='navy', lock='navy', sandbox='purple', practice='orange', dashboard='navy', download='teal')
 for k, glyph in G.items():
-    c = BTN[k]; d = {'coral':'coralD','teal':'tealD','gold':'goldD','green':'greenD','navy':'navyD'}[c]
+    c = BTN[k]; d = {'coral':'coralD','teal':'tealD','gold':'goldD','green':'greenD','navy':'navyD','purple':'purpleD','orange':'orangeD'}[c]
     save(f'btn_{k}', svg(112, 112,
         f'<g filter="url(#sh)"><circle cx="56" cy="58" r="50" fill="{P[d]}"/><circle cx="56" cy="54" r="50" fill="{P[c]}"/>'
         f'<ellipse cx="44" cy="30" rx="26" ry="11" fill="#fff" opacity=".28"/>'

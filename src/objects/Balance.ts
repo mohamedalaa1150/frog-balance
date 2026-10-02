@@ -1,6 +1,9 @@
 import Phaser from 'phaser';
-import { BEAM_ANCHORS, PAN_HANG_OFFSET } from '../assets';
+import { BEAM_ANCHORS } from '../assets';
+import { balanceArt } from './balanceArt';
+import { getRenderScale } from '../layout/viewport';
 import { beamAngle } from '../core/balance';
+import { CONFIG } from '../config';
 import { Pan } from './Pan';
 import { Mascot } from './Mascot';
 export class Balance extends Phaser.GameObjects.Container {
@@ -30,14 +33,15 @@ export class Balance extends Phaser.GameObjects.Container {
     };
     this.add([this.mascot, this.beam, this.pans.left, this.pans.right]);
     this.positionPans();
+    const resumed = (elapsed: number) => {
+      this.changedAt += elapsed;
+    };
+    scene.events.on('visibility-resume', resumed);
+    this.once('destroy', () => scene.events.off('visibility-resume', resumed));
   }
   setSpan(halfSpan: number): void {
     this.halfSpan = halfSpan;
-    const beamScale = halfSpan / (BEAM_ANCHORS.pivotX - BEAM_ANCHORS.leftX);
-    this.beam.setDisplaySize(
-      BEAM_ANCHORS.width * beamScale,
-      BEAM_ANCHORS.height * beamScale,
-    );
+    balanceArt(this.beam, 'beam', halfSpan * 2 + 40, 56, getRenderScale());
     this.positionPans();
   }
   get span(): number {
@@ -47,12 +51,17 @@ export class Balance extends Phaser.GameObjects.Container {
     return this.rendered;
   }
   setDifference(d: number, reduced: boolean, fast: boolean): void {
+    const target = beamAngle(d);
+    if (
+      target === this.target &&
+      reduced === this.reduced &&
+      fast === this.fast
+    )
+      return;
     this.mascot.look(d);
     this.mascot.breathe(reduced || fast);
     this.reduced = reduced;
     this.fast = fast;
-    const target = beamAngle(d);
-    if (target === this.target && !fast) return;
     this.motion?.stop();
     this.target = target;
     this.changedAt = this.scene.time.now;
@@ -85,6 +94,13 @@ export class Balance extends Phaser.GameObjects.Container {
       this.velocity +=
         (120 * (this.target - this.rendered) - 14 * this.velocity) * dt;
       this.rendered += this.velocity * dt;
+      // A full reversal can otherwise overshoot by almost three degrees.
+      // Keep the spring inside the same travel envelope reserved by layout.
+      const limit = CONFIG.beam.maxAngle + CONFIG.beam.overshootAllowance;
+      if (Math.abs(this.rendered) > limit) {
+        this.rendered = Math.sign(this.rendered) * limit;
+        this.velocity = 0;
+      }
       remaining -= dt;
     }
     if (
@@ -97,16 +113,16 @@ export class Balance extends Phaser.GameObjects.Container {
     }
     this.positionPans();
   }
-  private positionPans(): void {
+  positionPans(): void {
     const radians = Phaser.Math.DegToRad(this.rendered);
     this.beam.setAngle(this.rendered);
     this.pans.left.setPosition(
       -this.halfSpan * Math.cos(radians),
-      -this.halfSpan * Math.sin(radians) + PAN_HANG_OFFSET,
+      -this.halfSpan * Math.sin(radians) + this.pans.left.hangLength(radians),
     );
     this.pans.right.setPosition(
       this.halfSpan * Math.cos(radians),
-      this.halfSpan * Math.sin(radians) + PAN_HANG_OFFSET,
+      this.halfSpan * Math.sin(radians) + this.pans.right.hangLength(radians),
     );
   }
 }

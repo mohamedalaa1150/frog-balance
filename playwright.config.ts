@@ -2,8 +2,11 @@ import { defineConfig, devices } from '@playwright/test';
 
 // Optional system Chromium for runners where downloading managed browsers is blocked.
 const chromiumLaunchOptions = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
-  ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH }
-  : undefined;
+  ? {
+      executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+      args: ['--disable-gpu'],
+    }
+  : { args: ['--disable-gpu'] };
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -44,6 +47,7 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         launchOptions: chromiumLaunchOptions,
         viewport: { width: 1920, height: 1080 },
+        deviceScaleFactor: 1,
         hasTouch: true,
       },
     },

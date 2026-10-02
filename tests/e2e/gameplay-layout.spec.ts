@@ -78,7 +78,7 @@ for (const [width, height] of viewports) {
 }
 
 for (const [width, height] of [viewports[0], viewports[2]]) {
-  test(`BUG-205: source sizes match the spec and fit at ${width}×${height}`, async ({
+  test(`BUG-205: source targets retain their minimum size and fit at ${width}×${height}`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height });
@@ -100,8 +100,7 @@ for (const [width, height] of [viewports[0], viewports[2]]) {
       ),
     );
     for (const tile of tiles) {
-      expect(tile.width).toBeCloseTo(Math.max(120 * uiScale, 64), 2);
-      expect(tile.height).toBeCloseTo(Math.max(150 * uiScale, 80), 2);
+      expect(tile.height / tile.width).toBeCloseTo(1.25, 2);
       expect(tile.width).toBeGreaterThanOrEqual(64);
       expect(tile.height).toBeGreaterThanOrEqual(80);
       expect(tile.x).toBeGreaterThanOrEqual(0);

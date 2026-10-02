@@ -1,3 +1,4 @@
+import { readSave } from '../services/storage';
 import Phaser from 'phaser';
 import { drawTextPill } from '../ui/textPill';
 import { CONFIG } from '../config';
@@ -37,6 +38,7 @@ export class EquationBar {
     const compare = state.level.mode === 'compare';
     const visible = state.level.showEquation || compare;
     const number = (n: number) => formatNumber(n, system);
+    const direction = readSave().settings.equationDirection;
     for (const side of ['left', 'right'] as const) {
       let terms: string[];
       if (compare) terms = [number(panWeight(state.pans[side]))];
@@ -63,7 +65,7 @@ export class EquationBar {
           );
       }
       const text = this.terms[side];
-      const next = terms.reverse().join(' + ');
+      const next = (direction === 'ltr' ? terms : terms.reverse()).join(' + ');
       if (next !== text.text && state.phase === 'success' && !reduced)
         this.scene.tweens.add({
           targets: text,

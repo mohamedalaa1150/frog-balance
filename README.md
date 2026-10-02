@@ -177,7 +177,7 @@ success plays a small celebration and returns to the list. Sandbox accepts both
 pans, has no goal or stars, and reads their relation with the read icon. Tap a
 Sandbox pan to select the destination for source taps (right initially).
 
-The balance uses Phaser.AUTO (WebGL with Canvas fallback), a spring with stiffness
+The balance uses Phaser.CANVAS, a spring with stiffness
 120/damping 14, and a single 200 ms tween when reduced motion is enabled. Artwork
 uses all documented texture keys at the current render scale; numerals are Text
 objects over blank tile textures. Sprite frames and number labels can be replaced
@@ -202,3 +202,58 @@ and solves Count using `enumerateSolutions`. Fast mode passes a zero settle dela
 to the reducer without advancing or inventing action timestamps. Sandbox is a
 runtime core definition with a `none` goal; authored level schemas/content remain
 unchanged. Other authored modes stay in Phase 3.
+
+## Phase 4: Meta + quality
+
+The production flow is Title → World Map → Level Select → Game → Result.
+Completing a level saves its best stars and accumulated attempts, hints and error
+patterns, and unlocks the next level/world. Sandbox and adaptive Practice are
+available from Title and Map; the developer level list is registered only with
+`?test=1`. Practice adapts after three correct or two incorrect answers.
+
+Hold the Title lock continuously for three seconds to open the grown-up area.
+Settings apply audio channels, numeral/equation direction, counting VO, motion
+and idle hints immediately. Reset requires a second confirmation and preserves
+preferences. Dashboard summarizes mastery and hints, names the three most common
+errors in Arabic, recommends practice, and downloads a local UTF-8 CSV.
+
+The PWA precaches all bundled assets and installs updates automatically. Update
+activation preserves the current session; a notice appears on Title, and the new
+code loads on the next visit. Visibility pauses audio, animation, success/reveal
+deadlines and hint clocks. Every scene relayouts on rotation.
+
+Chromium offline tests retain `context.setOffline(true)` unchanged. WebKit uses a
+real origin outage because [Playwright #42775](https://github.com/microsoft/playwright/issues/42775)
+rejects even local service-worker responses under its offline-emulation flag.
+The WebKit test is never skipped: it shuts down its dedicated production server,
+requires a fresh context without a worker to fail, then requires a 200 response
+from the service worker and a complete level after reload.
+
+Game, Practice and Sandbox use one CSS-pixel layout: portrait beam span 60–72%,
+short landscape ≥45%, and taller landscape ≥62%. Pans use width-bounded grids
+with at most three rows; frogs use up to four/five columns and tiles two/three
+(portrait/landscape). Hanging strings follow the actual stack and tilt, while
+dishes and the mascot size independently. Pan items retain the 36/48×60 minimums
+and expand on larger screens (48/64×80 at 1366×768); hit areas stay ≥56 CSS px.
+Canvas backgrounds, static tray/HUD caches, size-matched textures, token/drag
+pools and Phaser's particle pool reduce frame work on software-rendered runners.
+
+`npm run build` reports and enforces both size budgets. The four CI projects run
+the complete E2E suite; desktop Chromium additionally performs 30 seconds of
+native drags under CDP CPU ×4 with a ≥55 FPS assertion. Whiteboard logs all eleven
+capacity drags and actual FPS at DPR 1. Screenshot thresholds, coverage thresholds
+and the 60-second capacity timeout are unchanged. Review screenshots are under
+`docs/screens/phase-4/`.
+
+QA round-one regressions cover all 48 authored worst-case stacks, seven Sandbox
+arrangements and Practice at seven viewports, at DPR 2 after a 2.5-second settle.
+Set `QA_SCREENSHOTS=1` when running `qa-gameplay-layout.spec.ts` and
+`qa-meta-layout.spec.ts` to save review images in `docs/screens/phase-4/fix/`.
+The hidden test API can hold result navigation with `setResultNavigation(false)`
+while success still evaluates normally; `getBeamGeometry()` exposes the rotated
+shaft and rings for collision checks, and `getBounds('mascot-head')` returns the
+top 35% of the mascot. The Phase-0 numeral font probe is hidden on Title; its text
+and metrics remain in the ready event and test API.
+Animated weight reversals are sampled throughout 50 frames at the same seven
+sizes. The spring uses the layout's two-degree overshoot allowance; pan repacks
+and released pooled tokens cancel placement tweens tied to their previous grid.

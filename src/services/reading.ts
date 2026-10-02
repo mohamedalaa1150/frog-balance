@@ -25,3 +25,27 @@ export function composePanReading(pans: Record<Side, readonly PlacedItem[]>) {
     right,
   };
 }
+
+/** Predictions explain the heavier pan first, independently of reading direction. */
+export function composePredictionExplanation(
+  pans: Record<Side, readonly PlacedItem[]>,
+) {
+  const left = panWeight(pans.left),
+    right = panWeight(pans.right);
+  const equal = left === right;
+  const heavier: Side | null = equal ? null : left > right ? 'left' : 'right';
+  const count = (n: number) => `count_${String(n).padStart(2, '0')}`;
+  return {
+    left,
+    right,
+    heavier,
+    keys: [
+      equal
+        ? 'phrase_they_are_equal_because'
+        : 'phrase_this_side_went_down_because',
+      count(Math.max(left, right)),
+      equal ? 'phrase_equals' : 'phrase_greater_than',
+      count(Math.min(left, right)),
+    ],
+  };
+}
