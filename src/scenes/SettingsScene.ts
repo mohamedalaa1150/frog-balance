@@ -53,11 +53,11 @@ export class SettingsScene extends MenuScene {
         25,
       ).setPosition(0, 18);
       const row = this.add
-        .container(0, 0, [title, value])
+        .container(0, 0, [this.add.zone(0, 0, 340, 112), title, value])
         .setName(`setting-${key}`)
-        .setSize(340, 90)
+        .setSize(340, 112)
         .setInteractive(
-          new Phaser.Geom.Rectangle(0, 0, 340, 90),
+          new Phaser.Geom.Rectangle(0, 0, 340, 112),
           Phaser.Geom.Rectangle.Contains,
         );
       bindButton(this, row, `settings_${key}`, () => {
@@ -151,12 +151,12 @@ export class SettingsScene extends MenuScene {
   }
   protected override layout(): void {
     const f = this.frame(),
-      columns = f.portrait ? 1 : 2,
+      columns = f.portrait ? 1 : f.height / f.r < 500 ? 3 : 2,
       rows = Math.ceil(this.rows.length / columns);
-    const available = f.height - f.button * 2.4;
+    const available = f.height - f.button * 2.8;
     const scale = Math.min(
       (f.width / columns - 24 * f.r) / 420,
-      available / (rows * 110),
+      available / (rows * 140),
     );
     this.rows.forEach((row, i) =>
       row

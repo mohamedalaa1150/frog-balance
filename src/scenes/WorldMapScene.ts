@@ -206,8 +206,8 @@ export class WorldMapScene extends MenuScene {
       this.header
         .setOrigin(0.5, 0)
         .setFontSize(18 * f.r)
-        .setWordWrapWidth(160 * f.r)
-        .setPosition(f.width - f.button - 100 * f.r, 8 * f.r);
+        .setWordWrapWidth(f.width - 2 * f.button - 24 * f.r)
+        .setPosition(f.width / 2, 8 * f.r);
     // Readable islands can have intersecting corner bounds even when their
     // painted centres differ. Resolve the smallest visual displacement within
     // the reviewer's anchor tolerance; never reserve footer space by moving pads.

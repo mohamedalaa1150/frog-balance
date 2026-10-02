@@ -10,12 +10,12 @@ export class Slider extends Phaser.GameObjects.Container {
   ) {
     super(scene, 0, 0);
     scene.add.existing(this);
-    this.setName(name).setSize(320, 64);
+    this.setName(name).setSize(320, 112);
     this.track = scene.add.graphics();
-    this.add(this.track);
+    this.add([scene.add.zone(0, 0, 320, 112), this.track]);
     this.paint();
     this.setInteractive(
-      new Phaser.Geom.Rectangle(0, 0, 320, 64),
+      new Phaser.Geom.Rectangle(0, 0, 320, 112),
       Phaser.Geom.Rectangle.Contains,
     );
     scene.input.setDraggable(this);

@@ -60,7 +60,12 @@ test('BUG-401/402: pan contents stay clear throughout animated weight reversals'
             const dish = api.getBounds(`dish-${side}`)!;
             for (const item of api.getLevelState()!.pans[side]) {
               const b = api.getBounds(`item-${side}-${item.uid}`)!;
-              if (intersects(b, head)) collisions.push('head');
+              // C-501 allows the mascot behind the pans; contents must paint in front.
+              if (
+                intersects(b, head) &&
+                !api.isInFrontOf(`item-${side}-${item.uid}`, 'mascot')
+              )
+                collisions.push('head layering');
               for (const ring of rings)
                 if (intersects(b, ring))
                   collisions.push(

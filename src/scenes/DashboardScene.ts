@@ -22,7 +22,7 @@ export class DashboardScene extends MenuScene {
         28,
       );
       row.setText(
-        `${menuLabel(`world_${world.world}`)}  ${menuLabel('dashboard_mastery')} ${number(world.mastery)}%  ${menuLabel('dashboard_hints')} ${number(world.averageHints)}`,
+        `${menuLabel(`world_${world.world}`)}  ${menuLabel('dashboard_mastery')} ${number(world.mastery)}${save.settings.numerals === 'arabic-indic' ? '٪' : '%'}  ${menuLabel('dashboard_hints')} ${number(world.averageHints)}`,
       );
       this.rows.push(row);
     }

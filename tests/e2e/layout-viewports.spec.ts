@@ -79,9 +79,9 @@ for (const [width, height] of [
         info.project.name === 'chromium-desktop' &&
         [1366, 844, 390].includes(width)
       ) {
-        mkdirSync('docs/screens/phase-4', { recursive: true });
+        mkdirSync('docs/screens/phase-5', { recursive: true });
         await page.screenshot({
-          path: resolve(`docs/screens/phase-4/${scene}-${width}x${height}.png`),
+          path: resolve(`docs/screens/phase-5/${scene}-${width}x${height}.png`),
         });
       }
     }
