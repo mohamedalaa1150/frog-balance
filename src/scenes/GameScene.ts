@@ -196,7 +196,7 @@ export class GameScene extends BaseScene {
           .image(0, 0, `predict_${choice}`)
           .setName(`predict-${choice}`)
           .setInteractive({ useHandCursor: true });
-        bindButton(this, button, 'intro_compare', () =>
+        bindButton(this, button, `ui_predict_${choice}`, () =>
           this.controller.dispatch({ type: 'predict', choice }),
         );
         this.predictions.push(button);

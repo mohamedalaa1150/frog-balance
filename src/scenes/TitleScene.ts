@@ -62,7 +62,7 @@ export class TitleScene extends BaseScene {
       .image(0, 0, 'btn_play')
       .setName('btn-play')
       .setInteractive({ useHandCursor: true });
-    bindButton(this, this.play, 'ui_next', () => {
+    bindButton(this, this.play, 'ui_play', () => {
       this.game.registry.set('audio-unlocked', true);
       this.sound.unlock();
       this.scene.start('WorldMapScene');

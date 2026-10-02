@@ -84,18 +84,10 @@ installViewportController(game, parent);
 installVisibility(game);
 registerSW({
   immediate: true,
-  onRegisteredSW(_url, registration) {
-    registration?.addEventListener('updatefound', () => {
-      const worker = registration.installing;
-      worker?.addEventListener('statechange', () => {
-        if (
-          worker.state === 'installed' &&
-          navigator.serviceWorker.controller
-        ) {
-          game.registry.set('update-ready', true);
-          game.events.emit('update-ready');
-        }
-      });
-    });
+  // autoUpdate installs the worker now, but a running level must finish without
+  // the plugin's default activation reload. Title shows the next-visit notice.
+  onNeedReload() {
+    game.registry.set('update-ready', true);
+    game.events.emit('update-ready');
   },
 });

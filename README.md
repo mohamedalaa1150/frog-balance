@@ -177,7 +177,7 @@ success plays a small celebration and returns to the list. Sandbox accepts both
 pans, has no goal or stars, and reads their relation with the read icon. Tap a
 Sandbox pan to select the destination for source taps (right initially).
 
-The balance uses Phaser.AUTO (WebGL with Canvas fallback), a spring with stiffness
+The balance uses Phaser.CANVAS, a spring with stiffness
 120/damping 14, and a single 200 ms tween when reduced motion is enabled. Artwork
 uses all documented texture keys at the current render scale; numerals are Text
 objects over blank tile textures. Sprite frames and number labels can be replaced
@@ -202,3 +202,35 @@ and solves Count using `enumerateSolutions`. Fast mode passes a zero settle dela
 to the reducer without advancing or inventing action timestamps. Sandbox is a
 runtime core definition with a `none` goal; authored level schemas/content remain
 unchanged. Other authored modes stay in Phase 3.
+
+## Phase 4: Meta + quality
+
+The production flow is Title → World Map → Level Select → Game → Result.
+Completing a level saves its best stars and accumulated attempts, hints and error
+patterns, and unlocks the next level/world. Sandbox and adaptive Practice are
+available from Title and Map; the developer level list is registered only with
+`?test=1`. Practice adapts after three correct or two incorrect answers.
+
+Hold the Title lock continuously for three seconds to open the grown-up area.
+Settings apply audio channels, numeral/equation direction, counting VO, motion
+and idle hints immediately. Reset requires a second confirmation and preserves
+preferences. Dashboard summarizes mastery and hints, names the three most common
+errors in Arabic, recommends practice, and downloads a local UTF-8 CSV.
+
+The PWA precaches all bundled assets and installs updates automatically. Update
+activation preserves the current session; a notice appears on Title, and the new
+code loads on the next visit. Visibility pauses audio, animation, success/reveal
+deadlines and hint clocks. Every scene relayouts on rotation.
+
+Gameplay reserves this level's legal stack instead of the global Sandbox stack.
+Portrait levels stack tokens vertically to preserve beam width. Minimum pan token
+sizes and expanded touch areas remain in CSS pixels, including short landscape.
+Canvas backgrounds, static tray/HUD caches, size-matched textures, token/drag
+pools and Phaser's particle pool reduce frame work on software-rendered runners.
+
+`npm run build` reports and enforces both size budgets. The four CI projects run
+the complete E2E suite; desktop Chromium additionally performs 30 seconds of
+native drags under CDP CPU ×4 with a ≥55 FPS assertion. Whiteboard logs all eleven
+capacity drags and actual FPS at DPR 1. Screenshot thresholds, coverage thresholds
+and the 60-second capacity timeout are unchanged. Review screenshots are under
+`docs/screens/phase-4/`.

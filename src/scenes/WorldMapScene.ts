@@ -69,7 +69,7 @@ export class WorldMapScene extends MenuScene {
           Phaser.Geom.Rectangle.Contains,
         );
         // The entire island is the touch target.
-        bindIsland(this, container, () =>
+        bindIsland(this, container, `world_${anchor.world}`, () =>
           this.scene.start('LevelSelectScene', { world: anchor.world }),
         );
       } else {
@@ -183,5 +183,6 @@ import { bindButton } from '../ui/Button';
 const bindIsland = (
   scene: Phaser.Scene,
   island: Phaser.GameObjects.Container,
+  label: string,
   action: () => void,
-) => bindButton(scene, island, 'map_choose_level', action);
+) => bindButton(scene, island, label, action);

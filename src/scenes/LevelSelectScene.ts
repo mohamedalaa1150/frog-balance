@@ -48,7 +48,7 @@ export class LevelSelectScene extends MenuScene {
           new Phaser.Geom.Rectangle(0, 0, 150, 150),
           Phaser.Geom.Rectangle.Contains,
         );
-        bindButton(this, pad, 'map_choose_level', () =>
+        bindButton(this, pad, `count_${String(index).padStart(2, '0')}`, () =>
           this.scene.start('GameScene', { levelId: id }),
         );
       }
