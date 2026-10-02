@@ -32,7 +32,7 @@ export interface LevelState {
   hintsUsed: number;
   errors: ErrorTag[];
   startedAt: number;
-  level: LevelDefinition;
+  level: PlayableLevel;
   hint: HintState;
   idleHintSec: IdleHintSec;
   now: number;
@@ -54,3 +54,13 @@ export type LevelAction =
   | { type: 'requestHint'; at?: number }
   | { type: 'settle'; at?: number; dragging?: boolean }
   | { type: 'tick'; at?: number; dragging?: boolean };
+
+export interface SandboxDefinition extends Omit<
+  LevelDefinition,
+  'id' | 'mode' | 'goal'
+> {
+  id: 'sandbox';
+  mode: 'sandbox';
+  goal: { type: 'none' };
+}
+export type PlayableLevel = LevelDefinition | SandboxDefinition;
