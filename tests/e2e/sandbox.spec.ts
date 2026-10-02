@@ -19,7 +19,7 @@ test('Sandbox exposes 1–10, accepts both pans, reads their relation, and never
     expect.objectContaining({
       type: 'read',
       data: {
-        keys: ['count_09', 'phrase_greater_than', 'count_06'],
+        keys: ['count_06', 'phrase_less_than', 'count_09'],
         left: 9,
         right: 6,
       },
@@ -49,6 +49,35 @@ test('Sandbox exposes 1–10, accepts both pans, reads their relation, and never
       window.__FROG__!.events.filter((e) => e.type === 'success'),
     ),
   ).toHaveLength(0);
+});
+test('BUG-204: Arabic read starts with right-hand terms in placement order', async ({
+  page,
+}) => {
+  await boot(page);
+  await page.evaluate(async () => {
+    const api = window.__FROG__!;
+    await api.gotoScene('SandboxScene');
+    api.place('number', 'left', 5);
+    api.place('number', 'right', 2);
+    api.place('number', 'right', 3);
+  });
+  await tap(page, 'btn-read');
+  expect(await page.evaluate(() => window.__FROG__!.events)).toContainEqual(
+    expect.objectContaining({
+      type: 'read',
+      data: {
+        keys: [
+          'count_02',
+          'phrase_plus',
+          'count_03',
+          'phrase_equals',
+          'count_05',
+        ],
+        left: 5,
+        right: 5,
+      },
+    }),
+  );
 });
 test('pan capacity rejects the eleventh frog and sources remain available', async ({
   page,

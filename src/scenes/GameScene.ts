@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { CONFIG } from '../config';
 import { LevelController } from '../controllers/LevelController';
-import { diff, panWeight } from '../core/balance';
+import { diff } from '../core/balance';
 import type { LevelState, Side } from '../core/types';
 import { getLayout } from '../layout/layout';
 import { getGameplayLayout } from '../layout/gameplayLayout';
@@ -15,6 +15,7 @@ import type {
   ReturnTarget,
 } from '../objects/PlaceableItem';
 import { AudioManager } from '../services/audio';
+import { composePanReading } from '../services/reading';
 import { readSave } from '../services/storage';
 import { hasString, t } from '../services/strings';
 import { BaseScene } from './BaseScene';
@@ -379,29 +380,12 @@ export class GameScene extends BaseScene {
     this.returnAt = this.time.now + (this.controller.fast ? 200 : 1700);
   }
   readEquation(): void {
-    const { left, right } = this.controller.state.pans;
-    const l = panWeight(left),
-      r = panWeight(right);
-    const relation =
-      l === r
-        ? 'phrase_equals'
-        : l > r
-          ? 'phrase_greater_than'
-          : 'phrase_less_than';
-    // Values above 20 are composed from individual terms; authored VO stops at 20.
-    const keysFor = (side: Side, total: number): string[] =>
-      total <= 20
-        ? [`count_${String(total).padStart(2, '0')}`]
-        : this.controller.state.pans[side].flatMap((item, i) => [
-            ...(i ? ['phrase_plus'] : []),
-            `count_${String(item.kind === 'frog' ? 1 : item.value).padStart(2, '0')}`,
-          ]);
-    const keys = [...keysFor('left', l), relation, ...keysFor('right', r)];
+    const reading = composePanReading(this.controller.state.pans);
     this.game.events.emit('gameplay-event', {
       type: 'read',
-      data: { keys, left: l, right: r },
+      data: reading,
     });
     this.audio.stopVoice();
-    for (const key of keys) void this.audio.play(key, 'vo');
+    for (const key of reading.keys) void this.audio.play(key, 'vo');
   }
 }
