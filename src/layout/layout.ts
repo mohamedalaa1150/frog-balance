@@ -13,4 +13,4 @@ export function getLayout(width: number, height: number) {
   };
 }
 
-// TODO: Phase 2–4: pan, tray, and navigation anchor maps.
+// Gameplay anchors and worst-case stack reservations live in gameplayLayout.ts.

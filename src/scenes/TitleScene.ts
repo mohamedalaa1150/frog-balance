@@ -8,6 +8,7 @@ import { BaseScene, type SceneReadyEvent } from './BaseScene';
 export class TitleScene extends BaseScene {
   private pond!: Phaser.GameObjects.Graphics;
   private title!: Phaser.GameObjects.Text;
+  private play?: Phaser.GameObjects.Image;
   private numerals!: Phaser.GameObjects.Text;
 
   constructor() {
@@ -45,6 +46,19 @@ export class TitleScene extends BaseScene {
       )
       .setOrigin(0.5)
       .setName('numerals-text');
+    if (
+      import.meta.env.DEV ||
+      new URLSearchParams(location.search).get('test') === '1'
+    ) {
+      this.play = this.add
+        .image(0, 0, 'btn_play')
+        .setName('btn-play')
+        .setInteractive({ useHandCursor: true });
+      this.play.on('pointerdown', () => {
+        this.game.registry.set('audio-unlocked', true);
+        this.scene.start('DevLevelListScene');
+      });
+    }
     this.relayout();
     this.scale.on(Phaser.Scale.Events.RESIZE, this.relayout, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -75,6 +89,9 @@ export class TitleScene extends BaseScene {
     // Rasterize text at the physical font size instead of enlarging a low-DPI texture.
     this.title.setPosition(centerX, height * 0.38).setFontSize(96 * uiScale);
     this.numerals.setPosition(centerX, height * 0.53).setFontSize(64 * uiScale);
+    this.play
+      ?.setPosition(centerX, height * 0.68)
+      .setDisplaySize(112 * uiScale, 112 * uiScale);
     this.pond.clear();
     // Solid strips provide a smooth gradient in both WebGL and Canvas renderers.
     const top = Phaser.Display.Color.ValueToColor('#87c9be');

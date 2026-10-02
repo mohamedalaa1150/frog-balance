@@ -1,3 +1,4 @@
+import { generatePlaceholderArt } from '../placeholder/placeholderArt';
 import { BaseScene } from './BaseScene';
 
 export class PreloadScene extends BaseScene {
@@ -5,8 +6,23 @@ export class PreloadScene extends BaseScene {
     super('PreloadScene');
   }
 
+  preload(): void {
+    const assets = import.meta.glob<string>(
+      '../../public/assets/audio/**/*.mp3',
+      { eager: true, query: '?url', import: 'default' },
+    );
+    for (const [path, url] of Object.entries(assets))
+      this.load.audio(
+        path
+          .split('/')
+          .at(-1)!
+          .replace(/\.mp3$/, ''),
+        url,
+      );
+  }
+
   create(): void {
-    // TODO: Phase 2: generate placeholder textures and load available audio.
+    generatePlaceholderArt(this);
     this.scene.start('TitleScene');
   }
 }

@@ -14,6 +14,7 @@ import type {
   LevelAction,
   LevelState,
   PlacedItem,
+  PlayableLevel,
   Side,
 } from './types';
 
@@ -108,11 +109,12 @@ export function isSolvable(level: LevelDefinition): boolean {
   );
 }
 export function createLevelState(
-  level: LevelDefinition,
+  level: PlayableLevel,
   options: { now?: number; idleHintSec?: IdleHintSec } = {},
 ): LevelState {
   const now = options.now ?? 0;
-  const copy = Level.parse(level);
+  const copy =
+    level.mode === 'sandbox' ? structuredClone(level) : Level.parse(level);
   const placed = (side: Side): PlacedItem[] =>
     copy.fixed[side].map((item, order) => ({
       ...item,
@@ -164,11 +166,11 @@ function changed(state: LevelState, pans: LevelState['pans']): LevelState {
     'activity',
   );
 }
-function settle(state: LevelState): LevelState {
+function settle(state: LevelState, settleMs: number): LevelState {
   if (
     !state.pendingEvaluation ||
     state.dragging ||
-    state.now - state.lastChangedAt < CONFIG.settleMs
+    state.now - state.lastChangedAt < settleMs
   )
     return state;
   const gap = Math.abs(diff(state.pans.left, state.pans.right));
@@ -179,6 +181,7 @@ function settle(state: LevelState): LevelState {
     phase: 'playing',
   };
   const level = state.level;
+  if (level.mode === 'sandbox') return next;
   if (level.goal.type === 'predict') {
     if (state.prediction === correctPrediction(level))
       return { ...next, phase: 'success' };
@@ -266,6 +269,7 @@ function settle(state: LevelState): LevelState {
 export function applyAction(
   state: LevelState,
   action: LevelAction,
+  options: { settleMs?: number } = {},
 ): LevelState {
   if (state.phase === 'success' || state.phase === 'revealing') return state;
   const now = Math.max(state.now, action.at ?? state.now);
@@ -275,7 +279,7 @@ export function applyAction(
   if (action.type === 'place') {
     if (
       level.goal.type === 'predict' ||
-      action.side !== level.workPan ||
+      (level.mode !== 'sandbox' && action.side !== level.workPan) ||
       !Item.safeParse(action.item).success
     )
       return state;
@@ -312,7 +316,7 @@ export function applyAction(
   }
   if (action.type === 'remove') {
     if (
-      action.side !== level.workPan ||
+      (level.mode !== 'sandbox' && action.side !== level.workPan) ||
       !state.pans[action.side].some((i) => i.uid === action.uid && !i.fixed)
     )
       return state;
@@ -339,7 +343,7 @@ export function applyAction(
   const dragging = action.dragging ?? state.dragging;
   if (dragging || state.dragging) next = { ...next, lastChangedAt: now };
   next = { ...next, dragging };
-  next = settle(next);
+  next = settle(next, options.settleMs ?? CONFIG.settleMs);
   if (
     action.type === 'tick' &&
     !dragging &&
@@ -348,4 +352,31 @@ export function applyAction(
   )
     next = hintEvent(next, 'tick');
   return next;
+}
+
+/** Free play still uses the same placement, capacity, timing, and removal reducer. */
+export function createSandboxState(now = 0): LevelState {
+  return createLevelState(
+    {
+      id: 'sandbox',
+      world: 1,
+      index: 1,
+      mode: 'sandbox',
+      fixed: { left: [], right: [] },
+      workPan: null,
+      tray: {
+        frogs: true,
+        numbers: Array.from({ length: 10 }, (_, i) => i + 1),
+      },
+      childLimits: {
+        maxNumbers: CONFIG.capacity.numbers,
+        maxFrogs: CONFIG.capacity.frogs,
+      },
+      goal: { type: 'none' },
+      showEquation: false,
+      guideArrow: false,
+      vo: { intro: 'ui_sandbox' },
+    },
+    { now, idleHintSec: 0 },
+  );
 }

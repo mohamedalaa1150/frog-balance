@@ -1,3 +1,4 @@
+import { consoleErrors } from './helpers';
 import { expect, test, type Page } from '@playwright/test';
 
 async function assertResolution(page: Page, dpr: number) {
@@ -51,12 +52,7 @@ for (const dpr of [1, 2, 3]) {
     test('caps physical rendering at 2x and preserves CSS coordinates on rotation', async ({
       page,
     }) => {
-      const errors: string[] = [];
-      page.on('pageerror', (error) => errors.push(error.message));
-      page.on('console', (message) => {
-        if (['error', 'warning'].includes(message.type()))
-          errors.push(message.text());
-      });
+      const errors = consoleErrors(page);
       await page.goto('/?test=1');
       await page.waitForFunction(() => !!window.__FROG__);
       await page.evaluate(() => window.__FROG__!.ready);
