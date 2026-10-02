@@ -74,6 +74,8 @@ def mascot(expr='idle'):
              f'<circle cx="203" cy="288" r="11" fill="{P["scarf"]}" stroke="{P["scarfO"]}" stroke-width="5"/>')
     body = '<g transform="translate(20,34)">' + ''.join(b) + f'<g transform="rotate({lean} 200 390)">' + ''.join(g) + '</g></g>'
     return svg(W, H, f'<g filter="url(#sh)">{body}</g>', SHADOW)
+for e in []:  # mascot now comes from AI raster art (public/assets/img)
+  pass
 for e in ['idle', 'look_left', 'look_right', 'strain_left', 'strain_right', 'happy', 'clap']:
     save(f'mascot_{e}', mascot(e))
 
