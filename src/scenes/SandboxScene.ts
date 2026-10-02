@@ -1,2 +1,6 @@
-// TODO: Phase 2–4: scene implementation per technical spec.
-export {};
+import { GameScene } from './GameScene';
+export class SandboxScene extends GameScene {
+  constructor() {
+    super('SandboxScene');
+  }
+}
