@@ -321,6 +321,7 @@ it('BUG-101: slow correct counting has no failed attempts, hints or errors', () 
     });
     s = applyAction(s, { type: 'tick', at: i * 2700 + 1200 });
     expect(s.lastSettledGap).toBe(4 - i);
+    expect(s.bestSettledGap).toBe(4 - i);
   }
   expect(s).toMatchObject({
     phase: 'success',
@@ -454,4 +455,77 @@ it('BUG-105: duplicate returns preserve fixed tiles and send hint activity witho
   });
   expect(s.hint.failures).toBe(0);
   expect(s.hint.lastActivityAt).toBe(s.now);
+});
+
+it('BUG-106: separately settled place/remove dithering triggers a hint on the third removal', () => {
+  let s = createLevelState(get('w1-l5'));
+  expect(s.bestSettledGap).toBe(5);
+  for (let cycle = 1; cycle <= 4; cycle++) {
+    s = place(s, [{ kind: 'frog' }]);
+    s = applyAction(s, { type: 'tick', at: s.now + 1100 });
+    expect(s.attempts).toBe(cycle - 1);
+    expect(s.hint.failures).toBe(cycle === 4 ? 0 : cycle - 1);
+    s = applyAction(s, {
+      type: 'remove',
+      side: 'right',
+      uid: s.pans.right.at(-1)!.uid,
+    });
+    s = applyAction(s, { type: 'tick', at: s.now + 1100 });
+    expect(s.attempts).toBe(cycle);
+    expect(s).toMatchObject({ lastSettledGap: 5, bestSettledGap: 4 });
+    expect(s.hintLevel).toBe(cycle >= 3 ? 1 : 0);
+  }
+  expect(s).toMatchObject({ attempts: 4, hintsUsed: 1, errors: [] });
+});
+
+it('BUG-106: a new best after revisiting an earlier quantity resets failures and fades the hint', () => {
+  let s = createLevelState(get('w1-l5'));
+  s = solve(s, [{ kind: 'frog' }]);
+  s = applyAction(s, {
+    type: 'remove',
+    side: 'right',
+    uid: s.pans.right[0]!.uid,
+  });
+  s = applyAction(s, { type: 'settle', at: s.now + 1100 });
+  s = applyAction(s, { type: 'requestHint' });
+  s = solve(s, [{ kind: 'frog' }]);
+  expect(s.hint).toMatchObject({ failures: 0, level: 1 });
+  s = applyAction(s, {
+    type: 'remove',
+    side: 'right',
+    uid: s.pans.right[0]!.uid,
+  });
+  s = applyAction(s, { type: 'settle', at: s.now + 1100 });
+  s = solve(s, [{ kind: 'frog' }]);
+  expect(s.hint).toMatchObject({ failures: 1, level: 1 });
+  expect(s.attempts).toBe(2);
+  s = solve(s, [{ kind: 'frog' }]);
+  expect(s.hint).toMatchObject({ failures: 0, level: 0 });
+  expect(s).toMatchObject({ attempts: 2, bestSettledGap: 3 });
+});
+
+it('BUG-106: a recorded bond solution or duplicate resets progress for the next pair', () => {
+  let s = createLevelState(get('w4-l6'));
+  s = solve(s, [{ kind: 'number', value: 3 }]);
+  s = solve(s, [{ kind: 'number', value: 4 }]);
+  expect(s).toMatchObject({
+    outcome: 'solution',
+    attempts: 0,
+    lastSettledGap: 7,
+    bestSettledGap: 7,
+  });
+  s = solve(s, [{ kind: 'number', value: 4 }]);
+  expect(s.hint.failures).toBe(0);
+  s = solve(s, [{ kind: 'number', value: 3 }]);
+  expect(s).toMatchObject({
+    outcome: 'duplicate',
+    attempts: 0,
+    lastSettledGap: 7,
+    bestSettledGap: 7,
+  });
+  s = applyAction(s, { type: 'requestHint' });
+  s = solve(s, [{ kind: 'number', value: 2 }]);
+  expect(s.hint).toMatchObject({ level: 0, failures: 0 });
+  s = solve(s, [{ kind: 'number', value: 5 }]);
+  expect(s).toMatchObject({ phase: 'success', attempts: 0, errors: [] });
 });

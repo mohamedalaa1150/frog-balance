@@ -136,6 +136,7 @@ export function createLevelState(
     now,
     lastChangedAt: now,
     lastSettledGap: Math.abs(diff(copy.fixed.left, copy.fixed.right)),
+    bestSettledGap: Math.abs(diff(copy.fixed.left, copy.fixed.right)),
     dragging: false,
     pendingEvaluation: false,
     nextUid: 0,
@@ -200,7 +201,7 @@ function settle(state: LevelState): LevelState {
   const balanced =
     diff(state.pans.left, state.pans.right) === 0 && child.length > 0;
   if (balanced && level.goal.type === 'balance')
-    return { ...next, phase: 'success' };
+    return { ...next, phase: 'success', bestSettledGap: 0 };
   if (
     balanced &&
     level.goal.type === 'balanceMulti' &&
@@ -221,6 +222,7 @@ function settle(state: LevelState): LevelState {
           [side]: state.pans[side].filter((i) => i.fixed),
         },
         lastSettledGap: Math.abs(levelNeed(level)),
+        bestSettledGap: Math.abs(levelNeed(level)),
         outcome: duplicate ? 'duplicate' : 'solution',
         phase:
           solutionsFound.length >= level.goal.requiredSolutions
@@ -231,15 +233,16 @@ function settle(state: LevelState): LevelState {
     );
   }
 
-  // A smaller unfinished quantity is progress, regardless of counting speed.
+  // Only a new best unfinished quantity resets failures and fades hints.
   // Overshoots and equality with invalid bond items remain incorrect answers.
   const other = side === 'left' ? 'right' : 'left';
-  if (
-    gap > 0 &&
-    gap < state.lastSettledGap &&
-    panWeight(state.pans[side]) < panWeight(state.pans[other])
-  )
-    return hintEvent(next, 'progress');
+  const shortOfTarget =
+    panWeight(state.pans[side]) < panWeight(state.pans[other]);
+  if (gap > 0 && gap < state.bestSettledGap && shortOfTarget)
+    return hintEvent({ ...next, bestSettledGap: gap }, 'progress');
+  // Reaching an earlier partial answer is neutral, not fresh progress.
+  if (gap > 0 && gap < state.lastSettledGap && shortOfTarget)
+    return hintEvent(next, 'activity');
   return hintEvent(
     {
       ...next,

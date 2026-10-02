@@ -38,6 +38,7 @@ export interface LevelState {
   now: number;
   lastChangedAt: number;
   lastSettledGap: number;
+  bestSettledGap: number;
   dragging: boolean;
   pendingEvaluation: boolean;
   nextUid: number;

@@ -110,8 +110,9 @@ starts play. `applyAction(state, action)` returns a new state for place, remove,
 predict, requestHint, settle, and tick. Action `at` values are monotonic milliseconds;
 omitting `at` preserves the current time. There are no wall-clock reads. Forward
 `dragging` on tick/settle; releasing starts a new full 1,000 ms quiet interval.
-Only changed positions are evaluated, once per change. Settled quantities approaching
-the target update `lastSettledGap` without failed attempts or errors; overshoots
+Only changed positions are evaluated, once per change. Settled quantities reaching a new best gap update `bestSettledGap` and reset
+hint failures. Improvements back to an earlier quantity are neutral activity:
+they update `lastSettledGap` without attempts or resetting hint failures; overshoots
 and invalid bond answers remain failures. Hint progress fading happens on settle,
 so placing and returning a frog without net progress cannot reset failed attempts.
 Fixed items, wrong pans,
@@ -139,6 +140,8 @@ Comparison bands 1–3 use differences 5–8; 4–6 use 3–5; 7–8 use 1–3; 
 Wrong predictions of the lighter pan record both `wrongPrediction` and
 `compareFlip`; equality mistakes record only `wrongPrediction`. Duplicate bond
 answers return child tiles and preserve fixed items without errors or attempts.
+Recorded and duplicate bond solutions reset both settled gaps to the starting
+gap so the next pair can make fresh progress.
 `defaults()` and `migrate(raw)` handle versioned plain save data without storage
 access. Version 0/unversioned saves with the same field layout receive missing
 field defaults. Migration repairs settings and level entries independently,
