@@ -51,6 +51,7 @@ export class Pan extends Phaser.GameObjects.Container {
     const frogs = items.filter((i) => i.kind === 'frog');
     for (const placed of items) {
       let item = this.items.get(placed.uid);
+      const entering = !item && !placed.fixed;
       if (!item) {
         item = new PlaceableItem(
           this.scene,
@@ -87,6 +88,14 @@ export class Pan extends Phaser.GameObjects.Container {
           -54 - Math.floor(index / columns) * size - (numbers.length ? 100 : 0),
         );
       }
+      if (entering && !interactions.fast() && !interactions.reduced())
+        this.scene.tweens.add({
+          targets: item,
+          y: item.y - 12,
+          duration: 90,
+          yoyo: true,
+          ease: 'Sine.easeOut',
+        });
     }
   }
   reject(reduced: boolean): void {

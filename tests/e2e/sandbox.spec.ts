@@ -30,6 +30,16 @@ test('Sandbox exposes 1–10, accepts both pans, reads their relation, and never
     await page.evaluate(() => window.__FROG__!.getLevelState()!.pans.right),
   ).toHaveLength(2);
   await tap(page, 'item-right-child-2');
+  await drag(page, 'item-left-child-0', 'pan-right');
+  expect(
+    await page.evaluate(() => window.__FROG__!.getLevelState()!.pans.left),
+  ).toHaveLength(0);
+  expect(
+    await page.evaluate(() => window.__FROG__!.getLevelState()!.pans.right),
+  ).toHaveLength(2);
+  expect(
+    await page.evaluate(() => window.__FROG__!.getLevelState()!.dragging),
+  ).toBe(false);
   await page.waitForTimeout(1150);
   expect(
     await page.evaluate(() => window.__FROG__!.getLevelState()!.phase),

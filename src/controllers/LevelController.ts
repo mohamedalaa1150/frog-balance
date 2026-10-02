@@ -84,6 +84,7 @@ export class LevelController {
     const accepted = this.state.pans[side].length > length;
     if (accepted) {
       this.emit('place', { kind: item.kind, value: item.value, side });
+      this.scene.events.emit('item-placed');
       this.countFrogs(item, side);
     } else if (this.state.errors.length > before.errors.length)
       this.feedback('feedback_pan_full', side);
@@ -104,6 +105,22 @@ export class LevelController {
       this.countFrogs(item!, side);
     }
     return accepted;
+  }
+  move(from: Side, to: Side, uid: string): boolean {
+    const item = this.state.pans[from].find(
+      (item) => item.uid === uid && !item.fixed,
+    );
+    if (!item) return false;
+    if (from === to) return true;
+    const spec: ItemSpec =
+      item.kind === 'frog'
+        ? { kind: 'frog' }
+        : { kind: 'number', value: item.value };
+    // The destination reducer must accept the copy before removing its source.
+    // A full or non-work pan therefore leaves the original state intact.
+    if (!this.place(spec, to)) return false;
+    this.remove(from, uid);
+    return true;
   }
   removeLast(side: Side): boolean {
     const item = [...this.state.pans[side]].reverse().find((i) => !i.fixed);

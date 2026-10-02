@@ -155,7 +155,10 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
   }
   private moveLift(pointer: Phaser.Input.Pointer): void {
     this.lifted?.setPosition(pointer.worldX, pointer.worldY);
-    this.shadow?.setPosition(pointer.worldX, pointer.worldY + 20 * this.scaleY);
+    this.shadow?.setPosition(
+      pointer.worldX,
+      pointer.worldY + (20 * (this.lifted?.scaleY ?? this.scaleY)) / 1.12,
+    );
   }
   setItemSize(w: number, h: number): void {
     this.image.setDisplaySize(w, h);

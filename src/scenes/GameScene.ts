@@ -28,6 +28,7 @@ export class GameScene extends BaseScene {
   private levelId = 'w1-l1';
   private lastTick = 0;
   private returnAt = Infinity;
+  private lastDiff?: number;
   private activeSide: Side = 'right';
   private interactions!: ItemInteractions;
   constructor(key = 'GameScene') {
@@ -39,6 +40,7 @@ export class GameScene extends BaseScene {
       this.scene.key === 'SandboxScene' ? 'sandbox' : (data.levelId ?? 'w1-l1');
     this.lastTick = 0;
     this.returnAt = Infinity;
+    this.lastDiff = undefined;
     this.navigation = [];
     this.pile = undefined;
     this.guide = undefined;
@@ -52,6 +54,8 @@ export class GameScene extends BaseScene {
     );
   }
   create(): void {
+    // Keep the specified durations even when a frame takes more than 500 ms.
+    this.tweens.setLagSmooth();
     this.input.dragDistanceThreshold = 8 * getRenderScale();
     this.background = this.add.image(0, 0, 'bg_world_1').setOrigin(0);
     this.subtitle = this.add
@@ -118,7 +122,9 @@ export class GameScene extends BaseScene {
     );
     this.controller.fast = this.game.registry.get('fast-mode') === true;
     this.audio.setFastMode(this.controller.fast);
+    this.events.on('item-placed', this.onPlaced, this);
     const level = this.controller.state.level;
+    void this.audio.play(`music_world_${level.world}`, 'music');
     this.background.setTexture(`bg_world_${level.world}`);
     if (level.tray.frogs)
       this.pile = new FrogPile(this, this.settings.numerals, this.interactions);
@@ -150,11 +156,18 @@ export class GameScene extends BaseScene {
     this.relayout();
     this.scale.on(Phaser.Scale.Events.RESIZE, this.relayout, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.events.off('item-placed', this.onPlaced, this);
       this.audio.destroy();
       this.scale.off(Phaser.Scale.Events.RESIZE, this.relayout, this);
     });
     if (hasString(level.vo.intro)) void this.audio.play(level.vo.intro, 'vo');
     this.markReady();
+  }
+  private onPlaced(): void {
+    const variant = `sfx_drop_pan_${Phaser.Math.Between(0, 1) ? 'a' : 'b'}`;
+    void this.audio.play(
+      this.cache.audio.exists(variant) ? variant : 'sfx_drop_pan',
+    );
   }
   private addButton(name: string, texture: string, action: () => void): void {
     const button = this.add
@@ -197,10 +210,14 @@ export class GameScene extends BaseScene {
     for (const side of ['left', 'right'] as const)
       if (this.balance.pans[side].contains(x, y)) {
         if (item.source) return this.controller.place(item.spec, side);
-        // Child tokens stay on their pan; tapping is the return gesture.
-        if (this.sideOf(item) === side) return true;
-        this.feedback('feedback_wrong_pan');
-        return false;
+        const from = this.sideOf(item);
+        return from
+          ? this.controller.move(
+              from,
+              side,
+              item.name.slice(`item-${from}-`.length),
+            )
+          : false;
       }
     void this.audio.play('sfx_bounce_back');
     return false;
@@ -216,8 +233,14 @@ export class GameScene extends BaseScene {
         this.interactions,
       );
     }
+    const difference = diff(state.pans.left, state.pans.right);
+    if (this.lastDiff !== undefined && difference !== this.lastDiff) {
+      void this.audio.play('sfx_beam_creak');
+      if (difference === 0) void this.audio.play('sfx_balanced_ding');
+    }
+    this.lastDiff = difference;
     this.balance.setDifference(
-      diff(state.pans.left, state.pans.right),
+      difference,
       this.reducedMotion,
       this.controller.fast,
     );
@@ -302,13 +325,15 @@ export class GameScene extends BaseScene {
   private celebrate(): void {
     const reduced = this.reducedMotion || this.controller.fast;
     this.balance.mascot.jump(reduced);
+    void this.audio.play('sfx_success');
     if (!reduced) {
+      const { uiScale } = getLayout(this.scale.width, this.scale.height);
       const emitter = this.add
         .particles(this.balance.x, this.balance.y, 'particle_star', {
-          speed: { min: 80, max: 200 },
+          speed: { min: 80 * uiScale, max: 200 * uiScale },
           lifespan: 650,
           quantity: 20,
-          scale: { start: 0.6 / getRenderScale(), end: 0 },
+          scale: { start: (0.6 * uiScale) / getRenderScale(), end: 0 },
           emitting: false,
         })
         .setDepth(25);
