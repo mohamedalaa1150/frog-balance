@@ -151,11 +151,14 @@ export class GameScene extends BaseScene {
       this.audio.unlock();
     });
     this.balance = new Balance(this);
+    const draggingNames = new WeakMap<PlaceableItem, string>();
     this.interactions = {
       tap: (item) => this.tap(item),
       drop: (item, x, y) => this.drop(item, x, y),
       dragging: (item, on) => {
-        this.controller.dragging(item.name, on);
+        if (on) draggingNames.set(item, item.name);
+        this.controller.dragging(draggingNames.get(item) ?? item.name, on);
+        if (!on) draggingNames.delete(item);
         if (on) void this.audio.play('sfx_pickup');
       },
       feedback: (key) => this.feedback(key),

@@ -166,12 +166,13 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
         scaleX: Math.hypot(world.a, world.b),
         scaleY: Math.hypot(world.c, world.d),
       };
-      // A reducer removal destroys the pan item. Detach the lifted copy first,
+      // A reducer removal releases the pan item. Detach the lifted copy first,
       // so it can still fly to its source after the state has changed.
       const lift = this.lifted;
       this.lifted = undefined;
       this.cachedShadow = this.shadow?.setVisible(false).setActive(false);
       this.shadow = undefined;
+      const nameBeforeDrop = this.name;
       const accepted = interactions.drop(this, pointer.worldX, pointer.worldY);
       interactions.dragging(this, false);
       this.setAlpha(1);
@@ -180,10 +181,10 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
         this.recycleLift(lift);
       else {
         const destination = accepted || original;
-        lift.setName(`return-${this.name}`);
+        lift.setName(`return-${nameBeforeDrop}`);
         scene.game.events.emit('gameplay-event', {
           type: accepted ? 'return-to-source' : 'bounce',
-          data: { name: this.name },
+          data: { name: nameBeforeDrop },
         });
         scene.tweens.add({
           targets: lift,

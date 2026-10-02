@@ -35,6 +35,9 @@ for (const input of ['mouse', 'touch'] as const) {
         window.__FROG__!.getPointerTarget('item-right-child-0'),
       ),
     ).toBeNull();
+    expect(
+      await page.evaluate(() => window.__FROG__!.getLevelState()!.dragging),
+    ).toBe(false);
     expect(await page.evaluate(() => window.__FROG__!.events)).toContainEqual(
       expect.objectContaining({
         type: 'remove',

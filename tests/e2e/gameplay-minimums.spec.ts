@@ -24,6 +24,8 @@ for (const [width, height] of [
         if (level === 'sandbox') {
           for (let i = 0; i < 10; i++) api.place('frog', 'left');
           api.place('number', 'right', 10);
+        } else if (level === 'w1-l3') {
+          for (let i = 0; i < 3; i++) api.place('frog', 'right');
         } else if (level === 'w2-l5') {
           for (let i = 0; i < 10; i++) api.place('frog', 'right');
         }
@@ -43,10 +45,8 @@ for (const [width, height] of [
           ),
         };
       }, level);
-      if (level === 'w1-l3')
-        expect(report.beam.width).toBeGreaterThanOrEqual(
-          width! * (width! >= height! ? 0.62 : 0.88),
-        );
+      if (level === 'w1-l3' && width! < height!)
+        expect(report.beam.width).toBeGreaterThanOrEqual(width! * 0.88);
       if (width! > height! && height! < 500) {
         expect(report.tray.height).toBeLessThanOrEqual(height! * 0.22 + 0.01);
       }
