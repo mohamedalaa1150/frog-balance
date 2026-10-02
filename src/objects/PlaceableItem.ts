@@ -207,6 +207,17 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
     this.digit?.setY((-7 * h) / 150);
     this.digit?.setFontSize(Math.min(w, h) * 0.58 * getRenderScale());
   }
+  expandHitArea(minimum: number): void {
+    if (!this.input) return;
+    const w = Math.max(this.width, minimum),
+      h = Math.max(this.height, minimum);
+    (this.input.hitArea as Phaser.Geom.Rectangle).setTo(
+      (this.width - w) / 2,
+      (this.height - h) / 2,
+      w,
+      h,
+    );
+  }
   private lockFeedback(): void {
     this.interactions.feedback('feedback_locked');
     if (this.interactions.reduced() || this.interactions.fast()) return;

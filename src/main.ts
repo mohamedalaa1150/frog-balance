@@ -31,7 +31,7 @@ const parent = document.getElementById('game');
 if (!parent) throw new Error('Missing game container');
 const viewport = getViewport(parent);
 const game = new Phaser.Game({
-  type: Phaser.AUTO,
+  type: Phaser.CANVAS,
   parent: 'game',
   backgroundColor: cssColor(THEME.sky),
   banner: false,

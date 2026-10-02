@@ -1,5 +1,8 @@
 import { expect, test } from 'vitest';
-import { composePanReading } from '../../src/services/reading';
+import {
+  composePanReading,
+  composePredictionExplanation,
+} from '../../src/services/reading';
 import type { PlacedItem } from '../../src/core/types';
 const numbers = (...values: number[]): PlacedItem[] =>
   values.map((value, i) => ({
@@ -54,3 +57,46 @@ test('empty pans read zero and frog terms read one', () => {
     }).keys,
   ).toEqual(['count_01', 'phrase_greater_than', 'count_00']);
 });
+
+test.each([
+  [9, 2, 'left'],
+  [2, 9, 'right'],
+  [5, 5, null],
+] as const)(
+  'prediction explanation %s | %s leads with the heavier total',
+  (left, right, heavier) => {
+    const pans = {
+      left: [
+        {
+          kind: 'number' as const,
+          value: left,
+          uid: 'l',
+          fixed: true,
+          order: 0,
+        },
+      ],
+      right: [
+        {
+          kind: 'number' as const,
+          value: right,
+          uid: 'r',
+          fixed: true,
+          order: 0,
+        },
+      ],
+    };
+    expect(composePredictionExplanation(pans)).toEqual({
+      left,
+      right,
+      heavier,
+      keys: [
+        heavier
+          ? 'phrase_this_side_went_down_because'
+          : 'phrase_they_are_equal_because',
+        `count_${String(Math.max(left, right)).padStart(2, '0')}`,
+        heavier ? 'phrase_greater_than' : 'phrase_equals',
+        `count_${String(Math.min(left, right)).padStart(2, '0')}`,
+      ],
+    });
+  },
+);

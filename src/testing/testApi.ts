@@ -22,6 +22,14 @@ export interface FrogTestApi {
   ready: Promise<void>;
   version: string;
   getActualFps(): number;
+  getSceneBounds(): Array<{
+    name: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    interactive: boolean;
+  }>;
   setFastMode(on: boolean): void;
   resetSave(): void;
   unlockAll(): void;
@@ -170,7 +178,16 @@ export function installTestApi(game: Phaser.Game): void {
     return null;
   };
   const pointerTarget = (name: string): { x: number; y: number } | null => {
-    const object = namedObject(name) as Phaser.GameObjects.Container | null;
+    // Pans are drop zones: their transform is available while the spring moves,
+    // and token hit areas do not affect the drop target.
+    const pan =
+      name === 'pan-left'
+        ? activeGame()?.balance.pans.left
+        : name === 'pan-right'
+          ? activeGame()?.balance.pans.right
+          : undefined;
+    const object =
+      pan ?? (namedObject(name) as Phaser.GameObjects.Container | null);
     if (!object) return null;
     const matrix = object.getWorldTransformMatrix();
     return toCssPoint(game, matrix.tx, matrix.ty);
@@ -179,6 +196,39 @@ export function installTestApi(game: Phaser.Game): void {
     ready,
     version,
     getActualFps: () => game.loop.actualFps,
+    getSceneBounds() {
+      const result: Array<{
+        name: string;
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        interactive: boolean;
+      }> = [];
+      const visit = (objects: Phaser.GameObjects.GameObject[]) => {
+        for (const raw of objects) {
+          const o = raw as Phaser.GameObjects.Container;
+          if (!o.visible || !o.active) continue;
+          if (o.name && typeof o.getBounds === 'function') {
+            const b = o.getBounds(),
+              top = toCssPoint(game, b.x, b.y),
+              bottom = toCssPoint(game, b.right, b.bottom);
+            result.push({
+              name: o.name,
+              ...top,
+              width: bottom.x - top.x,
+              height: bottom.y - top.y,
+              interactive: !!o.input?.enabled,
+            });
+          }
+          if (o instanceof Phaser.GameObjects.Container && !o.input?.enabled)
+            visit(o.list);
+        }
+      };
+      for (const scene of game.scene.getScenes(true))
+        visit(scene.children.list);
+      return result;
+    },
     events,
     toCssPoint: (x, y) => toCssPoint(game, x, y),
     gotoScene: (key) => navigate(key),

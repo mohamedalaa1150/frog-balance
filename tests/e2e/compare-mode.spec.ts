@@ -38,9 +38,14 @@ for (const id of ['w3-l1', 'w3-l7']) {
     expect(
       await page.evaluate(() => window.__FROG__!.isVisible('peg-lock')),
     ).toBe(false);
-    expect(
-      await page.evaluate(() => window.__FROG__!.getText('equation-equals')),
-    ).toBe(choice === 'equal' ? '=' : choice === 'left' ? '>' : '<');
+    expect(await page.evaluate(() => window.__FROG__!.events)).toContainEqual(
+      expect.objectContaining({
+        type: 'compare-reveal',
+        data: expect.objectContaining({
+          symbol: choice === 'equal' ? '=' : choice === 'left' ? '>' : '<',
+        }),
+      }),
+    );
     expect(
       (await page.evaluate(() => window.__FROG__!.events)).filter(
         (event) => event.type === 'success',
@@ -49,7 +54,7 @@ for (const id of ['w3-l1', 'w3-l7']) {
     expect(errors).toEqual([]);
   });
 }
-test('wrong prediction explains from the right, keeps the difference band and completes its sibling once', async ({
+test('wrong prediction explains the heavier side first, keeps the difference band and completes its sibling once', async ({
   page,
 }) => {
   await boot(page);
@@ -89,9 +94,9 @@ test('wrong prediction explains from the right, keeps the difference band and co
   );
   const start = keys.indexOf('phrase_this_side_went_down_because');
   expect(keys.slice(start + 1, start + 4)).toEqual([
-    `count_${String(right).padStart(2, '0')}`,
-    right > left ? 'phrase_greater_than' : 'phrase_less_than',
-    `count_${String(left).padStart(2, '0')}`,
+    `count_${String(Math.max(left, right)).padStart(2, '0')}`,
+    'phrase_greater_than',
+    `count_${String(Math.min(left, right)).padStart(2, '0')}`,
   ]);
   await page.evaluate(() => window.__FROG__!.solveCurrent());
   expect(

@@ -1,3 +1,4 @@
+import { bindButton } from '../ui/Button';
 import { THEME, cssColor, tileColor } from '../theme';
 import Phaser from 'phaser';
 import { CONFIG } from '../config';
@@ -21,7 +22,10 @@ import type {
   ReturnTarget,
 } from '../objects/PlaceableItem';
 import { AudioManager } from '../services/audio';
-import { composePanReading } from '../services/reading';
+import {
+  composePredictionExplanation,
+  composePanReading,
+} from '../services/reading';
 import { readSave } from '../services/storage';
 import { hasString, t } from '../services/strings';
 import { BaseScene } from './BaseScene';
@@ -40,6 +44,8 @@ export class GameScene extends BaseScene {
   private renderedState?: LevelState;
   private lastHint = 0;
   private explanationPending = false;
+  private explanationHand?: Phaser.GameObjects.Image;
+  private explaining = false;
   private navigation: Phaser.GameObjects.Image[] = [];
   private trayBackground!: Phaser.GameObjects.Image;
   private background!: Phaser.GameObjects.Image;
@@ -47,7 +53,7 @@ export class GameScene extends BaseScene {
   private audio!: AudioManager;
   private settings = readSave().settings;
   private levelId = 'w1-l1';
-  private lastTick = 0;
+
   private returnAt = Infinity;
   private lastDiff?: number;
   private activeSide: Side = 'right';
@@ -58,8 +64,10 @@ export class GameScene extends BaseScene {
   init(data: { levelId?: string } = {}): void {
     super.init();
     this.levelId =
-      this.scene.key === 'SandboxScene' ? 'sandbox' : (data.levelId ?? 'w1-l1');
-    this.lastTick = 0;
+      this.scene.key === 'SandboxScene'
+        ? 'sandbox'
+        : (data.levelId ?? 'w1-l1');
+
     this.returnAt = Infinity;
     this.lastDiff = undefined;
     this.navigation = [];
@@ -70,6 +78,8 @@ export class GameScene extends BaseScene {
     this.renderedState = undefined;
     this.lastHint = 0;
     this.explanationPending = false;
+    this.explaining = false;
+    this.explanationHand = undefined;
     this.settings = readSave().settings;
   }
   get reducedMotion(): boolean {
@@ -116,6 +126,7 @@ export class GameScene extends BaseScene {
       .setName('solutions-board')
       .setDepth(30);
     this.audio = new AudioManager(this, this.settings, (text) => {
+      if (this.explaining) return;
       this.subtitle.setText(text);
       drawTextPill(
         this.subtitlePill,
@@ -214,6 +225,11 @@ export class GameScene extends BaseScene {
       this.scale.off(Phaser.Scale.Events.RESIZE, this.relayout, this);
     });
     if (hasString(level.vo.intro)) void this.audio.play(level.vo.intro, 'vo');
+    this.time.addEvent({
+      delay: 100,
+      loop: true,
+      callback: () => this.controller.tick(),
+    });
     this.markReady();
   }
   private onPlaced(): void {
@@ -227,7 +243,18 @@ export class GameScene extends BaseScene {
       .image(0, 0, texture)
       .setName(name)
       .setInteractive({ useHandCursor: true });
-    button.on('pointerdown', action);
+    bindButton(
+      this,
+      button,
+      name === 'btn-hint'
+        ? 'ui_hint'
+        : name === 'btn-home'
+          ? 'ui_home'
+          : name === 'btn-read'
+            ? 'ui_read_equation'
+            : 'ui_repeat_instruction',
+      action,
+    );
     this.navigation.push(button);
   }
   private feedback(
@@ -344,6 +371,18 @@ export class GameScene extends BaseScene {
       this.settings.numerals,
       this.reducedMotion || this.controller.fast,
     );
+    if (
+      compare &&
+      (state.phase === 'success' || state.phase === 'revealing') &&
+      before?.phase !== state.phase
+    )
+      this.game.events.emit('gameplay-event', {
+        type: 'compare-reveal',
+        data: {
+          levelId: state.levelId,
+          symbol: difference === 0 ? '=' : difference < 0 ? '>' : '<',
+        },
+      });
     this.hints.render(state, this.balance, this.tray, this.settings.numerals);
     const number = (n: number) => formatNumber(n, this.settings.numerals);
     const target = state.level.workPan
@@ -405,10 +444,6 @@ export class GameScene extends BaseScene {
       this.scene.start('ResultScene', { state: this.controller.state });
       return;
     }
-    if (time - this.lastTick >= 100) {
-      this.lastTick = time;
-      this.controller.tick();
-    }
   }
   setFastMode(on: boolean): void {
     if (on)
@@ -418,7 +453,7 @@ export class GameScene extends BaseScene {
       }
     this.controller.fast = on;
     if (on && this.controller.state.phase === 'success')
-      this.returnAt = this.time.now;
+      this.returnAt = Math.max(this.returnAt, this.time.now + 300);
     this.audio.setFastMode(on);
     this.render(this.controller.state);
     this.controller.tick();
@@ -436,6 +471,7 @@ export class GameScene extends BaseScene {
             this.controller.state.level.mode === 'compare'
           ? 60
           : 0,
+      this.controller.state.level,
     );
     const { uiScale, balance, tray, pile, hud } = layout;
     const centerX = width / 2;
@@ -447,6 +483,9 @@ export class GameScene extends BaseScene {
       this.controller.state.level.world,
     );
     this.balance.setPosition(balance.x, balance.y).setScale(balance.scale);
+    for (const side of ['left', 'right'] as const)
+      this.balance.pans[side].setPresentation(balance.scale);
+    this.render(this.controller.state);
     this.trayBackground
       .setPosition(centerX, (tray.top + height) / 2)
       .setDisplaySize(width - 12 * getRenderScale(), height - tray.top);
@@ -454,8 +493,11 @@ export class GameScene extends BaseScene {
     this.pile?.setPosition(pile.x, pile.y).setScale(uiScale);
     this.navigation.forEach((button, i) =>
       button
-        .setDisplaySize(88 * uiScale, 88 * uiScale)
-        .setPosition((70 + i * 108) * uiScale, 70 * uiScale),
+        .setDisplaySize(hud.buttonSize, hud.buttonSize)
+        .setPosition(
+          (i + 0.6) * (hud.buttonSize + 12 * getRenderScale()),
+          hud.buttonSize / 2 + 6 * getRenderScale(),
+        ),
     );
     this.subtitle
       .setPosition(centerX, hud.subtitleY)
@@ -478,11 +520,13 @@ export class GameScene extends BaseScene {
     this.predictions.forEach((button, i) =>
       button
         .setPosition(
-          centerX +
-            (i - 1) * (layout.orientation === 'portrait' ? 200 : 230) * uiScale,
-          height - 104 * uiScale,
+          centerX + (i - 1) * balance.halfSpan * balance.scale,
+          (tray.top + height) / 2,
         )
-        .setDisplaySize(160 * uiScale, 160 * uiScale),
+        .setDisplaySize(
+          Math.min(112 * uiScale, 0.18 * height),
+          Math.min(112 * uiScale, 0.18 * height),
+        ),
     );
     if (this.guide) {
       const side = this.controller.state.level.workPan!;
@@ -523,7 +567,7 @@ export class GameScene extends BaseScene {
       'vo',
       'interrupt',
     );
-    this.returnAt = this.time.now + (this.controller.fast ? 200 : 1700);
+    this.returnAt = this.time.now + (this.controller.fast ? 300 : 1700);
   }
   private returnBondTiles(before?: LevelState): void {
     if (!before?.level.workPan) return;
@@ -599,20 +643,38 @@ export class GameScene extends BaseScene {
     }
   }
   private async explainPrediction(state: LevelState): Promise<void> {
-    const reading = composePanReading(state.pans);
-    const keys = [
-      reading.left === reading.right
-        ? 'phrase_they_are_equal_because'
-        : 'phrase_this_side_went_down_because',
-      ...reading.keys,
-      'compare_try_another',
-    ];
+    const reading = composePredictionExplanation(state.pans);
+    const keys = [...reading.keys, 'compare_try_another'];
+    this.explaining = true;
+    const number = (n: number) => formatNumber(n, this.settings.numerals);
+    this.subtitle.setText(
+      `${t(reading.keys[0] as 'phrase_they_are_equal_because')} ${number(Math.max(reading.left, reading.right))} ${t(reading.heavier ? 'phrase_greater_than' : 'phrase_equals')} ${number(Math.min(reading.left, reading.right))}`,
+    );
+    drawTextPill(
+      this.subtitlePill,
+      this.subtitle,
+      getLayout(this.scale.width, this.scale.height).uiScale,
+    );
+    for (const side of ['left', 'right'] as const)
+      this.balance.pans[side].setWorkActive(
+        reading.heavier === null || reading.heavier === side,
+      );
+    if (reading.heavier) {
+      const pan = this.balance.pans[reading.heavier].getWorldTransformMatrix();
+      this.explanationHand = this.add
+        .image(pan.tx, pan.ty - 45 * getRenderScale(), 'hint_hand')
+        .setDisplaySize(56 * getRenderScale(), 56 * getRenderScale())
+        .setDepth(28)
+        .setName('explanation-hand');
+    }
     this.audio.stopVoice();
     await Promise.all(keys.map((key) => this.audio.play(key, 'vo')));
     if (!this.scene.isActive() || this.controller.state !== state) return;
-    this.time.delayedCall(this.controller.fast ? 0 : 1000, () => {
+    this.time.delayedCall(this.controller.fast ? 300 : 1200, () => {
       if (!this.scene.isActive() || this.controller.state !== state) return;
       this.explanationPending = false;
+      this.explaining = false;
+      this.explanationHand?.destroy();
       this.controller.loadSibling();
       void this.audio.play('intro_compare', 'vo');
     });
