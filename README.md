@@ -229,9 +229,12 @@ The WebKit test is never skipped: it shuts down its dedicated production server,
 requires a fresh context without a worker to fail, then requires a 200 response
 from the service worker and a complete level after reload.
 
-Gameplay reserves this level's legal stack instead of the global Sandbox stack.
-Portrait levels stack tokens vertically to preserve beam width. Minimum pan token
-sizes and expanded touch areas remain in CSS pixels, including short landscape.
+Game, Practice and Sandbox use one CSS-pixel layout: portrait beam span 60–72%,
+short landscape ≥45%, and taller landscape ≥62%. Pans use width-bounded grids
+with at most three rows; frogs use up to four/five columns and tiles two/three
+(portrait/landscape). Hanging strings follow the actual stack and tilt, while
+dishes and the mascot size independently. Pan items retain the 36/48×60 minimums
+and expand on larger screens (48/64×80 at 1366×768); hit areas stay ≥56 CSS px.
 Canvas backgrounds, static tray/HUD caches, size-matched textures, token/drag
 pools and Phaser's particle pool reduce frame work on software-rendered runners.
 
@@ -241,3 +244,13 @@ native drags under CDP CPU ×4 with a ≥55 FPS assertion. Whiteboard logs all e
 capacity drags and actual FPS at DPR 1. Screenshot thresholds, coverage thresholds
 and the 60-second capacity timeout are unchanged. Review screenshots are under
 `docs/screens/phase-4/`.
+
+QA round-one regressions cover all 48 authored worst-case stacks, seven Sandbox
+arrangements and Practice at seven viewports, at DPR 2 after a 2.5-second settle.
+Set `QA_SCREENSHOTS=1` when running `qa-gameplay-layout.spec.ts` and
+`qa-meta-layout.spec.ts` to save review images in `docs/screens/phase-4/fix/`.
+The hidden test API can hold result navigation with `setResultNavigation(false)`
+while success still evaluates normally; `getBeamGeometry()` exposes the rotated
+shaft and rings for collision checks, and `getBounds('mascot-head')` returns the
+top 35% of the mascot. The Phase-0 numeral font probe is hidden on Title; its text
+and metrics remain in the ready event and test API.

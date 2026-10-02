@@ -11,7 +11,9 @@ permissions:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # The added QA matrix measures 392 cases after a 2.5-second settle each.
+    # Existing per-test timeouts and native-input performance limits are unchanged.
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
