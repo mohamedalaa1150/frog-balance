@@ -51,7 +51,7 @@ test('overshoot settles as overcount, removal waits one second, and success fire
   ).toEqual(expect.arrayContaining(['count_01', 'count_04', 'count_03']));
   await expect
     .poll(() =>
-      page.evaluate(() => window.__FROG__!.getPointerTarget('level-w1-l3')),
+      page.evaluate(() => window.__FROG__!.getPointerTarget('btn-replay')),
     )
     .not.toBeNull();
 });

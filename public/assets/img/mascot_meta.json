@@ -1,68 +1,32 @@
 {
- "mascot_idle": {
-  "size": [
-   880,
-   920
-  ],
-  "topY": 30,
-  "handSpanX": [
-   130,
-   743
-  ]
- },
- "mascot_look_left": {
-  "size": [
-   880,
-   920
-  ],
-  "topY": 31,
-  "handSpanX": [
-   129,
-   743
-  ]
- },
- "mascot_strain_left": {
-  "size": [
-   880,
-   920
-  ],
-  "topY": 30,
-  "handSpanX": [
-   259,
-   732
-  ]
- },
- "mascot_happy": {
-  "size": [
-   880,
-   920
-  ],
-  "topY": 28,
-  "handSpanX": [
-   127,
-   753
-  ]
- },
- "mascot_clap": {
-  "size": [
-   880,
-   920
-  ],
-  "topY": 28,
-  "handSpanX": [
-   189,
-   698
-  ]
- },
- "frog_token": {
-  "size": [
-   128,
-   140
-  ],
-  "topY": 10,
-  "handSpanX": [
-   20,
-   109
-  ]
- }
+  "mascot_idle": {
+    "size": [880, 920],
+    "topY": 30,
+    "handSpanX": [130, 743]
+  },
+  "mascot_look_left": {
+    "size": [880, 920],
+    "topY": 31,
+    "handSpanX": [129, 743]
+  },
+  "mascot_strain_left": {
+    "size": [880, 920],
+    "topY": 30,
+    "handSpanX": [259, 732]
+  },
+  "mascot_happy": {
+    "size": [880, 920],
+    "topY": 28,
+    "handSpanX": [127, 753]
+  },
+  "mascot_clap": {
+    "size": [880, 920],
+    "topY": 28,
+    "handSpanX": [189, 698]
+  },
+  "frog_token": {
+    "size": [128, 140],
+    "topY": 10,
+    "handSpanX": [20, 109]
+  }
 }

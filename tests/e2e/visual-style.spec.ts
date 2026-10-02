@@ -7,11 +7,7 @@ for (const viewport of [
 ]) {
   test(`approved style B at ${viewport.width}×${viewport.height}`, async ({
     page,
-  }, testInfo) => {
-    test.skip(
-      testInfo.project.name !== 'chromium-desktop',
-      'Visual baselines use Chromium desktop only.',
-    );
+  }) => {
     await page.setViewportSize(viewport);
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await boot(page);

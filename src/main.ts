@@ -12,6 +12,7 @@ import { getViewport, installViewportController } from './layout/viewport';
 import { BootScene } from './scenes/BootScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { TitleScene } from './scenes/TitleScene';
+import { ResultScene } from './scenes/ResultScene';
 import { GameScene } from './scenes/GameScene';
 import { SandboxScene } from './scenes/SandboxScene';
 import { DevLevelListScene } from './scenes/DevLevelListScene';
@@ -49,6 +50,7 @@ const game = new Phaser.Game({
     TitleScene,
     GameScene,
     SandboxScene,
+    ResultScene,
     DevLevelListScene,
   ],
   input: { activePointers: 2 },

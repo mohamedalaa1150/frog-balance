@@ -8,12 +8,14 @@ import {
 } from '../core/levelLogic';
 import { LevelsFile, type LevelDefinition } from '../core/levelSchema';
 import type { ItemSpec, LevelAction, LevelState, Side } from '../core/types';
+import { generateSibling } from '../core/generator';
+import { diff } from '../core/balance';
 import type { SaveV1 } from '../core/progress';
 const levels = LevelsFile.parse(content).levels;
-export const countLevels = levels.filter((level) => level.mode === 'count');
-export function getCountLevel(id: string): LevelDefinition {
-  const level = countLevels.find((level) => level.id === id);
-  if (!level) throw new Error(`Unknown Phase 2 count level: ${id}`);
+export const authoredLevels = levels;
+export function getLevel(id: string): LevelDefinition {
+  const level = levels.find((level) => level.id === id);
+  if (!level) throw new Error(`Unknown level: ${id}`);
   return level;
 }
 export class LevelController {
@@ -36,7 +38,7 @@ export class LevelController {
     this.state =
       id === 'sandbox'
         ? createSandboxState(now)
-        : createLevelState(getCountLevel(id), {
+        : createLevelState(getLevel(id), {
             now,
             idleHintSec: settings.idleHintSec,
           });
@@ -61,8 +63,8 @@ export class LevelController {
       });
     if (this.state.hintLevel !== before.hintLevel)
       this.emit('hint', { level: this.state.hintLevel });
-    if (this.state.errors.length !== before.errors.length)
-      this.emit('error', { tag: this.state.errors.at(-1) });
+    for (const tag of this.state.errors.slice(before.errors.length))
+      this.emit('error', { tag });
     if (
       this.state.pans !== before.pans ||
       this.state.phase !== before.phase ||
@@ -143,19 +145,69 @@ export class LevelController {
   settle(): void {
     this.dispatch({ type: 'settle', dragging: this.draggingItems.size > 0 });
   }
+  loadSibling(): void {
+    if (this.state.phase !== 'revealing' || this.state.level.mode !== 'compare')
+      return;
+    const before = this.state;
+    const sibling = generateSibling(
+      this.state.level,
+      before.attempts * 1009 + before.level.world * 17 + before.level.index,
+    );
+    this.state = {
+      ...createLevelState(sibling, {
+        now: this.scene.time.now,
+        idleHintSec: before.idleHintSec,
+      }),
+      attempts: before.attempts,
+      errors: before.errors,
+      startedAt: before.startedAt,
+      hint: before.hint,
+      hintLevel: before.hintLevel,
+      hintsUsed: before.hintsUsed,
+    };
+    this.emit('sibling', {
+      levelId: before.levelId,
+      gap: Math.abs(diff(sibling.fixed.left, sibling.fixed.right)),
+    });
+    this.render(this.state);
+  }
+  private isSuccessful(): boolean {
+    return this.state.phase === 'success';
+  }
   async solve(): Promise<void> {
     if (this.state.phase === 'success' || this.state.level.mode === 'sandbox')
       return;
-    const solution = enumerateSolutions(this.state.level)[0];
-    if (!solution) throw new Error(`No solution: ${this.state.levelId}`);
+    const solutions = enumerateSolutions(this.state.level);
+    if (!solutions.length)
+      throw new Error(`No solution: ${this.state.levelId}`);
     const completed = new Promise<void>((resolve) =>
       this.scene.events.once('level-success', resolve),
     );
-    const side = this.state.level.workPan!;
-    for (const item of [...this.state.pans[side]])
-      if (!item.fixed) this.remove(side, item.uid);
-    for (const item of solution.items) this.place(item, side);
-    this.tick();
+    if (this.state.level.goal.type === 'predict') {
+      this.dispatch({ type: 'predict', choice: solutions[0]!.prediction! });
+      this.tick();
+    } else {
+      const side = this.state.level.workPan!;
+      for (const solution of solutions) {
+        if (this.isSuccessful()) break;
+        if (
+          solution.canonical &&
+          this.state.solutionsFound.includes(solution.canonical)
+        )
+          continue;
+        for (const item of [...this.state.pans[side]])
+          if (!item.fixed) this.remove(side, item.uid);
+        for (const item of solution.items) this.place(item, side);
+        if (this.fast) this.tick();
+        else
+          await new Promise<void>((resolve) =>
+            this.scene.time.delayedCall(1100, () => {
+              this.tick();
+              resolve();
+            }),
+          );
+      }
+    }
     await completed;
   }
 }

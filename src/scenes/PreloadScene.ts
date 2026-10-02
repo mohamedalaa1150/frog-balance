@@ -1,3 +1,4 @@
+import { initializeTileColors } from '../theme';
 import { RASTER_KEYS, VECTOR_KEYS } from '../assets';
 import { getRenderScale } from '../layout/viewport';
 import { generatePlaceholderArt } from '../placeholder/placeholderArt';
@@ -9,6 +10,7 @@ export class PreloadScene extends BaseScene {
   }
 
   preload(): void {
+    this.load.json('tile-colors', 'assets/svg/tile_colors.json');
     if (!this.textures.exists('bg_title'))
       this.load.image('bg_title', 'assets/img/bg_world_1.webp');
     if (!this.textures.exists('mascot_base'))
@@ -36,6 +38,7 @@ export class PreloadScene extends BaseScene {
   }
 
   create(): void {
+    initializeTileColors(this.cache.json.get('tile-colors'));
     const missing = [...RASTER_KEYS, ...VECTOR_KEYS].filter(
       (key) => !this.textures.exists(key),
     );

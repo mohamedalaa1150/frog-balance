@@ -65,7 +65,7 @@ export function getGameplayLayout(
   const headerBottom = hudBottom + (40 + extraHeader) * uiScale;
   const upper = headerBottom + 8 * renderScale;
   const lower = sourceTop - 8 * renderScale;
-  const halfSpan = portrait ? 200 : 396;
+  const halfSpan = portrait ? 260 : 396;
   // Reserve spring overshoot and the placement hop as well as the target angle.
   const endRise =
     halfSpan * Math.sin(((CONFIG.beam.maxAngle + 6) * Math.PI) / 180);

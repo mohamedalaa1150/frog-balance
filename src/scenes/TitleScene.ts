@@ -1,5 +1,6 @@
 import { THEME, cssColor } from '../theme';
 import Phaser from 'phaser';
+import { coverBackground } from '../layout/background';
 import { CONFIG } from '../config';
 import { formatNumber } from '../core/numerals';
 import { getLayout } from '../layout/layout';
@@ -98,7 +99,7 @@ export class TitleScene extends BaseScene {
     this.play
       ?.setPosition(centerX, height * 0.56)
       .setDisplaySize(112 * uiScale, 112 * uiScale);
-    this.pond.setDisplaySize(width, height);
+    coverBackground(this.pond, width, height, 1);
     this.mascot
       .setPosition(centerX, height * 0.8)
       .setDisplaySize(190 * uiScale, 200 * uiScale);
