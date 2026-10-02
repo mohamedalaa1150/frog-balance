@@ -36,6 +36,15 @@ for (const reduced of [false, true])
           );
         }
         await page.waitForTimeout(reduced ? 220 : 680);
+        // Observe a rendered frame, rather than racing a saturated GPU's next RAF.
+        await page.evaluate(
+          () =>
+            new Promise<void>((resolve) =>
+              requestAnimationFrame(() =>
+                requestAnimationFrame(() => resolve()),
+              ),
+            ),
+        );
         expect(
           Math.abs(
             (await page.evaluate(() => window.__FROG__!.getBeamAngle())) -

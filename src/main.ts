@@ -29,6 +29,9 @@ const game = new Phaser.Game({
   parent: 'game',
   backgroundColor: '#174d52',
   banner: false,
+  // Sprite edges and text are already antialiased in render-scale textures.
+  // Avoid a second multisample framebuffer, particularly costly on software GPUs.
+  render: { antialias: true, antialiasGL: false },
   scale: {
     mode: Phaser.Scale.NONE,
     width: viewport.width,

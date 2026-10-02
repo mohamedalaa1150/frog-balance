@@ -73,12 +73,17 @@ test('holding a real dragged token prevents success until a full second after re
   await boot(page);
   await page.evaluate(async () => {
     await window.__FROG__!.gotoLevel('w1-l3');
-    for (let i = 0; i < 3; i++) window.__FROG__!.place('frog', 'right');
   });
   const point = await target(page, 'frog-pile');
   await page.mouse.move(point.x, point.y);
   await page.mouse.down();
   await page.mouse.move(point.x + 30, point.y - 30, { steps: 3 });
+  await expect
+    .poll(() => page.evaluate(() => window.__FROG__!.getLevelState()!.dragging))
+    .toBe(true);
+  await page.evaluate(() => {
+    for (let i = 0; i < 3; i++) window.__FROG__!.place('frog', 'right');
+  });
   await page.waitForTimeout(1250);
   expect(
     await page.evaluate(() => window.__FROG__!.getLevelState()!.phase),
