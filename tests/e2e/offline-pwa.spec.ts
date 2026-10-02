@@ -24,7 +24,12 @@ test('after precaching, offline reload can play a complete level', async ({
   });
   expect(manifest.icons).toHaveLength(3);
   await context.setOffline(true);
-  await page.reload();
+  // Reload through the document so WebKit's protocol reload cannot bypass its SW.
+  await Promise.all([
+    page.waitForEvent('domcontentloaded'),
+    page.evaluate(() => location.reload()),
+  ]);
+  await page.waitForFunction(() => !!window.__FROG__);
   await page.evaluate(() => window.__FROG__!.ready);
   await page.evaluate(async () => {
     const api = window.__FROG__!;

@@ -6,6 +6,11 @@ test('three independent practice successes raise the saved band and next produce
   await boot(page);
   await tap(page, 'btn-practice');
   for (let i = 0; i < 3; i++) {
+    await expect
+      .poll(() =>
+        page.evaluate(() => window.__FROG__!.getLevelState()?.levelId),
+      )
+      .toBe(`practice-${i}`);
     await page.evaluate(() => {
       window.__FROG__!.setFastMode(true);
       return window.__FROG__!.solveCurrent();
@@ -17,8 +22,13 @@ test('three independent practice successes raise the saved band and next produce
       .not.toBeNull();
     await tap(page, 'btn-next');
     await expect
-      .poll(() => page.evaluate(() => window.__FROG__!.getLevelState()?.phase))
-      .toBe('playing');
+      .poll(() =>
+        page.evaluate(() => ({
+          id: window.__FROG__!.getLevelState()?.levelId,
+          phase: window.__FROG__!.getLevelState()?.phase,
+        })),
+      )
+      .toEqual({ id: `practice-${i + 1}`, phase: 'playing' });
   }
   expect(
     await page.evaluate(

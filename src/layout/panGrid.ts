@@ -8,6 +8,7 @@ export function getPanGrid(
   kinds: readonly ItemKind[],
   cssScale = Infinity,
   wide = false,
+  vertical = false,
 ) {
   const mixed = kinds.includes('number') && kinds.includes('frog');
   const frog = Math.max(44, 36 / cssScale);
@@ -19,7 +20,15 @@ export function getPanGrid(
   );
   const totalWidth = widths.reduce((sum, w) => sum + w, 0);
   let cursor = -totalWidth / 2;
+  let top = 0;
   return kinds.map((kind, index) => {
+    if (vertical) {
+      const width = widths[index]!;
+      const height = kind === 'number' ? width * 1.25 : (width * 70) / 64;
+      const cell = { width, height, x: 0, y: -top - height / 2 };
+      top += height;
+      return cell;
+    }
     if (mixed && wide) {
       const width = widths[index]!;
       const x = cursor + width / 2;

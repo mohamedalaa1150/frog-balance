@@ -113,6 +113,7 @@ export function getGameplayLayout(
   let actualTop = topExtent,
     actualBottom = bottomExtent;
   if (level) {
+    const vertical = portrait && level.mode !== 'sandbox';
     const space = lower - upper;
     balanceScale = Math.min(
       uiScale * 1.3,
@@ -120,22 +121,28 @@ export function getGameplayLayout(
       availableWidth / 600,
     );
     const grid = legalStacks(level).flatMap((kinds) =>
-      getPanGrid(kinds, balanceScale / renderScale, !portrait),
+      getPanGrid(kinds, balanceScale / renderScale, !portrait, vertical),
     );
     const stackRise = Math.max(
       14 * balanceScale,
       ...grid.map((c) => (-c.y + c.height / 2 + 12) * balanceScale),
     );
     const stackWidth = Math.max(
-      160 * balanceScale,
-      ...grid.map((c) => (Math.abs(c.x) + c.width / 2) * balanceScale),
+      vertical ? 33 * renderScale : 160 * balanceScale,
+      ...grid.map(
+        (c) =>
+          (Math.abs(c.x) + c.width / 2) * balanceScale +
+          (vertical ? 9 * renderScale : 0),
+      ),
     );
     let low = 0,
       high = Math.max(
         0,
         Math.min(
           (width * (portrait ? 0.88 : 0.62)) / 2,
-          availableWidth / 2 - stackWidth - 12 * renderScale,
+          (vertical
+            ? width / 2 - 0.1 * renderScale
+            : availableWidth / 2 - 12 * renderScale) - stackWidth,
         ),
       );
     const extent = (span: number) => {

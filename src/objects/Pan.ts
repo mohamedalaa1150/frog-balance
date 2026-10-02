@@ -13,9 +13,11 @@ export class Pan extends Phaser.GameObjects.Container {
   private pool = new Map<string, PlaceableItem[]>();
 
   private cssScale = Infinity;
+  vertical = false;
   workActive = false;
-  setPresentation(scale: number): void {
+  setPresentation(scale: number, vertical = false): void {
     this.cssScale = scale / getRenderScale();
+    this.vertical = vertical;
     this.surface.setDisplaySize(260, 220);
     this.setSize(260, 64);
   }
@@ -62,7 +64,11 @@ export class Pan extends Phaser.GameObjects.Container {
     for (const [uid, item] of this.items)
       if (!items.some((i) => i.uid === uid)) {
         this.remove(item);
-        item.setActive(false).setVisible(false).disableInteractive();
+        item
+          .setName('')
+          .setActive(false)
+          .setVisible(false)
+          .disableInteractive();
         const key = `${item.spec.kind}-${item.spec.value ?? 0}-${item.fixed}`;
         const bucket = this.pool.get(key) ?? [];
         // Each pan retains at most 20 released tokens; both pools total 40.
@@ -79,17 +85,26 @@ export class Pan extends Phaser.GameObjects.Container {
       items.map((item) => item.kind),
       this.cssScale,
       this.scene.scale.width >= this.scene.scale.height,
+      this.vertical,
     );
     const contentWidth = Math.max(
-      260,
+      this.vertical ? 62 / this.cssScale : 260,
       ...grid.map(
-        (c) => 2 * (Math.abs(c.x) + c.width / 2) + 24 / this.cssScale,
+        (c) =>
+          2 * (Math.abs(c.x) + c.width / 2) +
+          (this.vertical ? 14 : 24) / this.cssScale,
       ),
     );
     const scale = this.cssScale * getRenderScale();
     if (Number.isFinite(scale)) {
       sizedTexture(this.surface, 'pan', contentWidth, 220, scale);
-      sizedTexture(this.glow, 'pan_glow', 320, 120, scale);
+      sizedTexture(
+        this.glow,
+        'pan_glow',
+        this.vertical ? contentWidth + 4 / this.cssScale : 320,
+        120,
+        scale,
+      );
     } else this.surface.setDisplaySize(contentWidth, 220);
     this.setSize(contentWidth, 64);
     if (this.input)

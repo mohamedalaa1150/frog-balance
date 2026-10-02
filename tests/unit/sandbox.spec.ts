@@ -19,6 +19,8 @@ it('Sandbox has infinite sources, both active pans, physical capacity and no suc
         at: 20,
       });
     const full = state.pans[side];
+    expect(state.phase).toBe('playing');
+    expect(state.pendingEvaluation).toBe(true);
     state = applyAction(state, {
       type: 'place',
       side,

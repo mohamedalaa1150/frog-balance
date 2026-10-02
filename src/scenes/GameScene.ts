@@ -531,7 +531,11 @@ export class GameScene extends BaseScene {
       balance.scale,
     );
     for (const side of ['left', 'right'] as const)
-      this.balance.pans[side].setPresentation(balance.scale);
+      this.balance.pans[side].setPresentation(
+        balance.scale,
+        layout.orientation === 'portrait' &&
+          this.controller.state.level.mode !== 'sandbox',
+      );
     this.render(this.controller.state, true);
     this.trayBackground
       .setPosition(centerX, (tray.top + height) / 2)

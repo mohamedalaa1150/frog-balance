@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { MASCOT_FRAMES } from '../assets';
+import { MASCOT_FRAMES, RASTER_KEYS } from '../assets';
 import { THEME, WORLD_SKIES, tileColor } from '../theme';
 import { getRenderScale } from '../layout/viewport';
 
@@ -573,7 +573,9 @@ export function generatePlaceholderArt(scene: Phaser.Scene): void {
     type: 'placeholder-textures',
     data: {
       renderScale: r,
-      textures: Object.keys(TEXTURE_SIZES).map((key) => {
+      textures: [
+        ...new Set([...Object.keys(TEXTURE_SIZES), ...RASTER_KEYS]),
+      ].map((key) => {
         const texture = scene.textures.get(key);
         return {
           key,

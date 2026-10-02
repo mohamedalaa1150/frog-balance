@@ -18,28 +18,22 @@ for (const [width, height] of [
         if (level === 'sandbox') await api.gotoScene('SandboxScene');
         else await api.gotoLevel(level);
       }, level);
-      if (level === 'sandbox')
-        await page.evaluate(() => {
-          for (let i = 0; i < 10; i++) window.__FROG__!.place('frog', 'left');
-          window.__FROG__!.place('number', 'right', 10);
-        });
-      else if (level === 'w2-l5')
-        await page.evaluate(() => {
-          for (let i = 0; i < 10; i++) window.__FROG__!.place('frog', 'right');
-        });
-      if (width! > height! && height! < 500) {
-        expect(
-          (
-            await page.evaluate(() =>
-              window.__FROG__!.getBounds('tray-background')!,
-            )
-          ).height,
-        ).toBeLessThanOrEqual(height! * 0.22 + 0.01);
-      }
-      const report = await page.evaluate(() => {
-        const api = window.__FROG__!,
-          s = api.getLevelState()!;
+      // Read newly placed objects after their first render, without extra bridge calls.
+      const report = await page.evaluate(async (level) => {
+        const api = window.__FROG__!;
+        if (level === 'sandbox') {
+          for (let i = 0; i < 10; i++) api.place('frog', 'left');
+          api.place('number', 'right', 10);
+        } else if (level === 'w2-l5') {
+          for (let i = 0; i < 10; i++) api.place('frog', 'right');
+        }
+        await new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        );
+        const s = api.getLevelState()!;
         return {
+          tray: api.getBounds('tray-background')!,
+          beam: api.getBounds('beam')!,
           mascot: api.getBounds('mascot')!,
           items: (['left', 'right'] as const).flatMap((side) =>
             s.pans[side].map((item) => ({
@@ -48,7 +42,14 @@ for (const [width, height] of [
             })),
           ),
         };
-      });
+      }, level);
+      if (level === 'w1-l3')
+        expect(report.beam.width).toBeGreaterThanOrEqual(
+          width! * (width! >= height! ? 0.62 : 0.88),
+        );
+      if (width! > height! && height! < 500) {
+        expect(report.tray.height).toBeLessThanOrEqual(height! * 0.22 + 0.01);
+      }
       for (const item of report.items) {
         expect(item.bounds.width).toBeGreaterThanOrEqual(
           item.kind === 'frog' ? 36 - 0.01 : 48 - 0.01,

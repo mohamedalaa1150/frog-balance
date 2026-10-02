@@ -27,9 +27,11 @@ test('P4 flow saves stars, unlocks levels, and survives reload', async ({
   await page.evaluate(() => window.__FROG__!.ready);
   await tap(page, 'btn-play');
   await tap(page, 'world-1');
-  expect(
-    await page.evaluate(() => window.__FROG__!.getText('level-w1-l2-number')),
-  ).toBe('٢');
+  await expect
+    .poll(() =>
+      page.evaluate(() => window.__FROG__!.getText('level-w1-l2-number')),
+    )
+    .toBe('٢');
   await tap(page, 'level-w1-l2');
   await expect
     .poll(() => page.evaluate(() => window.__FROG__!.getLevelState()?.levelId))
@@ -75,7 +77,9 @@ test('six completed levels celebrate unlocking a world once', async ({
     expect.objectContaining({ type: 'world-unlocked', data: { worlds: [2] } }),
   );
   await tap(page, 'world-2');
-  expect(
-    await page.evaluate(() => window.__FROG__!.getText('level-w2-l1-number')),
-  ).toBe('١');
+  await expect
+    .poll(() =>
+      page.evaluate(() => window.__FROG__!.getText('level-w2-l1-number')),
+    )
+    .toBe('١');
 });

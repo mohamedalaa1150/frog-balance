@@ -39,6 +39,7 @@ export class HintOverlay extends Phaser.GameObjects.Container {
           items.map((item) => item.kind),
           balance.scaleX / getRenderScale(),
           this.scene.scale.width >= this.scene.scale.height,
+          balance.pans[panSide].vertical,
         );
         let count = 0;
         for (const [i, item] of items.entries())
