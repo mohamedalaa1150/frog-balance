@@ -50,26 +50,19 @@ const Settings = z.strictObject({
     .union([z.literal(8), z.literal(12), z.literal(20), z.literal(0)])
     .default(12),
 });
+const LevelProgress = z.strictObject({
+  bestStars: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
+  plays: count,
+  totalAttempts: count,
+  totalHints: count,
+  errors: z.partialRecord(errorTags, count),
+  lastPlayed: z.number().nonnegative(),
+});
 const Save = z.strictObject({
   version: z.literal(1),
   settings: Settings.prefault({}),
   levels: z
-    .record(
-      z.string().regex(/^w[1-6]-l[1-8]$/),
-      z.strictObject({
-        bestStars: z.union([
-          z.literal(0),
-          z.literal(1),
-          z.literal(2),
-          z.literal(3),
-        ]),
-        plays: count,
-        totalAttempts: count,
-        totalHints: count,
-        errors: z.partialRecord(errorTags, count),
-        lastPlayed: z.number().nonnegative(),
-      }),
-    )
+    .record(z.string().regex(/^w[1-6]-l[1-8]$/), LevelProgress)
     .default({}),
   practice: z
     .strictObject({
@@ -81,25 +74,125 @@ const Save = z.strictObject({
 export function defaults(): SaveV1 {
   return Save.parse({ version: 1 });
 }
-/** Version 0 (or an unversioned save) used the same fields without defaults.
- * Fill missing fields, preserve validated progress, and reject corrupt/future saves. */
-export function migrate(raw: unknown): SaveV1 {
+export interface MigrationResult {
+  save: SaveV1;
+  droppedPaths: string[];
+}
+const recordOf = (value: unknown): Record<string, unknown> | undefined =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+/** Repair fields independently so one corrupt entry cannot erase valid stars.
+ * Reports discarded or replaced paths; a valid save has an empty report. */
+export function migrateWithReport(raw: unknown): MigrationResult {
+  const save = defaults();
+  const droppedPaths: string[] = [];
+  const drop = (path: string): void => {
+    droppedPaths.push(path);
+  };
   try {
     const value: unknown = typeof raw === 'string' ? JSON.parse(raw) : raw;
-    if (typeof value !== 'object' || value === null || Array.isArray(value))
-      return defaults();
-    const record = value as Record<string, unknown>;
+    const record = recordOf(value);
+    if (!record) return { save, droppedPaths: ['$'] };
+    if (typeof record.version === 'number' && record.version > 1)
+      return { save, droppedPaths: ['version'] };
     if (
       record.version !== undefined &&
       record.version !== 0 &&
       record.version !== 1
     )
-      return defaults();
-    const parsed = Save.safeParse({ ...record, version: 1 });
-    return parsed.success ? parsed.data : defaults();
+      drop('version');
+    for (const key of Object.keys(record))
+      if (!['version', 'settings', 'levels', 'practice'].includes(key))
+        drop(key);
+
+    const settings = recordOf(record.settings);
+    if (record.settings !== undefined && !settings) drop('settings');
+    const repairedSettings: Record<string, unknown> = {};
+    for (const key of Object.keys(
+      Settings.shape,
+    ) as (keyof SaveV1['settings'])[]) {
+      const parsed = Settings.shape[key].safeParse(settings?.[key]);
+      repairedSettings[key] = parsed.success ? parsed.data : save.settings[key];
+      if (!parsed.success) drop(`settings.${key}`);
+    }
+    for (const key of Object.keys(settings ?? {}))
+      if (!Object.hasOwn(Settings.shape, key)) drop(`settings.${key}`);
+    save.settings = Settings.parse(repairedSettings);
+
+    const levels = recordOf(record.levels);
+    if (record.levels !== undefined && !levels) drop('levels');
+    const clampCount = (value: unknown, path: string): unknown => {
+      if (typeof value === 'number' && Number.isFinite(value) && value < 0) {
+        drop(path);
+        return 0;
+      }
+      return value;
+    };
+    for (const [id, rawEntry] of Object.entries(levels ?? {})) {
+      const path = `levels.${id}`;
+      const entry = recordOf(rawEntry);
+      if (!/^w[1-6]-l[1-8]$/.test(id) || !entry) {
+        drop(path);
+        continue;
+      }
+      const errors: SaveV1['levels'][string]['errors'] = {};
+      const rawErrors = recordOf(entry.errors);
+      if (entry.errors !== undefined && !rawErrors) drop(`${path}.errors`);
+      for (const [tag, amount] of Object.entries(rawErrors ?? {})) {
+        const errorPath = `${path}.errors.${tag}`;
+        const parsedTag = errorTags.safeParse(tag);
+        if (!parsedTag.success) {
+          drop(errorPath);
+          continue;
+        }
+        const parsedCount = count.safeParse(clampCount(amount, errorPath));
+        if (parsedCount.success) errors[parsedTag.data] = parsedCount.data;
+        else drop(errorPath);
+      }
+      const parsed = LevelProgress.safeParse({
+        bestStars: entry.bestStars,
+        plays: clampCount(entry.plays, `${path}.plays`),
+        totalAttempts: clampCount(entry.totalAttempts, `${path}.totalAttempts`),
+        totalHints: clampCount(entry.totalHints, `${path}.totalHints`),
+        errors,
+        lastPlayed: entry.lastPlayed,
+      });
+      if (parsed.success) save.levels[id] = parsed.data;
+      else drop(path);
+      for (const key of Object.keys(entry))
+        if (!Object.hasOwn(LevelProgress.shape, key)) drop(`${path}.${key}`);
+    }
+
+    const practice = recordOf(record.practice);
+    if (record.practice !== undefined && !practice) drop('practice');
+    const clampPractice = (
+      key: 'band' | 'streak',
+      min: number,
+      max: number,
+    ): number => {
+      const value = practice?.[key];
+      if (value === undefined) return save.practice[key];
+      const repaired =
+        typeof value === 'number' && Number.isFinite(value)
+          ? Math.max(min, Math.min(max, Math.trunc(value)))
+          : save.practice[key];
+      if (repaired !== value) drop(`practice.${key}`);
+      return repaired;
+    };
+    save.practice = {
+      band: clampPractice('band', 1, 10),
+      streak: clampPractice('streak', -1, 2),
+    };
+    for (const key of Object.keys(practice ?? {}))
+      if (key !== 'band' && key !== 'streak') drop(`practice.${key}`);
+    return { save, droppedPaths };
   } catch {
-    return defaults();
+    return { save: defaults(), droppedPaths: ['$'] };
   }
+}
+export function migrate(raw: unknown): SaveV1 {
+  return migrateWithReport(raw).save;
 }
 export function isWorldUnlocked(save: SaveV1, world: number): boolean {
   if (!Number.isInteger(world) || world < 1 || world > 6) return false;
