@@ -147,7 +147,22 @@ function icon(
       h * 0.32,
       w * 0.05,
     );
-  } else if (/read|sound/.test(key)) {
+  } else if (key === 'btn_read') {
+    g.strokeRoundedRect(w * 0.2, h * 0.2, w * 0.6, h * 0.5, w * 0.1);
+    line([
+      [0.32, 0.7],
+      [0.3, 0.82],
+      [0.5, 0.7],
+    ]);
+    line([
+      [0.34, 0.4],
+      [0.66, 0.4],
+    ]);
+    line([
+      [0.34, 0.54],
+      [0.66, 0.54],
+    ]);
+  } else if (/sound/.test(key)) {
     line([
       [0.24, 0.42],
       [0.42, 0.42],
@@ -157,11 +172,21 @@ function icon(
       [0.24, 0.58],
       [0.24, 0.42],
     ]);
-    line([
-      [0.75, 0.35],
-      [0.85, 0.5],
-      [0.75, 0.65],
-    ]);
+    if (key === 'btn_sound_off') {
+      line([
+        [0.73, 0.38],
+        [0.88, 0.62],
+      ]);
+      line([
+        [0.88, 0.38],
+        [0.73, 0.62],
+      ]);
+    } else
+      line([
+        [0.75, 0.35],
+        [0.85, 0.5],
+        [0.75, 0.65],
+      ]);
   } else if (/hint/.test(key)) {
     g.strokeCircle(w * 0.5, h * 0.4, w * 0.21);
     line([
@@ -171,7 +196,26 @@ function icon(
       [0.4, 0.77],
       [0.4, 0.65],
     ]);
-  } else if (/back|replay/.test(key))
+  } else if (key === 'btn_settings') {
+    g.strokeCircle(w * 0.5, h * 0.5, w * 0.2);
+    g.strokeCircle(w * 0.5, h * 0.5, w * 0.07);
+    for (let i = 0; i < 8; i++) {
+      const angle = (i * Math.PI) / 4;
+      line([
+        [0.5 + Math.cos(angle) * 0.2, 0.5 + Math.sin(angle) * 0.2],
+        [0.5 + Math.cos(angle) * 0.31, 0.5 + Math.sin(angle) * 0.31],
+      ]);
+    }
+  } else if (key === 'btn_replay') {
+    g.beginPath();
+    g.arc(w * 0.5, h * 0.5, w * 0.25, Math.PI * 0.2, Math.PI * 1.7);
+    g.strokePath();
+    line([
+      [0.45, 0.18],
+      [0.65, 0.25],
+      [0.58, 0.45],
+    ]);
+  } else if (/back/.test(key))
     line([
       [0.65, 0.25],
       [0.3, 0.5],
@@ -185,13 +229,19 @@ function icon(
       [0.5, 0.72],
       [0.72, 0.5],
     ]);
-  else
+  else {
     line([
       [0.38, 0.25],
       [0.73, 0.5],
       [0.38, 0.75],
       [0.38, 0.25],
     ]);
+    if (key === 'btn_next')
+      line([
+        [0.8, 0.25],
+        [0.8, 0.75],
+      ]);
+  }
 }
 export function generatePlaceholderArt(scene: Phaser.Scene): void {
   const r = getRenderScale();

@@ -53,3 +53,16 @@ test('all documented atlas keys exist at render-scale dimensions', async ({
     false,
   );
 });
+
+test('BUG-203: every btn texture has distinct generated pixels', async ({
+  page,
+}) => {
+  await boot(page);
+  const keys = expected.filter((key) => key.startsWith('btn_'));
+  const hashes = await page.evaluate(
+    (keys) => keys.map((key) => window.__FROG__!.getTextureHash(key)),
+    keys,
+  );
+  expect(hashes).not.toContain(null);
+  expect(new Set(hashes).size).toBe(keys.length);
+});
