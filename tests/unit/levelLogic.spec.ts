@@ -230,9 +230,8 @@ it('bond records canonical solutions once, clears child items, preserves locks, 
   s = solve(s, [...a!.items].reverse());
   expect(s.outcome).toBe('duplicate');
   expect(s.solutionsFound).toHaveLength(1);
-  expect(s.attempts).toBe(1);
-  for (const item of [...s.pans.right])
-    s = applyAction(s, { type: 'remove', side: 'right', uid: item.uid });
+  expect(s.attempts).toBe(0);
+  expect(s.pans.right).toEqual([]);
   s = solve(s, b!.items);
   expect(s.phase).toBe('success');
   expect(s.solutionsFound).toHaveLength(2);
@@ -402,3 +401,57 @@ it.each([
     }
   },
 );
+
+it('BUG-105: reversed duplicate bonds are correct maths and return child tiles', () => {
+  let s = createLevelState(get('w4-l6'));
+  s = solve(s, [
+    { kind: 'number', value: 3 },
+    { kind: 'number', value: 4 },
+  ]);
+  s = solve(s, [
+    { kind: 'number', value: 4 },
+    { kind: 'number', value: 3 },
+  ]);
+  expect(s).toMatchObject({
+    outcome: 'duplicate',
+    phase: 'playing',
+    attempts: 0,
+    errors: [],
+    solutionsFound: ['3+4'],
+    lastSettledGap: 7,
+    hintsUsed: 0,
+  });
+  expect(s.pans.right).toEqual([]);
+  s = solve(s, [
+    { kind: 'number', value: 2 },
+    { kind: 'number', value: 5 },
+  ]);
+  expect(s.phase).toBe('success');
+});
+it('BUG-105: duplicate returns preserve fixed tiles and send hint activity without failure', () => {
+  const level = get('w4-l6');
+  level.fixed.right = [{ kind: 'number', value: 1 }];
+  let s = createLevelState(level);
+  s = solve(s, [
+    { kind: 'number', value: 2 },
+    { kind: 'number', value: 4 },
+  ]);
+  s = applyAction(s, { type: 'requestHint' });
+  const fixed = s.pans.right[0];
+  for (let i = 0; i < 3; i++)
+    s = solve(s, [
+      { kind: 'number', value: 4 },
+      { kind: 'number', value: 2 },
+    ]);
+  expect(s.pans.right).toEqual([fixed]);
+  expect(s.lastSettledGap).toBe(6);
+  expect(s).toMatchObject({
+    attempts: 0,
+    errors: [],
+    outcome: 'duplicate',
+    hintLevel: 1,
+    hintsUsed: 1,
+  });
+  expect(s.hint.failures).toBe(0);
+  expect(s.hint.lastActivityAt).toBe(s.now);
+});

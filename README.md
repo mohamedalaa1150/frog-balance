@@ -110,7 +110,11 @@ starts play. `applyAction(state, action)` returns a new state for place, remove,
 predict, requestHint, settle, and tick. Action `at` values are monotonic milliseconds;
 omitting `at` preserves the current time. There are no wall-clock reads. Forward
 `dragging` on tick/settle; releasing starts a new full 1,000 ms quiet interval.
-Only changed positions are evaluated, once per change. Fixed items, wrong pans,
+Only changed positions are evaluated, once per change. Settled quantities approaching
+the target update `lastSettledGap` without failed attempts or errors; overshoots
+and invalid bond answers remain failures. Hint progress fading happens on settle,
+so placing and returning a frog without net progress cannot reset failed attempts.
+Fixed items, wrong pans,
 unavailable sources, child limits, and physical capacities are enforced here.
 
 `enumerateSolutions(level)` returns legal child `items`, canonical bond strings,
@@ -130,9 +134,18 @@ only automatic idle hints. Three failures without improvement escalate one step.
 `practice-<index>` levels; `unlockedModes(save)` supplies eligible modes.
 `adaptBand(practice, correct)` uses a signed consecutive streak, raises the
 1–10 band after three correct results, and lowers it after two wrong results.
+Comparison bands 1–3 use differences 5–8; 4–6 use 3–5; 7–8 use 1–3; 9–10 use
+0–2, with equality sampled 25% of the time. Siblings use the same band mapping.
+Wrong predictions of the lighter pan record both `wrongPrediction` and
+`compareFlip`; equality mistakes record only `wrongPrediction`. Duplicate bond
+answers return child tiles and preserve fixed items without errors or attempts.
 `defaults()` and `migrate(raw)` handle versioned plain save data without storage
 access. Version 0/unversioned saves with the same field layout receive missing
-field defaults; corrupt or unsupported future saves reset to defaults.
+field defaults. Migration repairs settings and level entries independently,
+preserves valid stars, discards unknown error tags, clamps negative counts and
+practice fields, and resets wholly only for unreadable/non-object/future input.
+`migrateWithReport(raw)` returns `{ save, droppedPaths }`; paths include discarded
+or replaced values for later development logging without storage access.
 
 `formatEquation(leftTerms, rightTerms, system)` returns separate, labelled
 on-screen left/right groups and a central equals sign. Terms retain placement

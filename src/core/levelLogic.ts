@@ -171,7 +171,7 @@ function settle(state: LevelState): LevelState {
   )
     return state;
   const gap = Math.abs(diff(state.pans.left, state.pans.right));
-  let next: LevelState = {
+  const next: LevelState = {
     ...state,
     pendingEvaluation: false,
     lastSettledGap: gap,
@@ -208,29 +208,29 @@ function settle(state: LevelState): LevelState {
     state.pans[side].every((i) => i.kind === 'number')
   ) {
     const canonical = canonicalSolution(state.pans[side]);
-    if (state.solutionsFound.includes(canonical))
-      next = { ...next, outcome: 'duplicate' };
-    else {
-      const solutionsFound = [...state.solutionsFound, canonical];
-      return hintEvent(
-        {
-          ...next,
-          solutionsFound,
-          pans: {
-            ...state.pans,
-            [side]: state.pans[side].filter((i) => i.fixed),
-          },
-          lastSettledGap: Math.abs(levelNeed(level)),
-          outcome: 'solution',
-          phase:
-            solutionsFound.length >= level.goal.requiredSolutions
-              ? 'success'
-              : 'playing',
+    const duplicate = state.solutionsFound.includes(canonical);
+    const solutionsFound = duplicate
+      ? state.solutionsFound
+      : [...state.solutionsFound, canonical];
+    return hintEvent(
+      {
+        ...next,
+        solutionsFound,
+        pans: {
+          ...state.pans,
+          [side]: state.pans[side].filter((i) => i.fixed),
         },
-        'progress',
-      );
-    }
+        lastSettledGap: Math.abs(levelNeed(level)),
+        outcome: duplicate ? 'duplicate' : 'solution',
+        phase:
+          solutionsFound.length >= level.goal.requiredSolutions
+            ? 'success'
+            : 'playing',
+      },
+      duplicate ? 'activity' : 'progress',
+    );
   }
+
   // A smaller unfinished quantity is progress, regardless of counting speed.
   // Overshoots and equality with invalid bond items remain incorrect answers.
   const other = side === 'left' ? 'right' : 'left';
