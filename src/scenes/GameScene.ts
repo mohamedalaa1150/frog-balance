@@ -147,16 +147,25 @@ export class GameScene extends BaseScene {
       this.game.registry.set('audio-unlocked', true);
       this.audio.unlock();
     });
-    this.events.on('beam-creak', () => void this.audio.play('sfx_beam_creak'));
-    this.events.on(
-      'beam-level',
-      () => void this.audio.play('sfx_balanced_ding'),
-    );
+    const creak = () => void this.audio.play('sfx_beam_creak');
+    const ding = () => void this.audio.play('sfx_balanced_ding');
+    this.events.on('beam-creak', creak);
+    this.events.on('beam-level', ding);
+    this.events.once('shutdown', () => {
+      this.events.off('beam-creak', creak);
+      this.events.off('beam-level', ding);
+    });
     this.time.addEvent({
       delay: 20000,
       loop: true,
       callback: () => {
-        if (!this.controller.state.dragging) void this.audio.play('sfx_ribbit');
+        const state = this.controller.state;
+        if (
+          !state.dragging &&
+          state.phase !== 'success' &&
+          state.now - state.lastChangedAt >= 20000
+        )
+          void this.audio.play('sfx_ribbit');
       },
     });
     this.balance = new Balance(this);

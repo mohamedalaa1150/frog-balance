@@ -192,3 +192,40 @@ it('only a failed voiced key uses dev speech and new requests cancel its timeout
   await second;
   audio.destroy();
 });
+it('SFX creaks/ribbits are throttled and live settings drive their shared bus', async () => {
+  const { audio, sources, context } = setup(['sfx_beam_creak', 'sfx_ribbit']);
+  await audio.play('sfx_beam_creak');
+  await audio.play('sfx_beam_creak');
+  expect(sources).toHaveLength(1);
+  context.currentTime += 0.399;
+  await audio.play('sfx_beam_creak');
+  expect(sources).toHaveLength(1);
+  context.currentTime += 0.002;
+  await audio.play('sfx_beam_creak');
+  expect(sources).toHaveLength(2);
+  await audio.play('sfx_ribbit');
+  await audio.play('sfx_ribbit');
+  expect(sources).toHaveLength(3);
+  context.currentTime += 20;
+  await audio.play('sfx_ribbit');
+  expect(sources).toHaveLength(4);
+});
+it('music loops, keeps the same source for the same key and schedules a 600ms crossfade', async () => {
+  const { audio, sources, gains } = setup(['music_title', 'music_worlds_1_2']);
+  await audio.play('music_title', 'music');
+  await audio.play('music_title', 'music');
+  expect(sources).toHaveLength(1);
+  expect(sources[0]!.loop).toBe(true);
+  await audio.play('music_worlds_1_2', 'music');
+  expect(sources).toHaveLength(2);
+  expect(sources[1]!.loop).toBe(true);
+  expect(gains[3]!.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(
+    0,
+    10.6,
+  );
+  expect(gains[4]!.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(
+    1,
+    10.6,
+  );
+  expect(sources[0]!.stop).toHaveBeenCalledWith(10.6);
+});

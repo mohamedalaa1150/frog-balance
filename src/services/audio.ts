@@ -156,6 +156,7 @@ class AudioRuntime {
   snapshot() {
     return {
       musicKey: this.musicKey,
+      musicPlaying: this.music.length > 0,
       voPlaying: this.duck.active,
       musicSetting: this.settings.music,
       musicVolume: this.buses.music?.gain.value ?? 0,
@@ -247,6 +248,12 @@ class AudioRuntime {
           p.source.onended = () => {
             p.source.disconnect();
             if (generation !== this.voiceGeneration) return;
+            const next = clips[i + 1];
+            try {
+              if (next && hasString(next.key)) subtitle(t(next.key));
+            } catch {
+              /* Optional view. */
+            }
             if (i === clips.length - 1) {
               this.voices = [];
               this.finish = undefined;
