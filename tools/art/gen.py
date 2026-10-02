@@ -227,3 +227,9 @@ for n in range(1, 7):
     save(f'bg_world_{n}_p', background(n, 720, 1280))
 save('bg_title', background(2))
 print('wrote', len(os.listdir(OUT)), 'files to', OUT)
+
+# Keys that now come from the illustrated raster art in public/assets/img are not shipped as SVG.
+import glob
+for pat in ('mascot_*.svg', 'frog_token*.svg', 'frog_pile.svg', 'bg_world_*.svg', 'bg_title.svg'):
+    for f in glob.glob(os.path.join(OUT, pat)):
+        os.remove(f)
