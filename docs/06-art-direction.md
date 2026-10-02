@@ -68,7 +68,7 @@ Load with `this.load.svg(key, 'assets/svg/<key>.svg', { scale: renderScale })`.
 | `pan_glow` | 320×120 | Behind the active work pan's dish. |
 | `num_tile_1` … `num_tile_10` | 120×150 | Blank card; draw the digit with Text (Baloo 800, ~70 px) in the colour from `tile_colors.json`, centred at (60, 68). |
 | `tray_bg` | 1280×180 | Lily-pad tray across the bottom. |
-| `btn_home`, `btn_sound_on`, `btn_sound_off`, `btn_read`, `btn_hint`, `btn_replay`, `btn_play`, `btn_next`, `btn_back`, `btn_settings`, `btn_lock` | 112×112 | `btn_next` points LEFT (RTL "forward"). |
+| `btn_home`, `btn_sound_on`, `btn_sound_off`, `btn_read`, `btn_hint`, `btn_replay`, `btn_play`, `btn_next`, `btn_back`, `btn_settings`, `btn_lock`, `btn_sandbox`, `btn_practice`, `btn_dashboard`, `btn_download` | 112×112 | `btn_next` points LEFT (RTL "forward"). **One meaning per icon:** `btn_sandbox` (purple, little balance) = Sandbox; `btn_practice` (orange, ∞ + star) = Practice; `btn_dashboard` (bar chart) = Dashboard; `btn_download` = CSV export; `btn_read` only for "read the equation to me"; `btn_hint` only for hints; `btn_play` only for start/continue. |
 | `predict_left`, `predict_right`, `predict_equal` | 160×160 | Compare mode. |
 | `symbol_gt`, `symbol_lt`, `symbol_eq` | 120×110 | Shown between the numbers after a prediction. |
 | `star_full`, `star_empty` | 96×96 | |
