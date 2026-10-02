@@ -21,6 +21,7 @@ export interface TestEvent {
 export interface FrogTestApi {
   ready: Promise<void>;
   version: string;
+  getActualFps(): number;
   setFastMode(on: boolean): void;
   resetSave(): void;
   unlockAll(): void;
@@ -177,6 +178,7 @@ export function installTestApi(game: Phaser.Game): void {
   window.__FROG__ = {
     ready,
     version,
+    getActualFps: () => game.loop.actualFps,
     events,
     toCssPoint: (x, y) => toCssPoint(game, x, y),
     gotoScene: (key) => navigate(key),

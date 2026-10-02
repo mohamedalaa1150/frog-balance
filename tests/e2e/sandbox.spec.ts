@@ -85,7 +85,13 @@ test('pan capacity rejects the eleventh frog and sources remain available', asyn
   await boot(page);
   await page.evaluate(() => window.__FROG__!.gotoScene('SandboxScene'));
   test.setTimeout(60000);
-  for (let i = 0; i < 11; i++) await drag(page, 'frog-pile', 'pan-left');
+  for (let i = 0; i < 11; i++) {
+    const start = Date.now();
+    await drag(page, 'frog-pile', 'pan-left');
+    console.log(
+      `capacity drag ${i + 1}: ${Date.now() - start}ms; FPS ${await page.evaluate(() => window.__FROG__!.getActualFps())}`,
+    );
+  }
   expect(
     await page.evaluate(() => window.__FROG__!.getLevelState()!.pans.left),
   ).toHaveLength(10);
