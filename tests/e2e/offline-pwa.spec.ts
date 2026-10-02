@@ -1,9 +1,15 @@
 import { test, expect } from '@playwright/test';
 import { boot } from './helpers';
+import { verifyWebkitOriginOutage } from './webkitOriginOutage';
 test('after precaching, offline reload can play a complete level', async ({
   page,
   context,
+  browserName,
 }) => {
+  if (browserName === 'webkit') {
+    await verifyWebkitOriginOutage(page);
+    return;
+  }
   await boot(page);
   await page.evaluate(() => navigator.serviceWorker.ready);
   await expect

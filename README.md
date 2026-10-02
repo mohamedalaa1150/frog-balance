@@ -222,6 +222,13 @@ activation preserves the current session; a notice appears on Title, and the new
 code loads on the next visit. Visibility pauses audio, animation, success/reveal
 deadlines and hint clocks. Every scene relayouts on rotation.
 
+Chromium offline tests retain `context.setOffline(true)` unchanged. WebKit uses a
+real origin outage because [Playwright #42775](https://github.com/microsoft/playwright/issues/42775)
+rejects even local service-worker responses under its offline-emulation flag.
+The WebKit test is never skipped: it shuts down its dedicated production server,
+requires a fresh context without a worker to fail, then requires a 200 response
+from the service worker and a complete level after reload.
+
 Gameplay reserves this level's legal stack instead of the global Sandbox stack.
 Portrait levels stack tokens vertically to preserve beam width. Minimum pan token
 sizes and expanded touch areas remain in CSS pixels, including short landscape.
