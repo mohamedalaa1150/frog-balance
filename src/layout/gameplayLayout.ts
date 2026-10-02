@@ -67,8 +67,8 @@ export function getGameplayLayout(
   // Reserve spring overshoot and the placement hop as well as the target angle.
   const endRise =
     halfSpan * Math.sin(((CONFIG.beam.maxAngle + 6) * Math.PI) / 180);
-  const topExtent = 70 + endRise + PAN_STACK_RISE;
-  const bottomExtent = Math.max(endRise, 180); // Includes the mascot below the pivot.
+  const topExtent = endRise + Math.max(0, PAN_STACK_RISE - 150);
+  const bottomExtent = Math.max(endRise + 178, 280); // Includes the mascot below the pivot.
   const balanceScale = Math.min(
     uiScale,
     (lower - upper) / (topExtent + bottomExtent),

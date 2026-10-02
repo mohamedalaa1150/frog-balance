@@ -1,3 +1,4 @@
+import { THEME, cssColor } from '../theme';
 import Phaser from 'phaser';
 import { CONFIG } from '../config';
 import { LevelController } from '../controllers/LevelController';
@@ -27,6 +28,7 @@ export class GameScene extends BaseScene {
   private subtitle!: Phaser.GameObjects.Text;
   private hint!: Phaser.GameObjects.Text;
   private navigation: Phaser.GameObjects.Image[] = [];
+  private trayBackground!: Phaser.GameObjects.Image;
   private background!: Phaser.GameObjects.Image;
   private guide?: Phaser.GameObjects.Image;
   private audio!: AudioManager;
@@ -64,6 +66,7 @@ export class GameScene extends BaseScene {
     this.tweens.setLagSmooth();
     this.input.dragDistanceThreshold = 8 * getRenderScale();
     this.background = this.add.image(0, 0, 'bg_world_1').setOrigin(0);
+    this.trayBackground = this.add.image(0, 0, 'tray_bg');
     this.subtitle = this.add
       .text(
         0,
@@ -73,7 +76,7 @@ export class GameScene extends BaseScene {
           fontFamily: CONFIG.fontStack,
           fontSize: 24,
           fontStyle: '700',
-          color: '#174d52',
+          color: cssColor(THEME.navy),
           rtl: true,
           align: 'center',
         },
@@ -85,7 +88,7 @@ export class GameScene extends BaseScene {
         fontFamily: CONFIG.fontStack,
         fontSize: 24,
         fontStyle: '700',
-        color: '#174d52',
+        color: cssColor(THEME.navy),
         rtl: true,
       })
       .setOrigin(0.5)
@@ -329,6 +332,9 @@ export class GameScene extends BaseScene {
     this.balance.setSpan(balance.halfSpan);
     this.background.setDisplaySize(width, height);
     this.balance.setPosition(balance.x, balance.y).setScale(balance.scale);
+    this.trayBackground
+      .setPosition(centerX, (tray.top + height) / 2)
+      .setDisplaySize(width - 12 * getRenderScale(), height - tray.top);
     this.tray.layout(tray, uiScale);
     this.pile?.setPosition(pile.x, pile.y).setScale(uiScale);
     this.navigation.forEach((button, i) =>
@@ -361,7 +367,8 @@ export class GameScene extends BaseScene {
     if (!reduced) {
       const { uiScale } = getLayout(this.scale.width, this.scale.height);
       const emitter = this.add
-        .particles(this.balance.x, this.balance.y, 'particle_star', {
+        .particles(this.balance.x, this.balance.y, 'particle_confetti', {
+          tint: [THEME.coral, THEME.gold, THEME.blue, THEME.frog, THEME.purple],
           speed: { min: 80 * uiScale, max: 200 * uiScale },
           lifespan: 650,
           quantity: 20,

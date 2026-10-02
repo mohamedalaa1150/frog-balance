@@ -1,3 +1,4 @@
+import { THEME, cssColor } from '../theme';
 import Phaser from 'phaser';
 import { CONFIG } from '../config';
 import { countLevels } from '../controllers/LevelController';
@@ -16,7 +17,7 @@ export class DevLevelListScene extends BaseScene {
         fontFamily: CONFIG.fontStack,
         fontSize: 36,
         fontStyle: '700',
-        color: '#fff6e5',
+        color: cssColor(THEME.navy),
         rtl: true,
       })
       .setOrigin(0.5);
@@ -33,7 +34,7 @@ export class DevLevelListScene extends BaseScene {
           fontFamily: CONFIG.fontStack,
           fontSize: 42,
           fontStyle: '800',
-          color: '#174d52',
+          color: cssColor(THEME.navy),
         })
         .setOrigin(0.5);
       return { button, text };
@@ -48,7 +49,7 @@ export class DevLevelListScene extends BaseScene {
         fontFamily: CONFIG.fontStack,
         fontSize: 28,
         fontStyle: '700',
-        color: '#fff6e5',
+        color: cssColor(THEME.navy),
         rtl: true,
       })
       .setOrigin(0.5);

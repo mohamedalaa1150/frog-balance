@@ -70,9 +70,7 @@ for (const [width, height] of viewports) {
           expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(height);
         }
         expect(report.pan.y + report.pan.height).toBeLessThanOrEqual(
-          Math.min(...report.sources.map((bounds) => bounds.y)) -
-            8 +
-            0.01,
+          Math.min(...report.sources.map((bounds) => bounds.y)) - 8 + 0.01,
         );
       }
     }

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { THEME, WORLD_SKIES, tileColor } from '../theme';
 import { getRenderScale } from '../layout/viewport';
 
 /** Atlas contract, in design pixels. Number textures deliberately contain no digits. */
@@ -55,48 +56,129 @@ for (const icon of [
   'back',
 ])
   TEXTURE_SIZES[`btn_${icon}`] = [112, 112];
-const colors = [
-  0x2e5aac, 0x318247, 0xb34f17, 0x8d459d, 0xa23051, 0x176d78, 0x725126,
-  0x4659a8, 0x8b3a17, 0x38692c,
-];
-
 function frog(
   g: Phaser.GameObjects.Graphics,
   x: number,
   y: number,
   w: number,
   h: number,
-  gaze = 0,
-  happy = false,
+  frame = 0,
+  mascot = false,
 ) {
-  g.fillStyle(0x5cc85a).fillRoundedRect(
-    x + w * 0.08,
-    y + h * 0.23,
-    w * 0.84,
-    h * 0.7,
-    w * 0.23,
-  );
-  for (const eye of [0.28, 0.72]) {
-    g.fillStyle(0x5cc85a).fillCircle(x + w * eye, y + h * 0.26, w * 0.19);
-    g.fillStyle(0xfff6e5).fillCircle(x + w * eye, y + h * 0.26, w * 0.13);
-    g.fillStyle(0x174d52).fillCircle(
-      x + w * (eye + gaze * 0.035),
-      y + h * 0.27,
-      w * 0.055,
+  const ellipse = (
+    cx: number,
+    cy: number,
+    ew: number,
+    eh: number,
+    fill: number,
+    outline: number = THEME.frogOutline,
+  ) => {
+    g.fillStyle(fill).fillEllipse(x + cx * w, y + cy * h, ew * w, eh * h);
+    g.lineStyle(Math.max(2, w * 0.011), outline).strokeEllipse(
+      x + cx * w,
+      y + cy * h,
+      ew * w,
+      eh * h,
     );
-  }
-  g.lineStyle(Math.max(2, w * 0.025), 0x27633e);
-  g.beginPath();
-  g.moveTo(x + w * 0.32, y + h * 0.59);
-  g.lineTo(x + w * 0.5, y + h * (happy ? 0.72 : 0.64));
-  g.lineTo(x + w * 0.68, y + h * 0.59);
-  g.strokePath();
-  g.fillStyle(0xffd23f).fillEllipse(
+  };
+  g.fillStyle(THEME.shadow, 0.18).fillEllipse(
     x + w * 0.5,
-    y + h * 0.82,
-    w * 0.35,
-    h * 0.13,
+    y + h * 0.96,
+    w * 0.83,
+    h * 0.06,
   );
+  if (mascot) {
+    ellipse(0.13, frame === 6 ? 0.15 : 0.24, 0.17, 0.38, THEME.frog);
+    ellipse(0.87, frame === 6 ? 0.15 : 0.24, 0.17, 0.38, THEME.frog);
+  }
+  ellipse(0.18, 0.84, 0.29, 0.23, THEME.frog);
+  ellipse(0.82, 0.84, 0.29, 0.23, THEME.frog);
+  ellipse(0.5, 0.65, 0.7, 0.6, THEME.frog);
+  ellipse(0.5, 0.71, 0.41, 0.39, THEME.belly, THEME.belly);
+  ellipse(0.5, 0.37, 0.88, 0.5, THEME.frog);
+  for (const eye of [0.28, 0.72]) {
+    ellipse(eye, 0.21, 0.35, 0.32, THEME.frog);
+    ellipse(eye, 0.21, 0.26, 0.24, THEME.white, THEME.frogOutline);
+    const happy = frame === 5 || frame === 7;
+    const gaze =
+      frame === 1 || frame === 3
+        ? -0.035
+        : frame === 2 || frame === 4
+          ? 0.035
+          : 0;
+    if (happy)
+      g.lineStyle(w * 0.018, THEME.navy).lineBetween(
+        x + (eye - 0.07) * w,
+        y + h * 0.21,
+        x + (eye + 0.07) * w,
+        y + h * 0.21,
+      );
+    else {
+      g.fillStyle(THEME.navy).fillCircle(
+        x + (eye + gaze) * w,
+        y + h * 0.23,
+        w * (frame === 3 || frame === 4 ? 0.045 : 0.06),
+      );
+      g.fillStyle(THEME.white).fillCircle(
+        x + (eye + gaze + 0.018) * w,
+        y + h * 0.205,
+        w * 0.019,
+      );
+    }
+  }
+  ellipse(0.18, 0.4, 0.13, 0.09, THEME.cheek, THEME.cheek);
+  ellipse(0.82, 0.4, 0.13, 0.09, THEME.cheek, THEME.cheek);
+  g.lineStyle(Math.max(2, w * 0.012), THEME.frogOutline)
+    .beginPath()
+    .arc(x + w * 0.5, y + h * 0.39, w * 0.12, 0.1, Math.PI - 0.1)
+    .strokePath();
+  if (mascot) {
+    ellipse(0.49, 0.1, 0.1, 0.05, THEME.sun, THEME.goldOutline);
+    g.fillStyle(THEME.scarf).fillTriangle(
+      x + w * 0.3,
+      y + h * 0.55,
+      x + w * 0.7,
+      y + h * 0.55,
+      x + w * 0.5,
+      y + h * 0.65,
+    );
+    g.fillStyle(THEME.scarf).fillTriangle(
+      x + w * 0.5,
+      y + h * 0.59,
+      x + w * 0.64,
+      y + h * 0.73,
+      x + w * 0.68,
+      y + h * 0.58,
+    );
+    if (frame === 7) ellipse(0.5, 0.6, 0.2, 0.11, THEME.frog);
+  }
+}
+function lily(
+  g: Phaser.GameObjects.Graphics,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+) {
+  g.fillStyle(THEME.shadow, 0.18).fillEllipse(x, y + h * 0.07, w, h);
+  g.fillStyle(THEME.frog).fillEllipse(x, y, w, h);
+  g.lineStyle(Math.max(3, h * 0.025), THEME.leaf).strokeEllipse(x, y, w, h);
+  g.fillStyle(THEME.water).fillTriangle(
+    x,
+    y,
+    x - w * 0.5,
+    y - h * 0.08,
+    x - w * 0.43,
+    y + h * 0.23,
+  );
+  g.lineStyle(Math.max(2, h * 0.018), THEME.leaf, 0.55);
+  for (const angle of [-2.3, -1.3, -0.3, 0.7, 1.7])
+    g.lineBetween(
+      x,
+      y,
+      x + Math.cos(angle) * w * 0.4,
+      y + Math.sin(angle) * h * 0.4,
+    );
 }
 function icon(
   g: Phaser.GameObjects.Graphics,
@@ -104,8 +186,22 @@ function icon(
   w: number,
   h: number,
 ) {
-  g.fillStyle(0xffd23f).fillCircle(w / 2, h / 2, w * 0.48);
-  g.lineStyle(w * 0.065, 0x174d52);
+  const gold = /hint|replay|equal/.test(key);
+  g.fillStyle(THEME.shadow, 0.18).fillCircle(w / 2, h * 0.54, w * 0.44);
+  g.fillStyle(gold ? THEME.gold : THEME.coral).fillCircle(
+    w / 2,
+    h / 2,
+    w * 0.43,
+  );
+  g.lineStyle(
+    w * 0.035,
+    gold ? THEME.goldOutline : THEME.coralOutline,
+  ).strokeCircle(w / 2, h / 2, w * 0.43);
+  g.lineStyle(w * 0.016, THEME.white, 0.45)
+    .beginPath()
+    .arc(w / 2, h / 2, w * 0.38, Math.PI, Math.PI * 1.75)
+    .strokePath();
+  g.lineStyle(w * 0.065, THEME.white);
   const line = (points: number[][]) => {
     g.beginPath();
     points.forEach(([x, y], i) =>
@@ -140,7 +236,7 @@ function icon(
     ]);
   } else if (/lock/.test(key)) {
     g.strokeRoundedRect(w * 0.34, h * 0.24, w * 0.32, h * 0.4, w * 0.12);
-    g.fillStyle(0x174d52).fillRoundedRect(
+    g.fillStyle(THEME.white).fillRoundedRect(
       w * 0.25,
       h * 0.46,
       w * 0.5,
@@ -253,75 +349,201 @@ export function generatePlaceholderArt(scene: Phaser.Scene): void {
     g.clear();
     if (key === 'mascot_sheet') {
       for (let frame = 0; frame < 8; frame++)
-        frog(
-          g,
-          frame * 360 * r,
-          0,
-          360 * r,
-          h,
-          [0, -1, 1, -1, 1, 0, 0, 0][frame],
-          frame >= 5,
-        );
+        frog(g, frame * 360 * r, 0, 360 * r, h, frame, true);
     } else if (/frog_token|mascot_base|app_icon/.test(key)) {
-      if (key.endsWith('ghost')) g.setAlpha(0.35);
-      frog(g, 0, 0, w, h);
-      g.setAlpha(1);
+      frog(g, 0, 0, w, h, 0, !key.startsWith('frog_token'));
+      if (key.endsWith('ghost')) {
+        // Fade the generated canvas below; graphic alpha isn't baked by generateTexture.
+        g.lineStyle(2 * r, THEME.navy, 0.7);
+        for (let i = 0; i < 12; i++)
+          g.beginPath()
+            .arc(
+              w / 2,
+              h / 2,
+              w * 0.46,
+              (i * Math.PI) / 6,
+              ((i + 0.55) * Math.PI) / 6,
+            )
+            .strokePath();
+      }
     } else if (key === 'frog_pile') {
-      for (let i = 0; i < 5; i++)
+      for (let i = 0; i < 8; i++)
         frog(
           g,
-          (i % 3) * w * 0.28 + w * 0.06,
-          (i < 3 ? 0.4 : 0.02) * h,
-          w * 0.3,
-          h * 0.58,
+          (i < 3 ? (i + 0.8) * 0.21 : (i - 3) * 0.19) * w,
+          (i < 3 ? 0 : 0.4) * h,
+          w * 0.23,
+          h * 0.59,
         );
     } else if (key.startsWith('num_tile')) {
-      g.fillStyle(0x174d52, 0.18).fillRoundedRect(
-        w * 0.06,
-        h * 0.06,
-        w * 0.94,
-        h * 0.94,
-        w * 0.15,
-      );
-      g.fillStyle(colors[Number(key.split('_').at(-1)) - 1]!).fillRoundedRect(
-        0,
-        0,
-        w * 0.94,
-        h * 0.94,
-        w * 0.15,
-      );
-      g.fillStyle(0xffffff, 0.15).fillRoundedRect(
-        w * 0.08,
-        h * 0.07,
-        w * 0.76,
-        h * 0.1,
+      const border = tileColor(Number(key.split('_').at(-1)));
+      g.fillStyle(THEME.shadow, 0.18).fillRoundedRect(
         w * 0.04,
+        h * 0.05,
+        w * 0.92,
+        h * 0.94,
+        w * 0.15,
+      );
+      g.fillStyle(THEME.cream).fillRoundedRect(
+        w * 0.035,
+        h * 0.025,
+        w * 0.93,
+        h * 0.93,
+        w * 0.15,
+      );
+      g.lineStyle(5 * r, border).strokeRoundedRect(
+        w * 0.035,
+        h * 0.025,
+        w * 0.93,
+        h * 0.93,
+        w * 0.15,
+      );
+      g.lineStyle(2 * r, THEME.white, 0.65).lineBetween(
+        w * 0.18,
+        h * 0.07,
+        w * 0.81,
+        h * 0.07,
       );
     } else if (key.startsWith('bg_')) {
-      g.fillStyle(0xfff6e5).fillRect(0, 0, w, h);
-      g.fillStyle(0xd3ead7).fillEllipse(w * 0.5, h * 1.1, w * 1.7, h * 0.8);
-      g.fillStyle(0x87c9be, 0.4).fillEllipse(
-        w * 0.13,
-        h * 0.85,
-        w * 0.2,
-        h * 0.08,
+      const world = Number(key.match(/world_(\d)/)?.[1] ?? 2);
+      g.fillStyle(WORLD_SKIES[world - 1]!).fillRect(0, 0, w, h);
+      g.fillStyle(THEME.sun, 0.7).fillCircle(
+        w * 0.78,
+        h * 0.16,
+        Math.min(w, h) * 0.075,
+      );
+      for (const [cx, cy] of [
+        [0.16, 0.24],
+        [0.43, 0.12],
+        [0.9, 0.32],
+      ]) {
+        g.fillStyle(THEME.white, 0.65).fillRoundedRect(
+          w * cx!,
+          h * cy!,
+          w * 0.12,
+          h * 0.035,
+          h * 0.018,
+        );
+        g.fillCircle(w * (cx! + 0.06), h * cy!, h * 0.025);
+      }
+      g.fillStyle(THEME.water).fillRect(0, h * 0.53, w, h * 0.47);
+      g.fillStyle(THEME.waterDeep, 0.32).fillRect(0, h * 0.78, w, h * 0.22);
+      for (const side of [0.03, 0.94]) {
+        for (let i = 0; i < 4; i++) {
+          const x = w * (side + i * 0.012),
+            y = h * (0.4 + i * 0.04);
+          g.lineStyle(5 * r, THEME.leaf).lineBetween(
+            x,
+            h * 0.66,
+            x + (side < 0.5 ? 1 : -1) * 10 * r,
+            y,
+          );
+          g.fillStyle(THEME.wood).fillRoundedRect(
+            x - 4 * r,
+            y - 25 * r,
+            10 * r,
+            36 * r,
+            5 * r,
+          );
+        }
+        lily(g, w * (side + 0.035), h * 0.83, w * 0.14, h * 0.045);
+        for (let i = -1; i <= 1; i++) {
+          g.fillStyle(THEME.cheek).fillEllipse(
+            w * (side + 0.035) + i * 12 * r,
+            h * 0.79 + Math.abs(i) * 5 * r,
+            18 * r,
+            35 * r,
+          );
+        }
+      }
+      g.lineStyle(2 * r, THEME.cream, 0.25);
+      for (let i = 0; i < 12; i++)
+        g.lineBetween(
+          w * ((i * 0.27) % 1),
+          h * (0.6 + (i % 4) * 0.08),
+          w * ((i * 0.27) % 1) + 30 * r,
+          h * (0.6 + (i % 4) * 0.08),
+        );
+    } else if (key === 'beam') {
+      g.fillStyle(THEME.navy).fillRoundedRect(0, h * 0.12, w, h * 0.76, h / 2);
+      g.lineStyle(3 * r, THEME.blue, 0.7).lineBetween(
+        h,
+        h * 0.25,
+        w - h,
+        h * 0.25,
+      );
+      for (const x of [h / 2, w / 2, w - h / 2]) {
+        g.fillStyle(THEME.gold).fillCircle(x, h / 2, h * 0.36);
+        g.lineStyle(3 * r, THEME.goldOutline).strokeCircle(x, h / 2, h * 0.36);
+      }
+    } else if (key === 'pan') {
+      g.fillStyle(THEME.shadow, 0.18).fillEllipse(
+        w / 2,
+        h * 0.82,
+        w * 0.9,
+        h * 0.3,
+      );
+      g.fillStyle(THEME.pan).fillEllipse(w / 2, h * 0.48, w * 0.96, h * 0.82);
+      g.lineStyle(4 * r, THEME.panOutline).strokeEllipse(
+        w / 2,
+        h * 0.48,
+        w * 0.96,
+        h * 0.82,
+      );
+      g.fillStyle(THEME.gold).fillEllipse(w / 2, h * 0.28, w * 0.94, h * 0.4);
+      g.lineStyle(3 * r, THEME.belly).strokeEllipse(
+        w / 2,
+        h * 0.28,
+        w * 0.94,
+        h * 0.4,
+      );
+    } else if (key === 'pan_post') {
+      g.lineStyle(3 * r, THEME.navy).lineBetween(w / 2, 0, w / 2, h);
+    } else if (key === 'peg_lock') {
+      g.fillStyle(THEME.shadow, 0.18).fillRoundedRect(
+        w * 0.18,
+        h * 0.1,
+        w * 0.68,
+        h * 0.84,
+        w * 0.1,
+      );
+      g.fillStyle(THEME.wood).fillRoundedRect(
+        w * 0.16,
+        h * 0.06,
+        w * 0.68,
+        h * 0.84,
+        w * 0.1,
+      );
+      g.lineStyle(4 * r, THEME.woodOutline).strokeRoundedRect(
+        w * 0.16,
+        h * 0.06,
+        w * 0.68,
+        h * 0.84,
+        w * 0.1,
+      );
+      g.lineStyle(3 * r, THEME.belly, 0.6).lineBetween(
+        w * 0.32,
+        h * 0.17,
+        w * 0.28,
+        h * 0.65,
       );
     } else if (/btn_|predict_|symbol_|lock/.test(key)) icon(g, key, w, h);
     else if (/star/.test(key)) {
       const points = Array.from({ length: 10 }, (_, i) => {
         const a = (i * Math.PI) / 5 - Math.PI / 2,
-          radius = w * (i % 2 ? 0.2 : 0.48);
+          radius = w * (i % 2 ? 0.22 : 0.43);
         return new Phaser.Geom.Point(
           w / 2 + Math.cos(a) * radius,
           h / 2 + Math.sin(a) * radius,
         );
       });
-      g.fillStyle(key.includes('empty') ? 0x9bb5a3 : 0xffd23f).fillPoints(
+      g.fillStyle(key.includes('empty') ? THEME.cream : THEME.gold).fillPoints(
         points,
         true,
       );
+      g.lineStyle(3 * r, THEME.goldOutline).strokePoints(points, true);
     } else if (key === 'number_line') {
-      g.lineStyle(4 * r, 0x2e5aac).lineBetween(
+      g.lineStyle(4 * r, THEME.navy).lineBetween(
         w * 0.04,
         h * 0.5,
         w * 0.96,
@@ -334,28 +556,17 @@ export function generatePlaceholderArt(scene: Phaser.Scene): void {
           w * (0.04 + 0.092 * i),
           h * 0.7,
         );
-    } else {
-      const color =
-        key === 'beam' || key === 'pan_post'
-          ? 0x2e5aac
-          : key.includes('pan')
-            ? 0xffd23f
-            : 0x5cc85a;
-      g.fillStyle(color, key === 'pan_glow' ? 0.28 : 1).fillRoundedRect(
-        0,
-        0,
-        w,
-        h,
-        Math.min(w, h) * 0.35,
+    } else if (key === 'pan_glow') {
+      g.fillStyle(THEME.gold, 0.22).fillEllipse(w / 2, h / 2, w, h);
+    } else if (key === 'particle_confetti') {
+      g.fillStyle(THEME.white).fillRoundedRect(
+        w * 0.2,
+        h * 0.15,
+        w * 0.6,
+        h * 0.7,
+        3 * r,
       );
-      g.lineStyle(3 * r, 0x27633e, 0.4).strokeRoundedRect(
-        2 * r,
-        2 * r,
-        w - 4 * r,
-        h - 4 * r,
-        Math.min(w, h) * 0.3,
-      );
-    }
+    } else lily(g, w / 2, h * 0.47, w * 0.97, h * 0.85);
     g.generateTexture(key, w, h);
     if (key === 'mascot_sheet')
       for (let frame = 0; frame < 8; frame++)

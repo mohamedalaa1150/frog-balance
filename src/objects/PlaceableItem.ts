@@ -1,3 +1,4 @@
+import { THEME, cssColor, tileColor } from '../theme';
 import Phaser from 'phaser';
 import { CONFIG } from '../config';
 import { formatNumber, type NumeralSystem } from '../core/numerals';
@@ -53,7 +54,7 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
           fontFamily: CONFIG.fontStack,
           fontSize: 64 * r,
           fontStyle: '800',
-          color: '#fff6e5',
+          color: cssColor(tileColor(spec.value!)),
         })
         .setOrigin(0.5)
         .setScale(1 / r);
@@ -94,7 +95,7 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
           world.ty + 20 * this.scaleY,
           liftedWidth * Math.hypot(world.a, world.b),
           liftedHeight * Math.hypot(world.c, world.d) * 0.25,
-          0x174d52,
+          THEME.shadow,
           0.2,
         )
         .setDepth(19);
@@ -102,8 +103,10 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
         .container(world.tx, world.ty)
         .setDepth(20)
         .setScale(
-          Math.hypot(world.a, world.b) * 1.12,
-          Math.hypot(world.c, world.d) * 1.12,
+          Math.hypot(world.a, world.b) *
+            (interactions.reduced() || interactions.fast() ? 1 : 1.1),
+          Math.hypot(world.c, world.d) *
+            (interactions.reduced() || interactions.fast() ? 1 : 0.95),
         );
       this.lifted.add(
         scene.add
@@ -117,7 +120,7 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
               fontFamily: CONFIG.fontStack,
               fontSize: this.digit.style.fontSize,
               fontStyle: '800',
-              color: '#fff6e5',
+              color: cssColor(tileColor(spec.value!)),
             })
             .setOrigin(0.5)
             .setScale(1 / r),

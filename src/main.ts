@@ -2,6 +2,11 @@ import '@fontsource/baloo-bhaijaan-2/500.css';
 import '@fontsource/baloo-bhaijaan-2/700.css';
 import '@fontsource/baloo-bhaijaan-2/800.css';
 import './styles.css';
+import { THEME, cssColor } from './theme';
+document.documentElement.style.setProperty('--sky', cssColor(THEME.sky));
+document
+  .querySelector('meta[name=theme-color]')
+  ?.setAttribute('content', cssColor(THEME.sky));
 import Phaser from 'phaser';
 import { getViewport, installViewportController } from './layout/viewport';
 import { BootScene } from './scenes/BootScene';
@@ -27,7 +32,7 @@ const viewport = getViewport(parent);
 const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
-  backgroundColor: '#174d52',
+  backgroundColor: cssColor(THEME.sky),
   banner: false,
   // Sprite edges and text are already antialiased in render-scale textures.
   // Avoid a second multisample framebuffer, particularly costly on software GPUs.

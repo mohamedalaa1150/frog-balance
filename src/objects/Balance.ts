@@ -28,12 +28,12 @@ export class Balance extends Phaser.GameObjects.Container {
       left: new Pan(scene, 'left'),
       right: new Pan(scene, 'right'),
     };
-    this.add([this.mascot, this.beam, this.pans.left, this.pans.right]);
+    this.add([this.beam, this.mascot, this.pans.left, this.pans.right]);
     this.positionPans();
   }
   setSpan(halfSpan: number): void {
     this.halfSpan = halfSpan;
-    this.beam.setDisplaySize(halfSpan * 2 + 120, 36);
+    this.beam.setDisplaySize(halfSpan * 2 + 36, 36);
     this.positionPans();
   }
   get angleDegrees(): number {
@@ -41,6 +41,7 @@ export class Balance extends Phaser.GameObjects.Container {
   }
   setDifference(d: number, reduced: boolean, fast: boolean): void {
     this.mascot.look(d);
+    this.mascot.breathe(reduced || fast);
     this.reduced = reduced;
     this.fast = fast;
     const target = beamAngle(d);
@@ -94,11 +95,11 @@ export class Balance extends Phaser.GameObjects.Container {
     this.beam.setAngle(this.rendered);
     this.pans.left.setPosition(
       -this.halfSpan * Math.cos(radians),
-      -this.halfSpan * Math.sin(radians) - 70,
+      -this.halfSpan * Math.sin(radians) + 150,
     );
     this.pans.right.setPosition(
       this.halfSpan * Math.cos(radians),
-      this.halfSpan * Math.sin(radians) - 70,
+      this.halfSpan * Math.sin(radians) + 150,
     );
   }
 }
