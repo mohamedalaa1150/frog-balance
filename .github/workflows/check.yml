@@ -29,7 +29,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium webkit
+      - run: npx playwright install --with-deps ${{ matrix.project == 'webkit-ipad' && 'webkit' || 'chromium' }}
       - name: Cross-check TypeScript and Python solvability
         run: |
           npm run validate:content
