@@ -1,8 +1,17 @@
-import { defaults, migrate, SAVE_KEY, type SaveV1 } from '../core/progress';
+import {
+  defaults,
+  migrateWithReport,
+  SAVE_KEY,
+  type SaveV1,
+} from '../core/progress';
 let memory = defaults();
+let droppedPaths: string[] = [];
+export const migrationReport = (): readonly string[] => droppedPaths.slice();
 export function readSave(): SaveV1 {
   try {
-    memory = migrate(localStorage.getItem(SAVE_KEY) ?? memory);
+    const report = migrateWithReport(localStorage.getItem(SAVE_KEY) ?? memory);
+    memory = report.save;
+    droppedPaths = report.droppedPaths;
   } catch {
     /* Use the last in-memory save. */
   }

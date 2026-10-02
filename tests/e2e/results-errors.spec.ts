@@ -63,7 +63,7 @@ for (const [hints, expectedStars] of [
     await tap(page, 'btn-home');
     await expect
       .poll(() =>
-        page.evaluate(() => window.__FROG__!.getPointerTarget('level-w6-l8')),
+        page.evaluate(() => window.__FROG__!.getPointerTarget('world-1')),
       )
       .not.toBeNull();
   });

@@ -24,7 +24,7 @@ export class LevelController {
   private successFired = false;
   constructor(
     private scene: Phaser.Scene,
-    id: string,
+    id: string | LevelDefinition,
     settings: SaveV1['settings'],
     private render: (state: LevelState) => void,
     private feedback: (
@@ -38,7 +38,7 @@ export class LevelController {
     this.state =
       id === 'sandbox'
         ? createSandboxState(now)
-        : createLevelState(getLevel(id), {
+        : createLevelState(typeof id === 'string' ? getLevel(id) : id, {
             now,
             idleHintSec: settings.idleHintSec,
           });

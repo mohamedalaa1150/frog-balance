@@ -35,7 +35,7 @@ it('defaults are independent and match expected settings', () => {
     levels: {},
     practice: { band: 1, streak: 0 },
   });
-  expect(defaults().settings.music).toBe(0.3);
+  expect(defaults().settings.music).toBe(0.4);
 });
 it.each([
   null,
@@ -203,7 +203,7 @@ it('BUG-103: repairs settings independently and clamps counts and practice field
   const { save: result, droppedPaths } = migrateWithReport(raw);
   expect(result.settings).toMatchObject({
     numerals: 'western',
-    music: 0.3,
+    music: 0.4,
     sfx: 0.8,
     idleHintSec: 8,
   });

@@ -1,3 +1,4 @@
+import { bindButton } from '../ui/Button';
 import Phaser from 'phaser';
 import { coverBackground } from '../layout/background';
 import { drawTextPill } from '../ui/textPill';
@@ -24,7 +25,7 @@ export class ResultScene extends BaseScene {
   create(): void {
     const state = this.state;
     if (!state) {
-      this.scene.start('DevLevelListScene');
+      this.scene.start('WorldMapScene');
       return;
     }
     const rating = stars(state.hintsUsed, state.hint.maxLevel);
@@ -56,20 +57,25 @@ export class ResultScene extends BaseScene {
       {
         name: 'btn-home',
         texture: 'btn_home',
-        action: () => this.scene.start('DevLevelListScene'),
+        action: () => this.scene.start('WorldMapScene'),
       },
       {
         name: 'btn-replay',
         texture: 'btn_replay',
-        action: () => this.scene.start('GameScene', { levelId: state.levelId }),
+        action: () =>
+          state.levelId.startsWith('practice-')
+            ? this.scene.start('PracticeScene')
+            : this.scene.start('GameScene', { levelId: state.levelId }),
       },
       {
         name: 'btn-next',
         texture: 'btn_next',
         action: () =>
-          next
-            ? this.scene.start('GameScene', { levelId: next.id })
-            : this.scene.start('DevLevelListScene'),
+          state.levelId.startsWith('practice-')
+            ? this.scene.start('PracticeScene')
+            : next
+              ? this.scene.start('GameScene', { levelId: next.id })
+              : this.scene.start('WorldMapScene'),
       },
     ];
     const buttons = actions.map(({ name, texture, action }) => {
@@ -77,15 +83,26 @@ export class ResultScene extends BaseScene {
         .image(0, 0, texture)
         .setName(name)
         .setInteractive({ useHandCursor: true });
-      button.on('pointerdown', action);
+      bindButton(
+        this,
+        button,
+        name === 'btn-home'
+          ? 'ui_home'
+          : name === 'btn-next'
+            ? 'ui_next'
+            : 'ui_replay',
+        action,
+      );
       return button;
     });
-    // Free-play shortcut is retained on this temporary result screen.
+    // Keep free play one tap away after completing a level.
     const sandbox = this.add
       .image(0, 0, 'btn_read')
       .setName('btn-sandbox')
       .setInteractive();
-    sandbox.on('pointerdown', () => this.scene.start('SandboxScene'));
+    bindButton(this, sandbox, 'ui_sandbox', () =>
+      this.scene.start('SandboxScene'),
+    );
     const audio = new AudioManager(this, readSave().settings, () => {});
     if (this.game.registry.get('audio-unlocked')) audio.unlock();
     audio.setFastMode(this.game.registry.get('fast-mode') === true);
@@ -105,7 +122,7 @@ export class ResultScene extends BaseScene {
       drawTextPill(pill, label, uiScale);
       mascot
         .setPosition(centerX, height * 0.84)
-        .setDisplaySize(120 * uiScale, 125 * uiScale);
+        .setDisplaySize(190 * uiScale, 198 * uiScale);
       starImages.forEach((star, i) =>
         star
           .setPosition(centerX + (i - 1) * 120 * uiScale, height * 0.43)
@@ -121,6 +138,26 @@ export class ResultScene extends BaseScene {
         .setDisplaySize(96 * uiScale, 96 * uiScale);
     };
     layout();
+    const settings = readSave().settings;
+    const reduced =
+      this.game.registry.get('fast-mode') === true ||
+      settings.reducedMotion === 'on' ||
+      (settings.reducedMotion === 'system' &&
+        matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if (!reduced)
+      starImages.forEach((star, i) => {
+        star.setAlpha(0);
+        this.tweens.add({
+          targets: star,
+          alpha: 1,
+          duration: 300,
+          delay: i * 250,
+          ease: 'Sine.easeOut',
+        });
+        this.time.delayedCall(i * 250, () => {
+          void audio.play(`sfx_star_${i + 1}`);
+        });
+      });
     this.scale.on(Phaser.Scale.Events.RESIZE, layout);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.scale.off(Phaser.Scale.Events.RESIZE, layout);

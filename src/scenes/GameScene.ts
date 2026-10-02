@@ -1,3 +1,8 @@
+import { sizedTexture } from '../objects/sizedTexture';
+import { CachedLayer } from '../objects/CachedLayer';
+import type { LevelDefinition } from '../core/levelSchema';
+import { recordCompletion } from '../core/dashboard';
+import { adaptBand } from '../core/generator';
 import { bindButton } from '../ui/Button';
 import { THEME, cssColor, tileColor } from '../theme';
 import Phaser from 'phaser';
@@ -26,7 +31,7 @@ import {
   composePredictionExplanation,
   composePanReading,
 } from '../services/reading';
-import { readSave } from '../services/storage';
+import { readSave, writeSave } from '../services/storage';
 import { hasString, t } from '../services/strings';
 import { BaseScene } from './BaseScene';
 export class GameScene extends BaseScene {
@@ -47,12 +52,16 @@ export class GameScene extends BaseScene {
   private explanationHand?: Phaser.GameObjects.Image;
   private explaining = false;
   private navigation: Phaser.GameObjects.Image[] = [];
+  private cachedTray?: CachedLayer;
+  private cachedHud?: CachedLayer;
+  private cachedSubtitle?: CachedLayer;
   private trayBackground!: Phaser.GameObjects.Image;
   private background!: Phaser.GameObjects.Image;
   private guide?: Phaser.GameObjects.Image;
   private audio!: AudioManager;
   private settings = readSave().settings;
   private levelId = 'w1-l1';
+  private definition?: LevelDefinition;
 
   private returnAt = Infinity;
   private lastDiff?: number;
@@ -61,12 +70,16 @@ export class GameScene extends BaseScene {
   constructor(key = 'GameScene') {
     super(key);
   }
-  init(data: { levelId?: string } = {}): void {
+  init(data: { levelId?: string; definition?: LevelDefinition } = {}): void {
     super.init();
+    this.cachedTray = undefined;
+    this.cachedHud = undefined;
+    this.cachedSubtitle = undefined;
+    this.definition = data.definition;
     this.levelId =
       this.scene.key === 'SandboxScene'
         ? 'sandbox'
-        : (data.levelId ?? 'w1-l1');
+        : (data.definition?.id ?? data.levelId ?? 'w1-l1');
 
     this.returnAt = Infinity;
     this.lastDiff = undefined;
@@ -128,11 +141,7 @@ export class GameScene extends BaseScene {
     this.audio = new AudioManager(this, this.settings, (text) => {
       if (this.explaining) return;
       this.subtitle.setText(text);
-      drawTextPill(
-        this.subtitlePill,
-        this.subtitle,
-        getLayout(this.scale.width, this.scale.height).uiScale,
-      );
+      this.paintSubtitle();
     });
     if (this.game.registry.get('audio-unlocked') === true) this.audio.unlock();
     this.input.once('pointerdown', () => {
@@ -153,7 +162,7 @@ export class GameScene extends BaseScene {
     };
     this.controller = new LevelController(
       this,
-      this.levelId,
+      this.definition ?? this.levelId,
       this.settings,
       (state) => this.render(state),
       (key, side) => {
@@ -182,7 +191,7 @@ export class GameScene extends BaseScene {
           .image(0, 0, `predict_${choice}`)
           .setName(`predict-${choice}`)
           .setInteractive({ useHandCursor: true });
-        button.on('pointerdown', () =>
+        bindButton(this, button, 'intro_compare', () =>
           this.controller.dispatch({ type: 'predict', choice }),
         );
         this.predictions.push(button);
@@ -199,7 +208,7 @@ export class GameScene extends BaseScene {
       this.interactions,
     );
     this.addButton('btn-home', 'btn_home', () =>
-      this.scene.start('DevLevelListScene'),
+      this.scene.start('WorldMapScene'),
     );
     this.addButton('btn-sound', 'btn_sound_on', () => {
       if (hasString(level.vo.intro))
@@ -220,6 +229,9 @@ export class GameScene extends BaseScene {
     this.relayout();
     this.scale.on(Phaser.Scale.Events.RESIZE, this.relayout, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.cachedTray?.destroy();
+      this.cachedHud?.destroy();
+      this.cachedSubtitle?.destroy();
       this.events.off('item-placed', this.onPlaced, this);
       this.audio.destroy();
       this.scale.off(Phaser.Scale.Events.RESIZE, this.relayout, this);
@@ -261,11 +273,7 @@ export class GameScene extends BaseScene {
     key: 'feedback_locked' | 'feedback_wrong_pan' | 'feedback_pan_full',
   ): void {
     this.subtitle.setText(t(key));
-    drawTextPill(
-      this.subtitlePill,
-      this.subtitle,
-      getLayout(this.scale.width, this.scale.height).uiScale,
-    );
+    this.paintSubtitle();
     void this.audio.play(key, 'vo', 'interrupt');
     this.game.events.emit('gameplay-event', {
       type: 'feedback',
@@ -343,6 +351,22 @@ export class GameScene extends BaseScene {
     void this.audio.play('sfx_bounce_back');
     return false;
   }
+  private paintSubtitle(): void {
+    this.cachedSubtitle?.destroy();
+    const scale = getLayout(this.scale.width, this.scale.height).uiScale;
+    drawTextPill(this.subtitlePill, this.subtitle, scale);
+    const bounds = this.subtitle.getBounds();
+    const pad = Math.ceil(20 * scale);
+    this.cachedSubtitle = new CachedLayer(
+      this,
+      [this.subtitlePill, this.subtitle],
+      Math.floor(bounds.x) - pad,
+      Math.floor(bounds.y) - pad,
+      Math.ceil(bounds.width) + pad * 2,
+      Math.ceil(bounds.height) + pad * 2,
+      30,
+    );
+  }
   private render(state: LevelState): void {
     for (const side of ['left', 'right'] as const) {
       this.balance.pans[side].setWorkActive(
@@ -416,6 +440,7 @@ export class GameScene extends BaseScene {
       this.returnBondTiles(before);
       void this.audio.play('bond_already_found', 'vo', 'interrupt');
     }
+    if (state.hintLevel !== this.lastHint) this.cachedTray?.refresh();
     if (state.hintLevel > this.lastHint) this.playHint(state);
     this.lastHint = state.hintLevel;
     if (state.phase === 'revealing' && !this.explanationPending) {
@@ -483,6 +508,14 @@ export class GameScene extends BaseScene {
       this.controller.state.level.world,
     );
     this.balance.setPosition(balance.x, balance.y).setScale(balance.scale);
+    this.balance.mascot.setPresentation(balance.scale);
+    sizedTexture(
+      this.balance.beam,
+      'beam',
+      this.balance.beam.displayWidth,
+      this.balance.beam.displayHeight,
+      balance.scale,
+    );
     for (const side of ['left', 'right'] as const)
       this.balance.pans[side].setPresentation(balance.scale);
     this.render(this.controller.state);
@@ -503,7 +536,7 @@ export class GameScene extends BaseScene {
       .setPosition(centerX, hud.subtitleY)
       .setFontSize(24 * uiScale)
       .setWordWrapWidth(width * 0.88);
-    drawTextPill(this.subtitlePill, this.subtitle, uiScale);
+    this.paintSubtitle();
     this.equation.layout(this.balance, 178 * uiScale, uiScale);
     this.board
       .setPosition(centerX, 218 * uiScale)
@@ -528,6 +561,28 @@ export class GameScene extends BaseScene {
           Math.min(112 * uiScale, 0.18 * height),
         ),
     );
+    this.cachedTray?.destroy();
+    this.cachedHud?.destroy();
+    this.cachedTray = new CachedLayer(
+      this,
+      [
+        this.trayBackground,
+        ...this.tray.items,
+        ...(this.pile ? [this.pile] : []),
+      ],
+      0,
+      tray.top,
+      width,
+      height - tray.top,
+    );
+    this.cachedHud = new CachedLayer(
+      this,
+      this.navigation,
+      0,
+      0,
+      this.navigation.length * (hud.buttonSize + 12 * getRenderScale()),
+      hud.buttonSize + 12 * getRenderScale(),
+    );
     if (this.guide) {
       const side = this.controller.state.level.workPan!;
       this.guide
@@ -542,6 +597,19 @@ export class GameScene extends BaseScene {
   }
 
   private celebrate(): void {
+    const saved = recordCompletion(
+      readSave(),
+      this.controller.state,
+      Date.now(),
+    );
+    if (this.scene.key === 'PracticeScene')
+      saved.save.practice = adaptBand(
+        saved.save.practice,
+        this.controller.state.errors.length === 0,
+      );
+    writeSave(saved.save);
+    if (saved.unlocked.length)
+      this.game.registry.set('world-unlocked', saved.unlocked);
     const reduced = this.reducedMotion || this.controller.fast;
     this.balance.mascot.jump(reduced);
     void this.audio.play('sfx_success');
@@ -650,22 +718,20 @@ export class GameScene extends BaseScene {
     this.subtitle.setText(
       `${t(reading.keys[0] as 'phrase_they_are_equal_because')} ${number(Math.max(reading.left, reading.right))} ${t(reading.heavier ? 'phrase_greater_than' : 'phrase_equals')} ${number(Math.min(reading.left, reading.right))}`,
     );
-    drawTextPill(
-      this.subtitlePill,
-      this.subtitle,
-      getLayout(this.scale.width, this.scale.height).uiScale,
-    );
+    this.paintSubtitle();
     for (const side of ['left', 'right'] as const)
       this.balance.pans[side].setWorkActive(
         reading.heavier === null || reading.heavier === side,
       );
     if (reading.heavier) {
-      const pan = this.balance.pans[reading.heavier].getWorldTransformMatrix();
+      const pan = this.balance.pans[reading.heavier];
+      const size = (56 * getRenderScale()) / this.balance.scaleX;
       this.explanationHand = this.add
-        .image(pan.tx, pan.ty - 45 * getRenderScale(), 'hint_hand')
-        .setDisplaySize(56 * getRenderScale(), 56 * getRenderScale())
+        .image(0, -size, 'hint_hand')
+        .setDisplaySize(size, size)
         .setDepth(28)
         .setName('explanation-hand');
+      pan.add(this.explanationHand);
     }
     this.audio.stopVoice();
     await Promise.all(keys.map((key) => this.audio.play(key, 'vo')));

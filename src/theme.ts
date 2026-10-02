@@ -51,9 +51,16 @@ export function initializeTileColors(data: unknown): void {
       colors[key] = Number.parseInt(value.slice(1), 16);
   deliveredTileColors = colors;
 }
-export const tileColor = (value: number): number =>
-  deliveredTileColors[String(value)] ??
-  TILE_COLORS[(value - 1) % TILE_COLORS.length]!;
+export const tileColor = (value: number): number => {
+  const color =
+    deliveredTileColors[String(value)] ??
+    TILE_COLORS[(value - 1) % TILE_COLORS.length]!;
+  return (
+    (Math.floor((color >> 16) * 0.55) << 16) |
+    (Math.floor(((color >> 8) & 255) * 0.55) << 8) |
+    Math.floor((color & 255) * 0.55)
+  );
+};
 export const WORLD_SKIES = [
   THEME.dawn,
   THEME.noon,

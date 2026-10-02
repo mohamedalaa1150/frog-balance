@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sizedTexture } from './sizedTexture';
 import type { PlacedItem, Side } from '../core/types';
 import type { NumeralSystem } from '../core/numerals';
 import { PAN_ANCHORS } from '../assets';
@@ -64,7 +65,13 @@ export class Pan extends Phaser.GameObjects.Container {
         item.setActive(false).setVisible(false).disableInteractive();
         const key = `${item.spec.kind}-${item.spec.value ?? 0}-${item.fixed}`;
         const bucket = this.pool.get(key) ?? [];
-        bucket.push(item);
+        // Each pan retains at most 20 released tokens; both pools total 40.
+        const pooled = [...this.pool.values()].reduce(
+          (n, entries) => n + entries.length,
+          0,
+        );
+        if (pooled < 20) bucket.push(item);
+        else item.destroy();
         this.pool.set(key, bucket);
         this.items.delete(uid);
       }
@@ -79,8 +86,19 @@ export class Pan extends Phaser.GameObjects.Container {
         (c) => 2 * (Math.abs(c.x) + c.width / 2) + 24 / this.cssScale,
       ),
     );
-    this.surface.setDisplaySize(contentWidth, 220);
+    const scale = this.cssScale * getRenderScale();
+    if (Number.isFinite(scale)) {
+      sizedTexture(this.surface, 'pan', contentWidth, 220, scale);
+      sizedTexture(this.glow, 'pan_glow', 320, 120, scale);
+    } else this.surface.setDisplaySize(contentWidth, 220);
     this.setSize(contentWidth, 64);
+    if (this.input)
+      (this.input.hitArea as Phaser.Geom.Rectangle).setTo(
+        0,
+        0,
+        contentWidth,
+        64,
+      );
     for (const [index, placed] of items.entries()) {
       let item = this.items.get(placed.uid);
       const entering = !item && !placed.fixed;
@@ -109,6 +127,14 @@ export class Pan extends Phaser.GameObjects.Container {
       }
       const cell = grid[index]!;
       item.setItemSize(cell.width, cell.height);
+      if (Number.isFinite(scale))
+        sizedTexture(
+          item.image,
+          placed.kind === 'frog' ? 'frog_token' : `num_tile_${placed.value}`,
+          cell.width,
+          cell.height,
+          scale,
+        );
       item.expandHitArea(56 / this.cssScale);
       item.setPosition(cell.x, cell.y);
       if (entering && !interactions.fast() && !interactions.reduced())

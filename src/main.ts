@@ -1,3 +1,12 @@
+/// <reference types="vite-plugin-pwa/client" />
+import { registerSW } from 'virtual:pwa-register';
+import { installVisibility } from './services/visibility';
+import { SettingsScene } from './scenes/SettingsScene';
+import { DashboardScene } from './scenes/DashboardScene';
+import { PracticeScene } from './scenes/PracticeScene';
+import { WorldMapScene } from './scenes/WorldMapScene';
+import { LevelSelectScene } from './scenes/LevelSelectScene';
+import { GrownUpGateScene } from './scenes/GrownUpGateScene';
 import '@fontsource/baloo-bhaijaan-2/500.css';
 import '@fontsource/baloo-bhaijaan-2/700.css';
 import '@fontsource/baloo-bhaijaan-2/800.css';
@@ -32,6 +41,7 @@ if (!parent) throw new Error('Missing game container');
 const viewport = getViewport(parent);
 const game = new Phaser.Game({
   type: Phaser.CANVAS,
+  transparent: true,
   parent: 'game',
   backgroundColor: cssColor(THEME.sky),
   banner: false,
@@ -48,10 +58,18 @@ const game = new Phaser.Game({
     BootScene,
     PreloadScene,
     TitleScene,
+    WorldMapScene,
+    LevelSelectScene,
+    GrownUpGateScene,
+    SettingsScene,
+    DashboardScene,
+    PracticeScene,
     GameScene,
     SandboxScene,
     ResultScene,
-    DevLevelListScene,
+    ...(new URLSearchParams(location.search).get('test') === '1'
+      ? [DevLevelListScene]
+      : []),
   ],
   input: { activePointers: 2 },
   audio: { disableWebAudio: true },
@@ -62,3 +80,22 @@ document
   ?.addEventListener('contextmenu', (event) => event.preventDefault());
 installTestApi(game);
 installViewportController(game, parent);
+
+installVisibility(game);
+registerSW({
+  immediate: true,
+  onRegisteredSW(_url, registration) {
+    registration?.addEventListener('updatefound', () => {
+      const worker = registration.installing;
+      worker?.addEventListener('statechange', () => {
+        if (
+          worker.state === 'installed' &&
+          navigator.serviceWorker.controller
+        ) {
+          game.registry.set('update-ready', true);
+          game.events.emit('update-ready');
+        }
+      });
+    });
+  },
+});

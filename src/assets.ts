@@ -13,6 +13,9 @@ export const RASTER_KEYS = [
   'frog_token',
   'frog_token_ghost',
   'frog_pile',
+  'map_bg',
+  'map_bg_p',
+  ...Array.from({ length: 6 }, (_, i) => `island_${i + 1}`),
   ...Array.from({ length: 6 }, (_, i) => `bg_world_${i + 1}`),
   ...Array.from({ length: 6 }, (_, i) => `bg_world_${i + 1}_p`),
 ];

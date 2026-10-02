@@ -121,7 +121,7 @@ export function getGameplayLayout(
       ...grid.map((c) => (-c.y + c.height / 2 + 12) * balanceScale),
     );
     const stackWidth = Math.max(
-      130 * balanceScale,
+      160 * balanceScale,
       ...grid.map((c) => (Math.abs(c.x) + c.width / 2) * balanceScale),
     );
     let low = 0,

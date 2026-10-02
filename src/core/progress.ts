@@ -10,6 +10,7 @@ export interface SaveV1 {
   settings: {
     numerals: NumeralSystem;
     voCount: boolean;
+    equationDirection?: 'rtl' | 'ltr';
     music: number;
     sfx: number;
     vo: number;
@@ -41,8 +42,9 @@ const errorTags = z.enum([
 const volume = z.number().min(0).max(1);
 const Settings = z.strictObject({
   numerals: z.enum(['arabic-indic', 'western']).default('arabic-indic'),
+  equationDirection: z.enum(['rtl', 'ltr']).optional(),
   voCount: z.boolean().default(true),
-  music: volume.default(0.3),
+  music: volume.default(0.4),
   sfx: volume.default(0.8),
   vo: volume.default(1),
   reducedMotion: z.enum(['system', 'on', 'off']).default('system'),

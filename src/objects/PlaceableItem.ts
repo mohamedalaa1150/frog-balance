@@ -1,5 +1,6 @@
 import { THEME, cssColor, tileColor } from '../theme';
 import Phaser from 'phaser';
+import { sizedTexture } from './sizedTexture';
 import { CONFIG } from '../config';
 import { formatNumber, type NumeralSystem } from '../core/numerals';
 import type { ItemSpec } from '../core/types';
@@ -21,9 +22,20 @@ export interface ItemInteractions {
 /** Native Phaser dragging supports mouse, touch and pen through the same path. */
 export class PlaceableItem extends Phaser.GameObjects.Container {
   private dragged = false;
+  private itemWidth = 0;
+  private itemHeight = 0;
   private pressedPointerId?: number;
   private lifted?: Phaser.GameObjects.Container;
   private shadow?: Phaser.GameObjects.Ellipse;
+  private cachedLift?: Phaser.GameObjects.Container;
+  private cachedShadow?: Phaser.GameObjects.Ellipse;
+  private disposed = false;
+  private recycleLift(lift: Phaser.GameObjects.Container): void {
+    if (this.disposed || this.cachedLift) lift.destroy();
+    else {
+      this.cachedLift = lift.setActive(false).setVisible(false).setName('');
+    }
+  }
   readonly image: Phaser.GameObjects.Image;
   readonly digit?: Phaser.GameObjects.Text;
   private badge?: Phaser.GameObjects.Image;
@@ -89,31 +101,47 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
       const fromPile = source && spec.kind === 'frog';
       const liftedWidth = fromPile ? 64 : this.image.displayWidth;
       const liftedHeight = fromPile ? 70 : this.image.displayHeight;
-      this.shadow = scene.add
-        .ellipse(
-          world.tx,
-          world.ty + 20 * this.scaleY,
+      this.shadow =
+        this.cachedShadow ??
+        scene.add.ellipse(0, 0, 1, 1, THEME.shadow, 0.2).setDepth(19);
+      this.cachedShadow = undefined;
+      this.shadow
+        .setActive(true)
+        .setVisible(true)
+        .setPosition(world.tx, world.ty + 20 * this.scaleY)
+        .setSize(
           liftedWidth * Math.hypot(world.a, world.b),
           liftedHeight * Math.hypot(world.c, world.d) * 0.25,
-          THEME.shadow,
-          0.2,
-        )
-        .setDepth(19);
-      this.lifted = scene.add
-        .container(world.tx, world.ty)
-        .setDepth(20)
+        );
+      this.lifted = this.cachedLift ?? scene.add.container(0, 0).setDepth(20);
+      this.cachedLift = undefined;
+      this.lifted
+        .setActive(true)
+        .setVisible(true)
+        .setName('')
+        .setPosition(world.tx, world.ty)
         .setScale(
           Math.hypot(world.a, world.b) *
             (interactions.reduced() || interactions.fast() ? 1 : 1.1),
           Math.hypot(world.c, world.d) *
             (interactions.reduced() || interactions.fast() ? 1 : 0.95),
         );
-      this.lifted.add(
-        scene.add
-          .image(0, 0, fromPile ? 'frog_token' : this.image.texture.key)
-          .setDisplaySize(liftedWidth, liftedHeight),
+      let image = this.lifted.list[0] as Phaser.GameObjects.Image | undefined;
+      if (!image) {
+        image = scene.add.image(0, 0, 'frog_token');
+        this.lifted.add(image);
+      }
+      // Use the authored source key, so pooled previews do not chain resamples.
+      const key =
+        spec.kind === 'frog' ? 'frog_token' : `num_tile_${spec.value}`;
+      sizedTexture(
+        image,
+        key,
+        liftedWidth,
+        liftedHeight,
+        Math.hypot(world.a, world.b),
       );
-      if (this.digit)
+      if (this.digit && this.lifted.list.length === 1)
         this.lifted.add(
           scene.add
             .text(0, 0, this.digit.text, {
@@ -142,14 +170,14 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
       // so it can still fly to its source after the state has changed.
       const lift = this.lifted;
       this.lifted = undefined;
-      this.shadow?.destroy();
+      this.cachedShadow = this.shadow?.setVisible(false).setActive(false);
       this.shadow = undefined;
       const accepted = interactions.drop(this, pointer.worldX, pointer.worldY);
       interactions.dragging(this, false);
       this.setAlpha(1);
       if (!lift) return;
       if (accepted === true || interactions.fast() || interactions.reduced())
-        lift.destroy();
+        this.recycleLift(lift);
       else {
         const destination = accepted || original;
         lift.setName(`return-${this.name}`);
@@ -162,7 +190,7 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
           ...destination,
           duration: 200,
           ease: 'Sine.easeOut',
-          onComplete: () => lift.destroy(),
+          onComplete: () => this.recycleLift(lift),
         });
       }
     });
@@ -179,6 +207,9 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
     scene.input.on('pointerup', pointerUp);
     scene.input.on('pointerupoutside', pointerUpOutside);
     this.once('destroy', () => {
+      this.disposed = true;
+      this.cachedLift?.destroy();
+      this.cachedShadow?.destroy();
       scene.game.events.off(Phaser.Core.Events.POST_RENDER, rendered);
       scene.input.off('pointerup', pointerUp);
       scene.input.off('pointerupoutside', pointerUpOutside);
@@ -194,6 +225,9 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
     );
   }
   setItemSize(w: number, h: number): void {
+    if (w === this.itemWidth && h === this.itemHeight) return;
+    this.itemWidth = w;
+    this.itemHeight = h;
     this.image.setDisplaySize(w, h);
     this.setSize(Math.max(64, w), Math.max(64, h));
     this.badge?.setPosition(w * 0.35, h * 0.35).setDisplaySize(28, 28);
