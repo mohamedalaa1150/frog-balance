@@ -9,9 +9,17 @@ permissions:
   contents: read
 
 jobs:
-  check:
+  e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - chromium-desktop
+          - webkit-ipad
+          - chromium-android
+          - chromium-whiteboard
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,12 +34,25 @@ jobs:
           python3 tools/build_levels.py --check
           npm run validate:cross-check
       - run: npm run test:coverage
-      - run: npm run check
+      - run: npm run lint
+      - run: npm test
+      - run: npm run validate:content
+      - run: npm run build
+      - run: npm run test:e2e -- --project=${{ matrix.project }}
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-results
+          name: playwright-results-${{ matrix.project }}
           path: |
             playwright-report/
             test-results/
           retention-days: 7
+
+  # Keep the existing required-check name while each browser gets its own runner.
+  # The expanded regression suite retains every project, assertion and timeout.
+  check:
+    if: always()
+    needs: e2e
+    runs-on: ubuntu-latest
+    steps:
+      - run: test '${{ needs.e2e.result }}' = success

@@ -170,7 +170,8 @@ In development, press the play icon on Title to open the temporary Count level l
 The development list is hidden on the production Title without that query.
 
 Drag frogs or number tiles onto a pan, or tap a source to place a copy on the work
-pan. Tap a child token to remove it. Fixed tokens have locks and reject drag
+pan. Tap a child token or drag it outside both pans to return it to its source.
+Fixed tokens have locks and reject drag
 attempts. Count evaluates only after a full second without changes or dragging;
 success plays a small celebration and returns to the list. Sandbox accepts both
 pans, has no goal or stars, and reads their relation with the read icon. Tap a
@@ -186,7 +187,14 @@ Audio loads only local mp3 files found at build time. Missing files use queued
 `ar-EG` speech synthesis, or subtitles when speech is unavailable. VO ducks music
 to 30%. Settings use the existing save defaults/migration with guarded storage.
 The authored VO scripts contain no `count_00`; zero uses the formatted numeral as
-the speech fallback. Totals above 20 are read as sums of existing number/plus keys.
+the speech fallback. Sandbox reads from the right pan, comparing it with the left;
+each pan's terms retain placement order and use existing number/plus keys.
+
+Gameplay layout reserves the tallest legal stack at either tilt extreme, including
+spring overshoot and the placement hop, between the HUD and source controls.
+Sources retain their specified design sizes; tiles wrap on landscape screens and
+shrink only to fit portrait columns, with a 64×80 CSS-pixel minimum. Test mode also
+provides `getBounds(name)` in CSS pixels and `getTextureHash(key)` for pixel contracts.
 
 The test API navigates every new scene, exposes cloned reducer state and the
 rendered beam angle, returns CSS pointer coordinates, records actions/feedback/VO,
