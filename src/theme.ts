@@ -1,3 +1,4 @@
+import tileColors from '../public/assets/svg/tile_colors.json';
 /** Approved style B. All colour literals live here, including CSS/HTML chrome. */
 export const THEME = {
   sky: 0xfef1cf,
@@ -43,7 +44,10 @@ export const TILE_COLORS = [
   THEME.purple,
 ] as const;
 export const tileColor = (value: number): number =>
-  TILE_COLORS[(value - 1) % TILE_COLORS.length]!;
+  Number.parseInt(
+    (tileColors as Record<string, string>)[String(value)]!.slice(1),
+    16,
+  );
 export const WORLD_SKIES = [
   THEME.dawn,
   THEME.noon,

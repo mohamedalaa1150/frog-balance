@@ -92,7 +92,7 @@ for (const [width, height] of [viewports[0], viewports[2]]) {
       window.__FROG__!.getBounds('frog-pile')!,
     );
     expect(pile.width).toBeCloseTo(240 * uiScale, 2);
-    expect(pile.height).toBeCloseTo(140 * uiScale, 2);
+    expect(pile.height).toBeCloseTo(142 * uiScale, 2);
     await page.evaluate(() => window.__FROG__!.gotoScene('SandboxScene'));
     const tiles = await page.evaluate(() =>
       Array.from({ length: 10 }, (_, i) =>

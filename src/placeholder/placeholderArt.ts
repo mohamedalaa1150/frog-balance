@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { MASCOT_FRAMES } from '../assets';
 import { THEME, WORLD_SKIES, tileColor } from '../theme';
 import { getRenderScale } from '../layout/viewport';
 
@@ -8,22 +9,22 @@ export const TEXTURE_SIZES: Record<string, readonly [number, number]> = {
   bg_map: [1280, 720],
   mascot_base: [360, 380],
   mascot_sheet: [2880, 380],
-  beam: [820, 36],
-  pan: [240, 56],
+  beam: [840, 70],
+  pan: [260, 220],
   pan_post: [24, 70],
-  pan_glow: [300, 100],
-  frog_token: [64, 64],
-  frog_token_ghost: [64, 64],
-  frog_pile: [240, 140],
+  pan_glow: [320, 120],
+  frog_token: [64, 70],
+  frog_token_ghost: [64, 70],
+  frog_pile: [240, 142],
   lock_badge: [40, 40],
   peg_lock: [90, 90],
-  tray_bg: [1280, 170],
+  tray_bg: [1280, 180],
   predict_left: [160, 160],
   predict_right: [160, 160],
   predict_equal: [160, 160],
-  symbol_gt: [110, 110],
-  symbol_lt: [110, 110],
-  symbol_eq: [110, 110],
+  symbol_gt: [120, 110],
+  symbol_lt: [120, 110],
+  symbol_eq: [120, 110],
   star_full: [96, 96],
   star_empty: [96, 96],
   lily_level: [150, 150],
@@ -36,6 +37,8 @@ export const TEXTURE_SIZES: Record<string, readonly [number, number]> = {
   hint_hand: [110, 110],
   app_icon: [1024, 1024],
 };
+for (const frame of MASCOT_FRAMES)
+  TEXTURE_SIZES[`mascot_${frame}`] = [440, 460];
 for (let n = 1; n <= 6; n++) {
   TEXTURE_SIZES[`bg_world_${n}`] = [1280, 720];
   TEXTURE_SIZES[`bg_world_${n}_p`] = [720, 1280];
@@ -350,7 +353,7 @@ export function generatePlaceholderArt(scene: Phaser.Scene): void {
     if (key === 'mascot_sheet') {
       for (let frame = 0; frame < 8; frame++)
         frog(g, frame * 360 * r, 0, 360 * r, h, frame, true);
-    } else if (/frog_token|mascot_base|app_icon/.test(key)) {
+    } else if (/frog_token|mascot_|app_icon/.test(key)) {
       frog(g, 0, 0, w, h, 0, !key.startsWith('frog_token'));
       if (key.endsWith('ghost')) {
         // Fade the generated canvas below; graphic alpha isn't baked by generateTexture.
@@ -477,26 +480,17 @@ export function generatePlaceholderArt(scene: Phaser.Scene): void {
         g.lineStyle(3 * r, THEME.goldOutline).strokeCircle(x, h / 2, h * 0.36);
       }
     } else if (key === 'pan') {
-      g.fillStyle(THEME.shadow, 0.18).fillEllipse(
-        w / 2,
-        h * 0.82,
-        w * 0.9,
-        h * 0.3,
-      );
-      g.fillStyle(THEME.pan).fillEllipse(w / 2, h * 0.48, w * 0.96, h * 0.82);
+      g.lineStyle(3 * r, THEME.navy);
+      for (const x of [22, 130, 238])
+        g.lineBetween(130 * r, 14 * r, x * r, 172 * r);
+      g.fillStyle(THEME.pan).fillEllipse(130 * r, 184 * r, 246 * r, 54 * r);
       g.lineStyle(4 * r, THEME.panOutline).strokeEllipse(
-        w / 2,
-        h * 0.48,
-        w * 0.96,
-        h * 0.82,
+        130 * r,
+        184 * r,
+        246 * r,
+        54 * r,
       );
-      g.fillStyle(THEME.gold).fillEllipse(w / 2, h * 0.28, w * 0.94, h * 0.4);
-      g.lineStyle(3 * r, THEME.belly).strokeEllipse(
-        w / 2,
-        h * 0.28,
-        w * 0.94,
-        h * 0.4,
-      );
+      g.fillStyle(THEME.gold).fillEllipse(130 * r, 172 * r, 244 * r, 30 * r);
     } else if (key === 'pan_post') {
       g.lineStyle(3 * r, THEME.navy).lineBetween(w / 2, 0, w / 2, h);
     } else if (key === 'peg_lock') {

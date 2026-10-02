@@ -1,4 +1,5 @@
 import { afterEach, expect, test, vi } from 'vitest';
+import { PAN_HANG_OFFSET, PAN_ANCHORS } from '../../src/assets';
 import { getGameplayLayout } from '../../src/layout/gameplayLayout';
 import { getPanGrid, PLACEMENT_HOP } from '../../src/layout/panGrid';
 import type { ItemKind } from '../../src/core/types';
@@ -25,7 +26,7 @@ test('BUG-202 / BUG-205: worst-case stacks clear the HUD and sources across view
     for (const [w, h] of viewports) {
       for (const numbers of [0, 10]) {
         const layout = getGameplayLayout(w * r, h * r, numbers, true);
-        const { balance, uiScale, hud, tray, pile } = layout;
+        const { balance, hud, tray, pile } = layout;
         expect(balance.scale).toBeGreaterThan(0);
         expect(tray.itemWidth / r).toBeGreaterThanOrEqual(64);
         expect(tray.itemHeight / r).toBeGreaterThanOrEqual(80);
@@ -45,12 +46,12 @@ test('BUG-202 / BUG-205: worst-case stacks clear the HUD and sources across view
                   balance.scale;
               const panY =
                 balance.y +
-                (side * balance.halfSpan * Math.sin((tilt * Math.PI) / 180) -
-                  70) *
+                (side * balance.halfSpan * Math.sin((tilt * Math.PI) / 180) +
+                  PAN_HANG_OFFSET) *
                   balance.scale;
-              expect(panY + 70 * balance.scale).toBeLessThanOrEqual(
-                sourceTop - 8 * uiScale + 0.001,
-              );
+              expect(
+                panY + PAN_ANCHORS.bottom * balance.scale,
+              ).toBeLessThanOrEqual(sourceTop - 8 * r + 0.001);
               for (const cell of grid) {
                 const left = panX + (cell.x - cell.width / 2) * balance.scale;
                 const right = panX + (cell.x + cell.width / 2) * balance.scale;
@@ -59,7 +60,7 @@ test('BUG-202 / BUG-205: worst-case stacks clear the HUD and sources across view
                   (cell.y - cell.height / 2 - PLACEMENT_HOP) * balance.scale;
                 expect(left).toBeGreaterThanOrEqual(0);
                 expect(right).toBeLessThanOrEqual(w * r);
-                expect(top).toBeGreaterThanOrEqual(hud.bottom + 8 * uiScale);
+                expect(top).toBeGreaterThanOrEqual(hud.bottom + 8 * r);
               }
             }
           }

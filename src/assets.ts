@@ -1,0 +1,75 @@
+/** Delivered art manifest; display geometry is independent of source resolution. */
+export const MASCOT_FRAMES = [
+  'idle',
+  'look_left',
+  'look_right',
+  'strain_left',
+  'strain_right',
+  'happy',
+  'clap',
+] as const;
+export const RASTER_KEYS = [
+  ...MASCOT_FRAMES.map((frame) => `mascot_${frame}`),
+  'frog_token',
+  'frog_token_ghost',
+  'frog_pile',
+  ...Array.from({ length: 6 }, (_, i) => `bg_world_${i + 1}`),
+  ...Array.from({ length: 6 }, (_, i) => `bg_world_${i + 1}_p`),
+];
+export const VECTOR_KEYS = [
+  'beam',
+  'pan',
+  'pan_glow',
+  'tray_bg',
+  'lock_badge',
+  'peg_lock',
+  'hint_hand',
+  'number_line',
+  ...Array.from({ length: 10 }, (_, i) => `num_tile_${i + 1}`),
+  ...[
+    'home',
+    'sound_on',
+    'sound_off',
+    'read',
+    'hint',
+    'replay',
+    'play',
+    'next',
+    'back',
+    'settings',
+    'lock',
+  ].map((key) => `btn_${key}`),
+  'predict_left',
+  'predict_right',
+  'predict_equal',
+  'symbol_gt',
+  'symbol_lt',
+  'symbol_eq',
+  'star_full',
+  'star_empty',
+  'lily_level',
+  'lily_level_locked',
+];
+export const PAN_ANCHORS = {
+  width: 260,
+  height: 220,
+  hangX: 130,
+  hangY: 14,
+  rimY: 172,
+  bottom: 48,
+} as const;
+export const PAN_HANG_OFFSET = PAN_ANCHORS.rimY - PAN_ANCHORS.hangY;
+export const BEAM_ANCHORS = {
+  width: 840,
+  height: 70,
+  leftX: 24,
+  rightX: 816,
+  pivotX: 420,
+  pivotY: 35,
+} as const;
+export const MASCOT_ANCHORS = {
+  width: 440,
+  height: 460,
+  pivotX: 220,
+  pivotY: 35,
+} as const;

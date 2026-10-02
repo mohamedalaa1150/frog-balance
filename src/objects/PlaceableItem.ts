@@ -50,7 +50,7 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
     this.add(this.image);
     if (spec.kind === 'number') {
       this.digit = scene.add
-        .text(0, 0, formatNumber(spec.value!, system), {
+        .text(0, -7, formatNumber(spec.value!, system), {
           fontFamily: CONFIG.fontStack,
           fontSize: 64 * r,
           fontStyle: '800',
@@ -66,7 +66,7 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
     }
     this.setItemSize(
       spec.kind === 'frog' ? 64 : 120,
-      spec.kind === 'frog' ? 64 : 150,
+      spec.kind === 'frog' ? 70 : 150,
     );
     this.setInteractive(
       new Phaser.Geom.Rectangle(0, 0, this.width, this.height),
@@ -88,7 +88,7 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
       const world = this.getWorldTransformMatrix();
       const fromPile = source && spec.kind === 'frog';
       const liftedWidth = fromPile ? 64 : this.image.displayWidth;
-      const liftedHeight = fromPile ? 64 : this.image.displayHeight;
+      const liftedHeight = fromPile ? 70 : this.image.displayHeight;
       this.shadow = scene.add
         .ellipse(
           world.tx,
@@ -204,6 +204,7 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
         this.width,
         this.height,
       );
+    this.digit?.setY((-7 * h) / 150);
     this.digit?.setFontSize(Math.min(w, h) * 0.58 * getRenderScale());
   }
   private lockFeedback(): void {
