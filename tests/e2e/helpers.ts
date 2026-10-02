@@ -85,21 +85,30 @@ export async function touchDrag(
       await page.evaluate(
         ({ type, point }) => {
           const canvas = document.querySelector('canvas')!;
-          const touch = new Touch({
+          // WebKit exposes Touch/TouchEvent but rejects their constructors.
+          // Use its legacy event factory and a complete touch record instead.
+          const touch: Touch = {
             identifier: 1,
             target: canvas,
             clientX: point.x,
             clientY: point.y,
+            pageX: point.x + scrollX,
+            pageY: point.y + scrollY,
+            screenX: point.x,
+            screenY: point.y,
+            radiusX: 1,
+            radiusY: 1,
+            rotationAngle: 0,
+            force: 1,
+          };
+          const event = document.createEvent('TouchEvent');
+          event.initEvent(type.toLowerCase(), true, true);
+          Object.defineProperties(event, {
+            touches: { value: type === 'touchEnd' ? [] : [touch] },
+            targetTouches: { value: type === 'touchEnd' ? [] : [touch] },
+            changedTouches: { value: [touch] },
           });
-          canvas.dispatchEvent(
-            new TouchEvent(type.toLowerCase(), {
-              bubbles: true,
-              cancelable: true,
-              touches: type === 'touchEnd' ? [] : [touch],
-              targetTouches: type === 'touchEnd' ? [] : [touch],
-              changedTouches: [touch],
-            }),
-          );
+          canvas.dispatchEvent(event);
         },
         { type, point },
       );
