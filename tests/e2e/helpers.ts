@@ -58,3 +58,66 @@ export async function tap(page: Page, name: string, touch = false) {
   if (touch) await page.touchscreen.tap(point.x, point.y);
   else await page.mouse.click(point.x, point.y);
 }
+
+/** Chromium injects trusted native touches. Playwright WebKit exposes native tap
+ * only, so its drag exercises the browser TouchEvent path rather than the reducer. */
+export async function touchDrag(
+  page: Page,
+  browserName: string,
+  from: string,
+  end: { x: number; y: number },
+) {
+  const start = await target(page, from);
+  const session =
+    browserName === 'chromium'
+      ? await page.context().newCDPSession(page)
+      : undefined;
+  const send = async (
+    type: 'touchStart' | 'touchMove' | 'touchEnd',
+    point: { x: number; y: number },
+  ) => {
+    if (session) {
+      await session.send('Input.dispatchTouchEvent', {
+        type,
+        touchPoints: type === 'touchEnd' ? [] : [{ ...point, id: 1 }],
+      });
+    } else {
+      await page.evaluate(
+        ({ type, point }) => {
+          const canvas = document.querySelector('canvas')!;
+          const touch = new Touch({
+            identifier: 1,
+            target: canvas,
+            clientX: point.x,
+            clientY: point.y,
+          });
+          canvas.dispatchEvent(
+            new TouchEvent(type.toLowerCase(), {
+              bubbles: true,
+              cancelable: true,
+              touches: type === 'touchEnd' ? [] : [touch],
+              targetTouches: type === 'touchEnd' ? [] : [touch],
+              changedTouches: [touch],
+            }),
+          );
+        },
+        { type, point },
+      );
+    }
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+    );
+  };
+  try {
+    await send('touchStart', start);
+    for (let step = 1; step <= 6; step++)
+      await send('touchMove', {
+        x: start.x + ((end.x - start.x) * step) / 6,
+        y: start.y + ((end.y - start.y) * step) / 6,
+      });
+    await send('touchEnd', end);
+  } finally {
+    await session?.detach();
+  }
+}

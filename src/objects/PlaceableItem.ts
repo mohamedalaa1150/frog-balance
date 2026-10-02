@@ -3,9 +3,15 @@ import { CONFIG } from '../config';
 import { formatNumber, type NumeralSystem } from '../core/numerals';
 import type { ItemSpec } from '../core/types';
 import { getRenderScale } from '../layout/viewport';
+export interface ReturnTarget {
+  x: number;
+  y: number;
+  scaleX: number;
+  scaleY: number;
+}
 export interface ItemInteractions {
   tap(item: PlaceableItem): void;
-  drop(item: PlaceableItem, x: number, y: number): boolean;
+  drop(item: PlaceableItem, x: number, y: number): boolean | ReturnTarget;
   dragging(item: PlaceableItem, on: boolean): void;
   feedback(key: 'feedback_locked'): void;
   fast(): boolean;
@@ -122,28 +128,35 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
     this.on('drag', (pointer: Phaser.Input.Pointer) => this.moveLift(pointer));
     this.on('dragend', (pointer: Phaser.Input.Pointer) => {
       if (this.fixed) return;
+      const world = this.getWorldTransformMatrix();
+      const original: ReturnTarget = {
+        x: world.tx,
+        y: world.ty,
+        scaleX: Math.hypot(world.a, world.b),
+        scaleY: Math.hypot(world.c, world.d),
+      };
+      // A reducer removal destroys the pan item. Detach the lifted copy first,
+      // so it can still fly to its source after the state has changed.
+      const lift = this.lifted;
+      this.lifted = undefined;
+      this.shadow?.destroy();
+      this.shadow = undefined;
       const accepted = interactions.drop(this, pointer.worldX, pointer.worldY);
       interactions.dragging(this, false);
       this.setAlpha(1);
-      this.shadow?.destroy();
-      this.shadow = undefined;
-      const lift = this.lifted;
-      this.lifted = undefined;
       if (!lift) return;
-      if (accepted || interactions.fast() || interactions.reduced())
+      if (accepted === true || interactions.fast() || interactions.reduced())
         lift.destroy();
       else {
-        const world = this.getWorldTransformMatrix();
+        const destination = accepted || original;
+        lift.setName(`return-${this.name}`);
         scene.game.events.emit('gameplay-event', {
-          type: 'bounce',
+          type: accepted ? 'return-to-source' : 'bounce',
           data: { name: this.name },
         });
         scene.tweens.add({
           targets: lift,
-          x: world.tx,
-          y: world.ty,
-          scaleX: Math.hypot(world.a, world.b),
-          scaleY: Math.hypot(world.c, world.d),
+          ...destination,
           duration: 200,
           ease: 'Sine.easeOut',
           onComplete: () => lift.destroy(),

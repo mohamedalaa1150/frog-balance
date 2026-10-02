@@ -8,7 +8,11 @@ import { getRenderScale } from '../layout/viewport';
 import { Balance } from '../objects/Balance';
 import { FrogPile } from '../objects/FrogPile';
 import { NumberTray } from '../objects/NumberTray';
-import type { PlaceableItem, ItemInteractions } from '../objects/PlaceableItem';
+import type {
+  PlaceableItem,
+  ItemInteractions,
+  ReturnTarget,
+} from '../objects/PlaceableItem';
 import { AudioManager } from '../services/audio';
 import { readSave } from '../services/storage';
 import { hasString, t } from '../services/strings';
@@ -206,7 +210,11 @@ export class GameScene extends BaseScene {
         ? 'right'
         : undefined;
   }
-  private drop(item: PlaceableItem, x: number, y: number): boolean {
+  private drop(
+    item: PlaceableItem,
+    x: number,
+    y: number,
+  ): boolean | ReturnTarget {
     for (const side of ['left', 'right'] as const)
       if (this.balance.pans[side].contains(x, y)) {
         if (item.source) return this.controller.place(item.spec, side);
@@ -219,6 +227,38 @@ export class GameScene extends BaseScene {
             )
           : false;
       }
+    if (!item.source && !item.fixed) {
+      const side = this.sideOf(item);
+      const source =
+        item.spec.kind === 'frog'
+          ? this.pile
+          : this.tray.items.find(
+              (candidate) => candidate.spec.value === item.spec.value,
+            );
+      if (side && source) {
+        const matrix = source.getWorldTransformMatrix();
+        const destination = {
+          x: matrix.tx,
+          y: matrix.ty,
+          scaleX:
+            Math.hypot(matrix.a, matrix.b) *
+            (item.spec.kind === 'number'
+              ? source.image.displayWidth / item.image.displayWidth
+              : 1),
+          scaleY:
+            Math.hypot(matrix.c, matrix.d) *
+            (item.spec.kind === 'number'
+              ? source.image.displayHeight / item.image.displayHeight
+              : 1),
+        };
+        if (
+          this.controller.remove(side, item.name.slice(`item-${side}-`.length))
+        ) {
+          void this.audio.play('sfx_bounce_back');
+          return destination;
+        }
+      }
+    }
     void this.audio.play('sfx_bounce_back');
     return false;
   }
