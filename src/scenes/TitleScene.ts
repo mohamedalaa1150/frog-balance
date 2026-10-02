@@ -111,6 +111,10 @@ export class TitleScene extends BaseScene {
             color: cssColor(THEME.navy),
             backgroundColor: cssColor(THEME.sky),
             fontSize: 24,
+            rtl: true,
+            align: 'center',
+            wordWrap: { width: this.scale.width * 0.8 },
+            padding: { left: 12, right: 12, top: 6, bottom: 6 },
           },
         )
         .setOrigin(0.5)

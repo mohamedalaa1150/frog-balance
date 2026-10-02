@@ -4,13 +4,12 @@ import { CONFIG } from '../config';
 import { THEME, cssColor } from '../theme';
 import { readSave } from '../services/storage';
 import { AudioManager } from '../services/audio';
-import { hasString, t } from '../services/strings';
+import { t, type StringKey } from '../services/strings';
 import { getRenderScale } from '../layout/viewport';
 import { coverBackground } from '../layout/background';
 import { bindButton } from '../ui/Button';
 
-export const menuLabel = (key: string): string =>
-  hasString(key) ? t(key) : key;
+export const menuLabel = (key: string): string => t(key as StringKey);
 export class MenuScene extends BaseScene {
   protected audio!: AudioManager;
   protected background!: Phaser.GameObjects.Image;
