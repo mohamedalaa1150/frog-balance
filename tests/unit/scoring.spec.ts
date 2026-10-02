@@ -3,6 +3,7 @@ import content from '../../content/levels.json';
 import { LevelsFile } from '../../src/core/levelSchema';
 import {
   classifyError,
+  classifyPrediction,
   classifyRejection,
   stars,
 } from '../../src/core/scoring';
@@ -68,4 +69,26 @@ it('supports left work-pan, disabled idle, equations and comparisons', () => {
   expect(classifyError(missing, missing.fixed, 100000)).toEqual([]);
   expect(classifyRejection('capacity')).toBe('capacity');
   expect(classifyRejection('wrongPrediction')).toBe('wrongPrediction');
+});
+
+it.each([
+  ['w3-l1', 'left'],
+  ['w3-l2', 'right'],
+  ['w3-l3', 'left'],
+  ['w3-l4', 'equal'],
+  ['w3-l5', 'right'],
+  ['w3-l6', 'left'],
+  ['w3-l7', 'equal'],
+  ['w3-l8', 'left'],
+] as const)('BUG-104: classifies all three choices for %s', (id, expected) => {
+  const level = levels.find((l) => l.id === id)!;
+  for (const choice of ['left', 'right', 'equal'] as const) {
+    const tags =
+      choice === expected
+        ? []
+        : expected !== 'equal' && choice !== 'equal'
+          ? ['wrongPrediction', 'compareFlip']
+          : ['wrongPrediction'];
+    expect(classifyPrediction(level, choice)).toEqual(tags);
+  }
 });

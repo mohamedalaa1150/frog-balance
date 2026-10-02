@@ -4,7 +4,11 @@ import { createHintState, updateHint } from './hints';
 import type { HintEvent, IdleHintSec } from './hints';
 import { Item, Level } from './levelSchema';
 import type { LevelDefinition } from './levelSchema';
-import { classifyError, classifyRejection } from './scoring';
+import {
+  classifyError,
+  classifyPrediction,
+  classifyRejection,
+} from './scoring';
 import type {
   ItemSpec,
   LevelAction,
@@ -183,7 +187,10 @@ function settle(state: LevelState): LevelState {
         attempts: state.attempts + 1,
         phase: 'revealing',
         outcome: 'wrongPrediction',
-        errors: [...state.errors, classifyRejection('wrongPrediction')],
+        errors: [
+          ...state.errors,
+          ...classifyPrediction(level, state.prediction!),
+        ],
       },
       'failure',
     );

@@ -271,7 +271,13 @@ it.each(['left', 'right', 'equal'] as const)(
     expect(applyAction(s, { type: 'predict', choice: 'equal' })).toBe(s);
     s = applyAction(s, { type: 'settle', at: 1001 });
     expect(s.phase).toBe(choice === 'left' ? 'success' : 'revealing');
-    expect(s.errors).toEqual(choice === 'left' ? [] : ['wrongPrediction']);
+    expect(s.errors).toEqual(
+      choice === 'left'
+        ? []
+        : choice === 'right'
+          ? ['wrongPrediction', 'compareFlip']
+          : ['wrongPrediction'],
+    );
     expect(s.attempts).toBe(choice === 'left' ? 0 : 1);
     expect(applyAction(s, { type: 'requestHint' })).toBe(s);
     expect(applyAction(s, { type: 'tick', at: 99999 })).toBe(s);
@@ -369,3 +375,30 @@ it('BUG-101: partial bonds progress without failure; recorded solutions restore 
     outcome: 'solution',
   });
 });
+
+it.each([
+  ['w3-l1', 'left'],
+  ['w3-l2', 'right'],
+  ['w3-l3', 'left'],
+  ['w3-l4', 'equal'],
+  ['w3-l5', 'right'],
+  ['w3-l6', 'left'],
+  ['w3-l7', 'equal'],
+  ['w3-l8', 'left'],
+] as const)(
+  'BUG-104: %s records the expected misconception for all predictions',
+  (id, expected) => {
+    for (const choice of ['left', 'right', 'equal'] as const) {
+      let s = createLevelState(get(id));
+      s = applyAction(s, { type: 'predict', choice });
+      s = applyAction(s, { type: 'settle', at: 1000 });
+      const tags =
+        choice === expected
+          ? []
+          : expected !== 'equal' && choice !== 'equal'
+            ? ['wrongPrediction', 'compareFlip']
+            : ['wrongPrediction'];
+      expect(s.errors).toEqual(tags);
+    }
+  },
+);
