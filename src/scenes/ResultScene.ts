@@ -97,7 +97,7 @@ export class ResultScene extends BaseScene {
     });
     // Keep free play one tap away after completing a level.
     const sandbox = this.add
-      .image(0, 0, 'btn_read')
+      .image(0, 0, 'btn_sandbox')
       .setName('btn-sandbox')
       .setInteractive();
     bindButton(this, sandbox, 'ui_sandbox', () =>

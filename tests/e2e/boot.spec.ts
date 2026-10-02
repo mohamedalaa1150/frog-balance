@@ -32,6 +32,7 @@ test('boots with the self-hosted Arabic title and no console errors', async ({
         numerals: '١٢٣٤٥٦٧٨٩١٠',
         rtl: true,
         visible: true,
+        numeralProbeVisible: false,
       }),
     }),
   );
@@ -52,6 +53,9 @@ test('boots with the self-hosted Arabic title and no console errors', async ({
     );
     expect(bounds.width).toBeGreaterThan(rendered.viewport.width * 0.15);
   }
+  expect(
+    await page.evaluate(() => window.__FROG__!.isVisible('numerals-text')),
+  ).toBe(false);
   // ready is emitted only after TitleScene's first rendered frame.
   expect(errors).toEqual([]);
 });

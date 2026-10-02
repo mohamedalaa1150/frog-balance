@@ -57,6 +57,10 @@ for (const icon of [
   'lock',
   'read',
   'back',
+  'sandbox',
+  'practice',
+  'dashboard',
+  'download',
 ])
   TEXTURE_SIZES[`btn_${icon}`] = [112, 112];
 function frog(
@@ -246,6 +250,48 @@ function icon(
       h * 0.32,
       w * 0.05,
     );
+  } else if (key === 'btn_sandbox') {
+    line([
+      [0.25, 0.4],
+      [0.75, 0.4],
+      [0.65, 0.78],
+      [0.35, 0.78],
+      [0.25, 0.4],
+    ]);
+    g.strokeCircle(w * 0.5, h * 0.35, w * 0.18);
+  } else if (key === 'btn_practice') {
+    g.strokeCircle(w * 0.5, h * 0.5, w * 0.27);
+    g.strokeCircle(w * 0.5, h * 0.5, w * 0.14);
+    line([
+      [0.52, 0.48],
+      [0.8, 0.2],
+    ]);
+  } else if (key === 'btn_dashboard') {
+    line([
+      [0.23, 0.23],
+      [0.23, 0.77],
+      [0.78, 0.77],
+    ]);
+    line([
+      [0.35, 0.63],
+      [0.48, 0.4],
+      [0.61, 0.51],
+      [0.75, 0.27],
+    ]);
+  } else if (key === 'btn_download') {
+    line([
+      [0.5, 0.2],
+      [0.5, 0.64],
+      [0.3, 0.45],
+      [0.5, 0.64],
+      [0.7, 0.45],
+    ]);
+    line([
+      [0.25, 0.63],
+      [0.25, 0.8],
+      [0.75, 0.8],
+      [0.75, 0.63],
+    ]);
   } else if (key === 'btn_read') {
     g.strokeRoundedRect(w * 0.2, h * 0.2, w * 0.6, h * 0.5, w * 0.1);
     line([

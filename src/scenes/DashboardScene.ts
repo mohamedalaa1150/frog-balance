@@ -40,7 +40,7 @@ export class DashboardScene extends MenuScene {
     );
     this.exportButton = this.icon(
       'btn-export',
-      'btn_read',
+      'btn_download',
       'dashboard_csv',
       () => {
         const csv = progressCsv(

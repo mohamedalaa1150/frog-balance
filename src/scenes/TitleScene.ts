@@ -5,6 +5,7 @@ import { coverBackground } from '../layout/background';
 import { CONFIG } from '../config';
 import { formatNumber } from '../core/numerals';
 import { getLayout } from '../layout/layout';
+import { getRenderScale } from '../layout/viewport';
 import { bindButton } from '../ui/Button';
 import { readSave } from '../services/storage';
 import { t } from '../services/strings';
@@ -15,6 +16,7 @@ export class TitleScene extends BaseScene {
   private mascot!: Phaser.GameObjects.Image;
   private title!: Phaser.GameObjects.Text;
   private play?: Phaser.GameObjects.Image;
+  private pulse?: Phaser.Tweens.Tween;
   private numerals!: Phaser.GameObjects.Text;
 
   constructor() {
@@ -57,7 +59,8 @@ export class TitleScene extends BaseScene {
         },
       )
       .setOrigin(0.5)
-      .setName('numerals-text');
+      .setName('numerals-text')
+      .setVisible(false);
     this.play = this.add
       .image(0, 0, 'btn_play')
       .setName('btn-play')
@@ -69,8 +72,8 @@ export class TitleScene extends BaseScene {
     });
     const buttons = [
       ['btn-lock', 'btn_lock', 'gate_hold', 'GrownUpGateScene'],
-      ['btn-sandbox', 'btn_read', 'ui_sandbox', 'SandboxScene'],
-      ['btn-practice', 'btn_hint', 'ui_practice', 'PracticeScene'],
+      ['btn-sandbox', 'btn_sandbox', 'ui_sandbox', 'SandboxScene'],
+      ['btn-practice', 'btn_practice', 'ui_practice', 'PracticeScene'],
     ];
     if (new URLSearchParams(location.search).get('test') === '1')
       buttons.push([
@@ -140,7 +143,8 @@ export class TitleScene extends BaseScene {
       title: this.title.text,
       numerals: this.numerals.text,
       rtl: this.title.style.rtl,
-      visible: this.title.visible && this.numerals.visible,
+      visible: this.title.visible,
+      numeralProbeVisible: this.numerals.visible,
       titleBounds: this.title.getBounds(),
       numeralBounds: this.numerals.getBounds(),
       viewport: { width: this.scale.width, height: this.scale.height },
@@ -157,9 +161,30 @@ export class TitleScene extends BaseScene {
     // Rasterize text at the physical font size instead of enlarging a low-DPI texture.
     this.title.setPosition(centerX, height * 0.27).setFontSize(96 * uiScale);
     this.numerals.setPosition(centerX, height * 0.41).setFontSize(64 * uiScale);
+    this.pulse?.stop();
+    const playSize = Math.max(96 * getRenderScale(), 144 * uiScale);
     this.play
       ?.setPosition(centerX, height * 0.56)
-      .setDisplaySize(112 * uiScale, 112 * uiScale);
+      .setDisplaySize(playSize, playSize);
+    const motion = readSave().settings.reducedMotion;
+    if (
+      this.play &&
+      motion !== 'on' &&
+      !(
+        motion === 'system' &&
+        matchMedia('(prefers-reduced-motion: reduce)').matches
+      ) &&
+      this.game.registry.get('fast-mode') !== true
+    )
+      this.pulse = this.tweens.add({
+        targets: this.play,
+        scaleX: '*=1.04',
+        scaleY: '*=1.04',
+        duration: 1400,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
     coverBackground(this.pond, width, height, 2);
     const size = Math.max(
       64 * Math.min(window.devicePixelRatio, 2),
@@ -177,7 +202,12 @@ export class TitleScene extends BaseScene {
       },
     );
     this.mascot
-      .setPosition(centerX, height * 0.8)
+      .setPosition(
+        width >= height
+          ? centerX + playSize / 2 + 110 * uiScale + 12 * getRenderScale()
+          : centerX,
+        height * (width >= height ? 0.61 : 0.8),
+      )
       .setDisplaySize(220 * uiScale, 230 * uiScale);
   }
 }

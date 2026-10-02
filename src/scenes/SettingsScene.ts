@@ -142,7 +142,7 @@ export class SettingsScene extends MenuScene {
     });
     const dashboard = this.icon(
       'btn-dashboard',
-      'btn_read',
+      'btn_dashboard',
       'ui_dashboard',
       () => this.scene.start('DashboardScene'),
     );
