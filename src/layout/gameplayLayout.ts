@@ -2,7 +2,7 @@ import type { LevelState } from '../core/types';
 import { MASCOT_ANCHORS } from '../assets';
 import { CONFIG } from '../config';
 import { getLayout } from './layout';
-import { getPanGrid, legalStacks } from './panGrid';
+import { getPanGrid, legalStacks, panHangLength } from './panGrid';
 
 /** Shared physical-pixel anchors, including the tallest legal pan stack at either
  * tilt extreme. Source targets keep their asset size, wrapping before shrinking. */
@@ -137,8 +137,30 @@ export function getGameplayLayout(
   const lower = sourceTop / renderScale - 8;
   // Suspensions follow the actual stack and tilt, so a low full pan does not
   // inherit the extra string length only needed by a high full pan.
-  const minPivot = Math.max(8 + rise + beamHeight / 2, upperItem + rise - 34);
-  const maxPivot = lower - rise - stackHeight - 34 - dishBottom;
+  let minPivot = Math.max(8 + rise + beamHeight / 2, upperItem + rise - 34);
+  let maxPivot = lower - rise - stackHeight - 34 - dishBottom;
+  if (short) {
+    // Short screens need the actual grid clearances, rather than a guessed
+    // hanging offset. Rings are 40 px tall; the central pivot is 56 px tall.
+    minPivot = Math.max(8 + rise + 20, 8 + beamHeight / 2);
+    maxPivot = Infinity;
+    const settled = (CONFIG.beam.maxAngle * Math.PI) / 180;
+    for (const kinds of shapes) {
+      const cells = getPanGrid(kinds, grid);
+      const top = Math.max(0, ...cells.map((c) => -c.y + c.height / 2));
+      for (const side of ['left', 'right'] as const)
+        for (const tilt of [-settled, settled]) {
+          const ringY = (side === 'left' ? -1 : 1) * halfSpan * Math.sin(tilt);
+          const hang = panHangLength(cells, side, tilt);
+          if (cells.length)
+            minPivot = Math.max(minPivot, upperItem - ringY - hang + top);
+          maxPivot = Math.min(
+            maxPivot,
+            lower - ringY - hang - Math.max(dishBottom, 16),
+          );
+        }
+    }
+  }
   const pivotY = minPivot + Math.max(0, maxPivot - minPivot) / 2;
   const innerGap = 2 * halfSpan * Math.cos(angle) - dishWidth;
   const mascotWidth = Math.min(

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { sizedTexture } from './sizedTexture';
-import type { PlacedItem, Side } from '../core/types';
+import type { PlacedItem, Side, ItemKind } from '../core/types';
 import type { NumeralSystem } from '../core/numerals';
 import { balanceArt } from './balanceArt';
 import { THEME } from '../theme';
@@ -8,6 +8,7 @@ import { getRenderScale } from '../layout/viewport';
 import { PlaceableItem, type ItemInteractions } from './PlaceableItem';
 import {
   getPanGrid,
+  panHangLength,
   PLACEMENT_HOP,
   type PanGridLayout,
 } from '../layout/panGrid';
@@ -34,7 +35,13 @@ export class Pan extends Phaser.GameObjects.Container {
     this.suspension = 0;
     balanceArt(this.surface, 'dish', grid.width, bottom + 8, scale);
     this.surface.setOrigin(0.5, 8 / (bottom + 8));
-    sizedTexture(this.glow, 'pan_glow', grid.width + 8, 32, scale);
+    sizedTexture(
+      this.glow,
+      'pan_glow',
+      grid.width + 8,
+      Math.min(32, bottom * 2),
+      scale,
+    );
     this.setSize(grid.width, 64);
     if (this.input)
       (this.input.hitArea as Phaser.Geom.Rectangle).setTo(0, 0, grid.width, 64);
@@ -42,19 +49,7 @@ export class Pan extends Phaser.GameObjects.Container {
   /** Long enough for the actual grid to clear the tilted shaft and end ring.
    * Strings are three pooled images; no texture allocations in the spring loop. */
   hangLength(radians: number): number {
-    let length = 64;
-    const slope = Math.tan(radians);
-    for (const c of this.cells) {
-      const rise = -c.y + c.height / 2;
-      const inner =
-        this.side === 'left' ? c.x + c.width / 2 : c.x - c.width / 2;
-      const shaft = Math.max(0, inner * slope) + 14 / Math.cos(radians);
-      const ring = Math.abs(c.x) <= c.width / 2 + 20 ? 20 : 0;
-      length = Math.max(
-        length,
-        rise + Math.max(8, shaft + 8, ring + 8) + PLACEMENT_HOP,
-      );
-    }
+    const length = panHangLength(this.cells, this.side, radians);
     if (Math.abs(length - this.suspension) > 0.01) {
       this.suspension = length;
       for (let i = 0; i < this.strings.length; i++) {
@@ -119,6 +114,7 @@ export class Pan extends Phaser.GameObjects.Container {
     items: readonly PlacedItem[],
     system: NumeralSystem,
     interactions: ItemInteractions,
+    presentation: readonly ItemKind[] = items.map((item) => item.kind),
   ): void {
     for (const [uid, item] of this.items)
       if (!items.some((i) => i.uid === uid)) {
@@ -140,10 +136,7 @@ export class Pan extends Phaser.GameObjects.Container {
         this.pool.set(key, bucket);
         this.items.delete(uid);
       }
-    const grid = getPanGrid(
-      items.map((item) => item.kind),
-      this.grid,
-    );
+    const grid = getPanGrid(presentation, this.grid);
     this.cells = grid;
     const scale = this.cssScale * getRenderScale();
     for (const [index, placed] of items.entries()) {

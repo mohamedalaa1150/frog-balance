@@ -10,7 +10,7 @@ import { LevelController } from '../controllers/LevelController';
 import { drawTextPill } from '../ui/textPill';
 import { coverBackground } from '../layout/background';
 import { EquationBar } from '../objects/EquationBar';
-import { HintOverlay } from '../objects/HintOverlay';
+import { HintOverlay, hintPanKinds } from '../objects/HintOverlay';
 import { formatNumber } from '../core/numerals';
 import { panWeight, diff } from '../core/balance';
 import type { LevelState, Side } from '../core/types';
@@ -384,11 +384,17 @@ export class GameScene extends BaseScene {
       this.balance.pans[side].setWorkActive(
         state.level.mode === 'sandbox' || side === state.level.workPan,
       );
-      if (force || before?.pans[side] !== state.pans[side])
+      if (
+        force ||
+        before?.pans[side] !== state.pans[side] ||
+        before?.hintLevel !== state.hintLevel ||
+        (before?.phase === 'success') !== (state.phase === 'success')
+      )
         this.balance.pans[side].render(
           state.pans[side],
           this.settings.numerals,
           this.interactions,
+          hintPanKinds(state, side),
         );
     }
     this.renderedState = state;

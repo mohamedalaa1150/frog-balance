@@ -3,11 +3,30 @@ import { CONFIG } from '../config';
 import { diff, panWeight } from '../core/balance';
 import { enumerateSolutions } from '../core/levelLogic';
 import { formatNumber, type NumeralSystem } from '../core/numerals';
-import type { LevelState } from '../core/types';
+import type { LevelState, Side } from '../core/types';
 import { getPanGrid } from '../layout/panGrid';
 import { THEME, cssColor } from '../theme';
 import type { Balance } from './Balance';
 import type { NumberTray } from './NumberTray';
+
+/** Ghosts and real items share one projected grid without changing pan weight. */
+export function hintPanKinds(state: LevelState, side: Side) {
+  const kinds = state.pans[side].map((item) => item.kind);
+  if (
+    state.hintLevel < 2 ||
+    state.phase === 'success' ||
+    state.level.workPan !== side ||
+    !['missing', 'equation'].includes(state.level.mode)
+  )
+    return kinds;
+  const missing = Math.max(
+    0,
+    side === 'right'
+      ? -diff(state.pans.left, state.pans.right)
+      : diff(state.pans.left, state.pans.right),
+  );
+  return [...kinds, ...Array<'frog'>(missing).fill('frog')];
+}
 
 export class HintOverlay extends Phaser.GameObjects.Container {
   private panAids: Phaser.GameObjects.GameObject[] = [];
@@ -128,10 +147,7 @@ export class HintOverlay extends Phaser.GameObjects.Container {
           ? -diff(state.pans.left, state.pans.right)
           : diff(state.pans.left, state.pans.right),
       );
-      const kinds = [
-        ...state.pans[side].map((item) => item.kind),
-        ...Array<'frog'>(missing).fill('frog'),
-      ];
+      const kinds = hintPanKinds(state, side);
       const grid = getPanGrid(kinds, pan.grid);
       for (let i = 0; i < missing; i++) {
         const cell = grid[state.pans[side].length + i]!;

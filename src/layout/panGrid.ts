@@ -9,6 +9,27 @@ export interface PanGridLayout {
 }
 export const PLACEMENT_HOP = 6;
 
+/** Clearance shared by the layout solver and the rendered hanging pan. */
+export function panHangLength(
+  cells: ReadonlyArray<{ x: number; y: number; width: number; height: number }>,
+  side: 'left' | 'right',
+  radians: number,
+): number {
+  let length = 64;
+  const slope = Math.tan(radians);
+  for (const c of cells) {
+    const rise = -c.y + c.height / 2;
+    const inner = side === 'left' ? c.x + c.width / 2 : c.x - c.width / 2;
+    const shaft = Math.max(0, inner * slope) + 14 / Math.cos(radians);
+    const ring = Math.abs(c.x) <= c.width / 2 + 20 ? 20 : 0;
+    length = Math.max(
+      length,
+      rise + Math.max(8, shaft + 8, ring + 8) + PLACEMENT_HOP,
+    );
+  }
+  return length;
+}
+
 /** A width-bounded grid shared by gameplay, practice, Sandbox and hint ghosts.
  * Mixed stacks use adjacent columns when possible, rather than adding the
  * heights of a tile row and a frog grid. Input/placement order is preserved. */
@@ -71,9 +92,45 @@ export function getPanGrid(
         )
           best = { f, n, width: w, height: h };
       }
-    if (!best) throw new Error('Pan grid cannot fit a legal mixed stack');
-    block('number', numbers, best.n, -best.width / 2);
-    block('frog', frogs, best.f, -best.width / 2 + best.n * tileWidth);
+    if (!best) {
+      // Hint ghosts can project a numerical answer as a frog tally, beyond
+      // the reducer's mixed capacity. Pack that visual grid in bounded rows.
+      const rows: Array<
+        Array<{ kind: ItemKind; width: number; height: number }>
+      > = [[]];
+      for (const kind of [
+        ...Array<ItemKind>(numbers).fill('number'),
+        ...Array<ItemKind>(frogs).fill('frog'),
+      ]) {
+        const item = {
+          kind,
+          width: kind === 'frog' ? frogWidth : tileWidth,
+          height: kind === 'frog' ? frogHeight : tileHeight,
+        };
+        let row = rows[rows.length - 1]!;
+        if (
+          row.reduce((n, c) => n + c.width, 0) + item.width > width + 1e-6 ||
+          row.filter((c) => c.kind === kind).length >=
+            (kind === 'frog' ? (portrait ? 4 : 5) : portrait ? 2 : 3)
+        ) {
+          row = [];
+          rows.push(row);
+        }
+        row.push(item);
+      }
+      let bottom = 0;
+      for (const row of rows) {
+        let x = -row.reduce((n, c) => n + c.width, 0) / 2;
+        for (const c of row) {
+          cells.push({ ...c, x: x + c.width / 2, y: -bottom - c.height / 2 });
+          x += c.width;
+        }
+        bottom += Math.max(...row.map((c) => c.height));
+      }
+    } else {
+      block('number', numbers, best.n, -best.width / 2);
+      block('frog', frogs, best.f, -best.width / 2 + best.n * tileWidth);
+    }
   } else {
     const count = frogs || numbers;
     const columns = frogs ? frogColumns : numberColumns;

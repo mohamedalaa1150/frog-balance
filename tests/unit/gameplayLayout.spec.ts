@@ -80,8 +80,9 @@ test('BUG-401/402/205: width-bounded grids, beam spans and sources across viewpo
         expect(
           balance.y / r -
             balance.halfSpan * Math.sin((22 * Math.PI) / 180) -
-            28,
+            20,
         ).toBeGreaterThanOrEqual(8 - 0.001);
+        expect(balance.y / r - 28).toBeGreaterThanOrEqual(8 - 0.001);
         expect(sourceTop).toBeGreaterThan(hud.bottom);
         const rectangles = [
           ...tray.positions.map(({ x, y }) => ({
@@ -125,5 +126,25 @@ test('full legal grids have no overlapping token rectangles', () => {
           Math.abs(a.x - b.x) >= (a.width + b.width) / 2 ||
             Math.abs(a.y - b.y) >= (a.height + b.height) / 2,
         ).toBe(true);
+  }
+});
+
+test('number-tray hint tallies fit beside the fixed tile in at most three portrait rows', () => {
+  const grid = getPanGrid(['number', ...Array<ItemKind>(9).fill('frog')], {
+    portrait: true,
+    width: 144,
+    frogWidth: 36,
+    tileWidth: 48,
+  });
+  expect(Math.max(...grid.map((c) => -c.y + c.height / 2))).toBeLessThanOrEqual(
+    60 + (2 * 36 * 70) / 64,
+  );
+  for (const [i, a] of grid.entries()) {
+    expect(Math.abs(a.x) + a.width / 2).toBeLessThanOrEqual(72);
+    for (const b of grid.slice(i + 1))
+      expect(
+        Math.abs(a.x - b.x) >= (a.width + b.width) / 2 ||
+          Math.abs(a.y - b.y) >= (a.height + b.height) / 2,
+      ).toBe(true);
   }
 });
