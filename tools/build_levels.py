@@ -1,7 +1,7 @@
 """Generates content/levels.json (authored level design) and validates solvability.
 Run: python3 tools/build_levels.py   (no dependencies)
 Mirrors the rules in docs/02-technical-spec.md §6 so the content team can edit and re-validate."""
-import json, itertools, pathlib
+import json, itertools, pathlib, argparse
 
 N = lambda v: {"kind": "number", "value": v}
 F = {"kind": "frog"}
@@ -64,23 +64,37 @@ def cap_ok(items):
 
 def child_options(L):
     frogs = range(0, L["childLimits"]["maxFrogs"] + 1) if L["tray"]["frogs"] else [0]
-    nums = L["tray"]["numbers"]
+    nums = sorted(set(L["tray"]["numbers"]))
     for k in range(0, L["childLimits"]["maxNumbers"] + 1):
         for combo in itertools.combinations_with_replacement(nums, k):
             for f in frogs:
                 if k + f == 0: continue
                 yield [N(v) for v in combo] + [F] * f
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--check', action='store_true', help='Validate the authored file without writing it')
+parser.add_argument('--json', action='store_true', help='Print machine-readable solvability results')
+args = parser.parse_args()
+out = pathlib.Path(__file__).resolve().parent.parent / "content" / "levels.json"
+if args.check:
+    levels = json.loads(out.read_text(encoding="utf-8"))["levels"]
 errors = []
+rows = []
 assert len(levels) == 48
 for L in levels:
     other = "left" if L["workPan"] == "right" else "right"
     for side in ("left", "right"):
         if not cap_ok(L["fixed"][side]): errors.append(f"{L['id']} fixed {side} over capacity")
     g = L["goal"]["type"]
+    if (L["mode"] == "compare") != (g == "predict") or (L["mode"] == "bond") != (g == "balanceMulti"):
+        errors.append(f"{L['id']} mode/goal mismatch")
     if g == "predict":
         if not (L["fixed"]["left"] and L["fixed"]["right"]): errors.append(f"{L['id']} empty pan")
+        if L["workPan"] is not None: errors.append(f"{L['id']} predict workPan must be null")
+        rows.append({"id": L["id"], "mode": L["mode"], "need": 0, "solutions": 1, "ok": True})
         continue
+    if L["workPan"] is None:
+        errors.append(f"{L['id']} missing workPan"); continue
     need = W(L["fixed"][other]) - W(L["fixed"][L["workPan"]])
     if need <= 0: errors.append(f"{L['id']} need={need}"); continue
     sols = set()
@@ -89,15 +103,19 @@ for L in levels:
         if W(opt) != need or not cap_ok(pan): continue
         if g == "balanceMulti":
             if any(i["kind"] == "frog" for i in opt) or len(opt) != L["goal"]["childNumbersExactly"]: continue
-            sols.add("+".join(map(str, sorted(i["value"] for i in pan))))
+            if any(i["kind"] != "number" for i in pan): continue
+            key = "+".join(map(str, sorted(i["value"] for i in pan)))
+            sols.add(key)
         else:
-            sols.add("ok")
+            sols.add(json.dumps(opt, sort_keys=True))
     required = L["goal"].get("requiredSolutions", 1)
     if len(sols) < required: errors.append(f"{L['id']} solutions {len(sols)} < {required}")
-    L["_solutions"] = sorted(sols) if g == "balanceMulti" else None
+    rows.append({"id": L["id"], "mode": L["mode"], "need": need, "solutions": len(sols), "ok": len(sols) >= required})
 
 if errors: raise SystemExit("INVALID:\n" + "\n".join(errors))
-for L in levels: L.pop("_solutions", None)
-out = pathlib.Path(__file__).resolve().parent.parent / "content" / "levels.json"
-out.write_text(json.dumps({"version": 1, "levels": levels}, ensure_ascii=False, indent=2), encoding="utf-8")
-print(f"OK — {len(levels)} levels valid and solvable → {out}")
+if not args.check:
+    out.write_text(json.dumps({"version": 1, "levels": levels}, ensure_ascii=False, indent=2), encoding="utf-8")
+if args.json:
+    print(json.dumps(rows))
+else:
+    print(f"OK — {len(levels)} levels valid and solvable → {out}")

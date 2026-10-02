@@ -31,3 +31,32 @@ describe('formatNumber', () => {
     ).toBe('١٢٣٤٥٦٧٨٩١٠');
   });
 });
+
+import { formatEquation } from '../../src/core/numerals';
+it.each(['arabic-indic', 'western'] as const)(
+  'equation retains pan/placement alignment with %s digits',
+  (system) => {
+    const result = formatEquation([3, 4], [5, '?'], system);
+    expect(result.left).toEqual({
+      side: 'left',
+      terms: system === 'western' ? ['3', '4'] : ['٣', '٤'],
+      text: system === 'western' ? '3 + 4' : '٣ + ٤',
+      direction: 'rtl',
+    });
+    expect(result.center).toBe('=');
+    expect(result.right.side).toBe('right');
+    expect(result.right.terms.at(-1)).toBe('؟');
+    expect(result.right.text).toBe(system === 'western' ? '5 + ؟' : '٥ + ؟');
+  },
+);
+it('formats empty, solved and repeated equation terms without mutating', () => {
+  const left = [10, 2];
+  const right = [1, 1];
+  expect(formatEquation(left, right, 'western').left.terms).toEqual([
+    '10',
+    '2',
+  ]);
+  expect(left).toEqual([10, 2]);
+  expect(formatEquation([], [], 'arabic-indic').left.text).toBe('');
+  expect(formatEquation([10], [5, 5], 'arabic-indic').right.text).toBe('٥ + ٥');
+});
