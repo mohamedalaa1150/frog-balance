@@ -61,8 +61,8 @@ export function getGameplayLayout(
   });
   const hudBottom = (70 + 44) * uiScale;
   const headerBottom = hudBottom + 40 * uiScale;
-  const upper = headerBottom + 8 * uiScale;
-  const lower = sourceTop - 8 * uiScale;
+  const upper = headerBottom + 8 * renderScale;
+  const lower = sourceTop - 8 * renderScale;
   const halfSpan = portrait ? 200 : 350;
   // Reserve spring overshoot and the placement hop as well as the target angle.
   const endRise =

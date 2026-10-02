@@ -15,10 +15,6 @@ for (const [width, height] of viewports) {
     test.setTimeout(90000);
     await page.setViewportSize({ width, height });
     await boot(page);
-    const uiScale =
-      width >= height
-        ? Math.min(width / 1280, height / 720)
-        : Math.min(width / 720, height / 1280);
     for (const side of ['left', 'right'] as const) {
       for (const stack of ['numbers', 'frogs', 'mixed'] as const) {
         await page.evaluate(
@@ -70,12 +66,12 @@ for (const [width, height] of viewports) {
           expect(bounds).not.toBeNull();
           expect(bounds!.x).toBeGreaterThanOrEqual(0);
           expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width + 0.01);
-          expect(bounds!.y).toBeGreaterThanOrEqual(hudBottom + 8 * uiScale);
+          expect(bounds!.y).toBeGreaterThanOrEqual(hudBottom + 8);
           expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(height);
         }
         expect(report.pan.y + report.pan.height).toBeLessThanOrEqual(
           Math.min(...report.sources.map((bounds) => bounds.y)) -
-            8 * uiScale +
+            8 +
             0.01,
         );
       }
