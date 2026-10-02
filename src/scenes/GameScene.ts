@@ -1,4 +1,3 @@
-import { sizedTexture } from '../objects/sizedTexture';
 import { CachedLayer } from '../objects/CachedLayer';
 import type { LevelDefinition } from '../core/levelSchema';
 import { recordCompletion } from '../core/dashboard';
@@ -477,11 +476,15 @@ export class GameScene extends BaseScene {
 
     if (this.guide)
       this.guide.setVisible(state.pans[state.level.workPan!].length === 0);
+    this.balance.positionPans();
   }
   update(time: number, delta: number): void {
     if (!this.controller) return;
     this.balance.update(delta);
-    if (time >= this.returnAt) {
+    if (
+      time >= this.returnAt &&
+      this.game.registry.get('hold-result-navigation') !== true
+    ) {
       this.returnAt = Infinity;
       this.scene.start('ResultScene', { state: this.controller.state });
       return;
@@ -525,19 +528,12 @@ export class GameScene extends BaseScene {
       this.controller.state.level.world,
     );
     this.balance.setPosition(balance.x, balance.y).setScale(balance.scale);
-    this.balance.mascot.setPresentation(balance.scale);
-    sizedTexture(
-      this.balance.beam,
-      'beam',
-      this.balance.beam.displayWidth,
-      this.balance.beam.displayHeight,
-      balance.scale,
-    );
+    this.balance.mascot.setPresentation(balance.scale, balance.mascotWidth);
     for (const side of ['left', 'right'] as const)
       this.balance.pans[side].setPresentation(
         balance.scale,
-        layout.orientation === 'portrait' &&
-          this.controller.state.level.mode !== 'sandbox',
+        balance.grid,
+        balance.dishBottom,
       );
     this.render(this.controller.state, true);
     this.trayBackground
@@ -551,7 +547,9 @@ export class GameScene extends BaseScene {
       button
         .setDisplaySize(hud.buttonSize, hud.buttonSize)
         .setPosition(
-          (i + 0.6) * (hud.buttonSize + 12 * getRenderScale()),
+          i === 2
+            ? width - hud.buttonSize / 2 - 8 * getRenderScale()
+            : (i + 0.6) * (hud.buttonSize + 12 * getRenderScale()),
           hud.buttonSize / 2 + 6 * getRenderScale(),
         ),
     );
@@ -603,7 +601,7 @@ export class GameScene extends BaseScene {
       this.navigation,
       0,
       0,
-      this.navigation.length * (hud.buttonSize + 12 * getRenderScale()),
+      width,
       hud.buttonSize + 12 * getRenderScale(),
     );
     if (this.guide) {

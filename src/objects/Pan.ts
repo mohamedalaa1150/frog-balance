@@ -2,24 +2,71 @@ import Phaser from 'phaser';
 import { sizedTexture } from './sizedTexture';
 import type { PlacedItem, Side } from '../core/types';
 import type { NumeralSystem } from '../core/numerals';
-import { PAN_ANCHORS } from '../assets';
+import { balanceArt } from './balanceArt';
+import { THEME } from '../theme';
 import { getRenderScale } from '../layout/viewport';
 import { PlaceableItem, type ItemInteractions } from './PlaceableItem';
-import { getPanGrid, PLACEMENT_HOP } from '../layout/panGrid';
+import {
+  getPanGrid,
+  PLACEMENT_HOP,
+  type PanGridLayout,
+} from '../layout/panGrid';
 export class Pan extends Phaser.GameObjects.Container {
   private glow: Phaser.GameObjects.Image;
   private surface: Phaser.GameObjects.Image;
   private items = new Map<string, PlaceableItem>();
   private pool = new Map<string, PlaceableItem[]>();
 
-  private cssScale = Infinity;
-  vertical = false;
+  private cssScale = 1;
+  grid: PanGridLayout = {
+    portrait: false,
+    width: 272,
+    frogWidth: 48,
+    tileWidth: 64,
+  };
+  private cells: ReturnType<typeof getPanGrid> = [];
+  private strings: Phaser.GameObjects.Image[] = [];
+  private suspension = 0;
   workActive = false;
-  setPresentation(scale: number, vertical = false): void {
+  setPresentation(scale: number, grid: PanGridLayout, bottom: number): void {
     this.cssScale = scale / getRenderScale();
-    this.vertical = vertical;
-    this.surface.setDisplaySize(260, 220);
-    this.setSize(260, 64);
+    this.grid = grid;
+    this.suspension = 0;
+    balanceArt(this.surface, 'dish', grid.width, bottom + 8, scale);
+    this.surface.setOrigin(0.5, 8 / (bottom + 8));
+    sizedTexture(this.glow, 'pan_glow', grid.width + 8, 32, scale);
+    this.setSize(grid.width, 64);
+    if (this.input)
+      (this.input.hitArea as Phaser.Geom.Rectangle).setTo(0, 0, grid.width, 64);
+  }
+  /** Long enough for the actual grid to clear the tilted shaft and end ring.
+   * Strings are three pooled images; no texture allocations in the spring loop. */
+  hangLength(radians: number): number {
+    let length = 64;
+    const slope = Math.tan(radians);
+    for (const c of this.cells) {
+      const rise = -c.y + c.height / 2;
+      const inner =
+        this.side === 'left' ? c.x + c.width / 2 : c.x - c.width / 2;
+      const shaft = Math.max(0, inner * slope) + 14 / Math.cos(radians);
+      const ring = Math.abs(c.x) <= c.width / 2 + 20 ? 20 : 0;
+      length = Math.max(
+        length,
+        rise + Math.max(8, shaft + 8, ring + 8) + PLACEMENT_HOP,
+      );
+    }
+    if (Math.abs(length - this.suspension) > 0.01) {
+      this.suspension = length;
+      for (let i = 0; i < this.strings.length; i++) {
+        const string = this.strings[i]!;
+        const dx = (i - 1) * this.grid.width * 0.42;
+        string
+          .setPosition(0, -length)
+          .setDisplaySize(2, Math.hypot(dx, length))
+          .setRotation(-Math.atan2(dx, length));
+      }
+    }
+    return length;
   }
   constructor(
     scene: Phaser.Scene,
@@ -35,12 +82,24 @@ export class Pan extends Phaser.GameObjects.Container {
     });
     const r = getRenderScale();
     this.glow = scene.add.image(0, 0, 'pan_glow').setScale(1 / r);
-    this.surface = scene.add
-      .image(0, 0, 'pan')
-      .setOrigin(0.5, PAN_ANCHORS.rimY / PAN_ANCHORS.height)
-      .setDisplaySize(PAN_ANCHORS.width, PAN_ANCHORS.height);
-    this.add([this.glow, this.surface]);
-    this.setSize(260, 64);
+    this.surface = scene.add.image(0, 0, 'pan').setName(`dish-${side}`);
+    if (!scene.textures.exists('pan-string')) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d')!;
+      ctx.fillStyle = `#${THEME.navy.toString(16).padStart(6, '0')}`;
+      ctx.fillRect(0, 0, 64, 64);
+      scene.textures.addCanvas('pan-string', canvas);
+    }
+    this.strings = Array.from({ length: 3 }, (_, i) =>
+      scene.add
+        .image(0, 0, 'pan-string')
+        .setOrigin(0.5, 0)
+        .setName(`pan-string-${side}-${i}`),
+    );
+    this.add([this.glow, ...this.strings, this.surface]);
+    this.setSize(272, 64);
     this.setInteractive(
       new Phaser.Geom.Rectangle(0, 0, 260, 64),
       Phaser.Geom.Rectangle.Contains,
@@ -83,37 +142,10 @@ export class Pan extends Phaser.GameObjects.Container {
       }
     const grid = getPanGrid(
       items.map((item) => item.kind),
-      this.cssScale,
-      this.scene.scale.width >= this.scene.scale.height,
-      this.vertical,
+      this.grid,
     );
-    const contentWidth = Math.max(
-      this.vertical ? 62 / this.cssScale : 260,
-      ...grid.map(
-        (c) =>
-          2 * (Math.abs(c.x) + c.width / 2) +
-          (this.vertical ? 14 : 24) / this.cssScale,
-      ),
-    );
+    this.cells = grid;
     const scale = this.cssScale * getRenderScale();
-    if (Number.isFinite(scale)) {
-      sizedTexture(this.surface, 'pan', contentWidth, 220, scale);
-      sizedTexture(
-        this.glow,
-        'pan_glow',
-        this.vertical ? contentWidth + 4 / this.cssScale : 320,
-        120,
-        scale,
-      );
-    } else this.surface.setDisplaySize(contentWidth, 220);
-    this.setSize(contentWidth, 64);
-    if (this.input)
-      (this.input.hitArea as Phaser.Geom.Rectangle).setTo(
-        0,
-        0,
-        contentWidth,
-        64,
-      );
     for (const [index, placed] of items.entries()) {
       let item = this.items.get(placed.uid);
       const entering = !item && !placed.fixed;

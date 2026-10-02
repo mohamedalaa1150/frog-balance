@@ -6,8 +6,10 @@ export class Mascot extends Phaser.GameObjects.Sprite {
   private breathing?: Phaser.Tweens.Tween;
   private celebrating = false;
   private presentation = 1;
+  private widthOnPan = MASCOT_ANCHORS.width as number;
   private expression = 'mascot_idle';
-  setPresentation(scale: number): void {
+  setPresentation(scale: number, width = MASCOT_ANCHORS.width as number): void {
+    this.widthOnPan = width;
     const breathing = !!this.breathing;
     this.breathing?.stop();
     this.breathing = undefined;
@@ -19,8 +21,8 @@ export class Mascot extends Phaser.GameObjects.Sprite {
     sizedTexture(
       this,
       this.expression,
-      MASCOT_ANCHORS.width,
-      MASCOT_ANCHORS.height,
+      this.widthOnPan,
+      (this.widthOnPan * MASCOT_ANCHORS.height) / MASCOT_ANCHORS.width,
       this.presentation,
     );
   }
@@ -35,7 +37,7 @@ export class Mascot extends Phaser.GameObjects.Sprite {
     if (reduced || this.celebrating) {
       this.breathing?.stop();
       this.breathing = undefined;
-      this.setDisplaySize(MASCOT_ANCHORS.width, MASCOT_ANCHORS.height);
+      this.paint();
     } else if (!this.breathing)
       this.breathing = this.scene.tweens.add({
         targets: this,

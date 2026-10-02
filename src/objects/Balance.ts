@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
-import { BEAM_ANCHORS, PAN_HANG_OFFSET } from '../assets';
+import { BEAM_ANCHORS } from '../assets';
+import { balanceArt } from './balanceArt';
+import { getRenderScale } from '../layout/viewport';
 import { beamAngle } from '../core/balance';
 import { Pan } from './Pan';
 import { Mascot } from './Mascot';
@@ -38,11 +40,7 @@ export class Balance extends Phaser.GameObjects.Container {
   }
   setSpan(halfSpan: number): void {
     this.halfSpan = halfSpan;
-    const beamScale = halfSpan / (BEAM_ANCHORS.pivotX - BEAM_ANCHORS.leftX);
-    this.beam.setDisplaySize(
-      BEAM_ANCHORS.width * beamScale,
-      BEAM_ANCHORS.height * beamScale,
-    );
+    balanceArt(this.beam, 'beam', halfSpan * 2 + 40, 56, getRenderScale());
     this.positionPans();
   }
   get span(): number {
@@ -107,16 +105,16 @@ export class Balance extends Phaser.GameObjects.Container {
     }
     this.positionPans();
   }
-  private positionPans(): void {
+  positionPans(): void {
     const radians = Phaser.Math.DegToRad(this.rendered);
     this.beam.setAngle(this.rendered);
     this.pans.left.setPosition(
       -this.halfSpan * Math.cos(radians),
-      -this.halfSpan * Math.sin(radians) + PAN_HANG_OFFSET,
+      -this.halfSpan * Math.sin(radians) + this.pans.left.hangLength(radians),
     );
     this.pans.right.setPosition(
       this.halfSpan * Math.cos(radians),
-      this.halfSpan * Math.sin(radians) + PAN_HANG_OFFSET,
+      this.halfSpan * Math.sin(radians) + this.pans.right.hangLength(radians),
     );
   }
 }

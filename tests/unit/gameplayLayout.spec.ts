@@ -1,7 +1,6 @@
 import { afterEach, expect, test, vi } from 'vitest';
-import { PAN_HANG_OFFSET, PAN_ANCHORS } from '../../src/assets';
 import { getGameplayLayout } from '../../src/layout/gameplayLayout';
-import { getPanGrid, PLACEMENT_HOP } from '../../src/layout/panGrid';
+import { getPanGrid } from '../../src/layout/panGrid';
 import type { ItemKind } from '../../src/core/types';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -19,7 +18,7 @@ const stacks: ItemKind[][] = [
   [...Array(2).fill('number'), ...Array(6).fill('frog')],
   [...Array(6).fill('frog'), ...Array(2).fill('number')],
 ];
-test('BUG-202 / BUG-205: worst-case stacks clear the HUD and sources across viewport and DPR changes', () => {
+test('BUG-401/402/205: width-bounded grids, beam spans and sources across viewport and DPR changes', () => {
   for (const dpr of [1, 2, 3]) {
     vi.stubGlobal('window', { devicePixelRatio: dpr });
     const r = Math.min(dpr, 2);
@@ -34,37 +33,56 @@ test('BUG-202 / BUG-205: worst-case stacks clear the HUD and sources across view
           numbers ? tray.top : Infinity,
           pile.y - pile.height / 2,
         );
+        const portrait = w < h;
+        const gridLayout = balance.grid;
         for (const stack of stacks) {
-          const grid = getPanGrid(stack);
-          for (const tilt of [-26, 0, 26]) {
-            for (const side of [-1, 1]) {
-              const panX =
-                balance.x +
-                side *
-                  balance.halfSpan *
-                  Math.cos((tilt * Math.PI) / 180) *
-                  balance.scale;
-              const panY =
-                balance.y +
-                (side * balance.halfSpan * Math.sin((tilt * Math.PI) / 180) +
-                  PAN_HANG_OFFSET) *
-                  balance.scale;
-              expect(
-                panY + PAN_ANCHORS.bottom * balance.scale,
-              ).toBeLessThanOrEqual(sourceTop - 8 * r + 0.001);
-              for (const cell of grid) {
-                const left = panX + (cell.x - cell.width / 2) * balance.scale;
-                const right = panX + (cell.x + cell.width / 2) * balance.scale;
-                const top =
-                  panY +
-                  (cell.y - cell.height / 2 - PLACEMENT_HOP) * balance.scale;
-                expect(left).toBeGreaterThanOrEqual(0);
-                expect(right).toBeLessThanOrEqual(w * r);
-                expect(top).toBeGreaterThanOrEqual(hud.bottom + 8 * r);
-              }
-            }
+          const grid = getPanGrid(stack, gridLayout);
+          for (const [i, cell] of grid.entries()) {
+            expect(Math.abs(cell.x) + cell.width / 2).toBeLessThanOrEqual(
+              gridLayout.width / 2 + 0.001,
+            );
+            expect(cell.width).toBeGreaterThanOrEqual(
+              stack[i] === 'frog' ? 36 : 48,
+            );
+            expect(cell.height).toBeGreaterThanOrEqual(
+              stack[i] === 'frog' ? (36 * 70) / 64 : 60,
+            );
+          }
+          for (const kind of ['frog', 'number']) {
+            const cells = grid.filter((_, i) => stack[i] === kind);
+            const rows = new Set(cells.map((c) => c.y));
+            expect(rows.size).toBeLessThanOrEqual(3);
+            for (const y of rows)
+              expect(cells.filter((c) => c.y === y).length).toBeLessThanOrEqual(
+                kind === 'frog' ? (portrait ? 4 : 5) : portrait ? 2 : 3,
+              );
           }
         }
+        for (const tilt of [-20, 0, 20]) {
+          const angle = (tilt * Math.PI) / 180;
+          const beamWidth =
+            (2 * balance.halfSpan + 40) * Math.cos(angle) +
+            56 * Math.abs(Math.sin(angle));
+          expect(beamWidth / w).toBeGreaterThanOrEqual(
+            portrait ? 0.6 : h < 500 ? 0.45 : 0.62,
+          );
+          if (portrait) expect(beamWidth / w).toBeLessThanOrEqual(0.72);
+          for (const side of [-1, 1]) {
+            const center = w / 2 + side * balance.halfSpan * Math.cos(angle);
+            expect(center - gridLayout.width / 2).toBeGreaterThanOrEqual(
+              8 - 0.001,
+            );
+            expect(center + gridLayout.width / 2).toBeLessThanOrEqual(
+              w - 8 + 0.001,
+            );
+          }
+        }
+        expect(
+          balance.y / r -
+            balance.halfSpan * Math.sin((22 * Math.PI) / 180) -
+            28,
+        ).toBeGreaterThanOrEqual(8 - 0.001);
+        expect(sourceTop).toBeGreaterThan(hud.bottom);
         const rectangles = [
           ...tray.positions.map(({ x, y }) => ({
             x: x - tray.itemWidth / 2,

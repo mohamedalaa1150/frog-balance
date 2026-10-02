@@ -1,81 +1,92 @@
-import type { LevelState } from '../core/types';
+import type { LevelState, ItemKind } from '../core/types';
 import { canPlace } from '../core/balance';
-import type { ItemKind } from '../core/types';
-import { CONFIG } from '../config';
 
-/** Rendering geometry only: the reducer remains responsible for legal capacity. */
+export interface PanGridLayout {
+  portrait: boolean;
+  width: number;
+  frogWidth: number;
+  tileWidth: number;
+}
+export const PLACEMENT_HOP = 6;
+
+/** A width-bounded grid shared by gameplay, practice, Sandbox and hint ghosts.
+ * Mixed stacks use adjacent columns when possible, rather than adding the
+ * heights of a tile row and a frog grid. Input/placement order is preserved. */
 export function getPanGrid(
   kinds: readonly ItemKind[],
-  cssScale = Infinity,
-  wide = false,
-  vertical = false,
+  layout: PanGridLayout = {
+    portrait: false,
+    width: 272,
+    frogWidth: 48,
+    tileWidth: 64,
+  },
 ) {
-  const mixed = kinds.includes('number') && kinds.includes('frog');
-  const frog = Math.max(44, 36 / cssScale);
-  const mixedWidth = Math.max(55, 48 / cssScale);
-  const widths = kinds.map((kind) =>
-    kind === 'number'
-      ? Math.max(55, 48 / cssScale)
-      : Math.max(44, 36 / cssScale),
-  );
-  const totalWidth = widths.reduce((sum, w) => sum + w, 0);
-  let cursor = -totalWidth / 2;
-  let top = 0;
-  return kinds.map((kind, index) => {
-    if (vertical) {
-      const width = widths[index]!;
-      const height = kind === 'number' ? width * 1.25 : (width * 70) / 64;
-      const cell = { width, height, x: 0, y: -top - height / 2 };
-      top += height;
-      return cell;
-    }
-    if (mixed && wide) {
-      const width = widths[index]!;
-      const x = cursor + width / 2;
-      cursor += width;
-      const height = kind === 'number' ? width * 1.25 : (width * 70) / 64;
-      return { width, height, x, y: -height / 2 };
-    }
-    if (mixed)
-      return {
-        width: mixedWidth,
-        height: kind === 'number' ? mixedWidth * 1.25 : (mixedWidth * 70) / 64,
-        x: ((index % 4) - (Math.min(4, kinds.length) - 1) / 2) * mixedWidth,
-        y: (-mixedWidth * 1.25) / 2 - Math.floor(index / 4) * mixedWidth * 1.25,
-      };
-    if (kind === 'number') {
-      const width = Math.max(kinds.length === 3 ? 70 : 88, 48 / cssScale);
-      return {
-        width,
-        height: width * 1.25,
-        x: (index - (kinds.length - 1) / 2) * width,
-        y: (-width * 1.25) / 2,
-      };
-    }
-    return {
-      width: frog,
-      height: (frog * 70) / 64,
-      x: ((index % 5) - (Math.min(5, kinds.length) - 1) / 2) * frog,
-      y: (-frog * 70) / 128 - (Math.floor(index / 5) * frog * 70) / 64,
-    };
+  const { portrait, width, frogWidth, tileWidth } = layout;
+  const frogs = kinds.filter((k) => k === 'frog').length;
+  const numbers = kinds.length - frogs;
+  const frogColumns = Math.min(portrait ? 4 : 5, frogs);
+  const numberColumns = Math.min(portrait ? 2 : 3, numbers);
+  const frogHeight = (frogWidth * 70) / 64;
+  const tileHeight = tileWidth * 1.25;
+  const cells: Array<{
+    kind: ItemKind;
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+  }> = [];
+  const block = (
+    kind: ItemKind,
+    count: number,
+    columns: number,
+    left: number,
+  ) => {
+    const w = kind === 'frog' ? frogWidth : tileWidth;
+    const h = kind === 'frog' ? frogHeight : tileHeight;
+    for (let i = 0; i < count; i++)
+      cells.push({
+        kind,
+        width: w,
+        height: h,
+        x: left + ((i % columns) + 0.5) * w,
+        y: -(Math.floor(i / columns) + 0.5) * h,
+      });
+  };
+  if (frogs && numbers) {
+    // Find a compact side-by-side packing, at most three rows for each kind.
+    let best:
+      { f: number; n: number; width: number; height: number } | undefined;
+    for (let f = 1; f <= frogColumns; f++)
+      for (let n = 1; n <= numberColumns; n++) {
+        const w = f * frogWidth + n * tileWidth;
+        const h = Math.max(
+          Math.ceil(frogs / f) * frogHeight,
+          Math.ceil(numbers / n) * tileHeight,
+        );
+        if (
+          w <= width + 1e-6 &&
+          Math.ceil(frogs / f) <= 3 &&
+          Math.ceil(numbers / n) <= 3 &&
+          (!best || h < best.height || (h === best.height && w < best.width))
+        )
+          best = { f, n, width: w, height: h };
+      }
+    if (!best) throw new Error('Pan grid cannot fit a legal mixed stack');
+    block('number', numbers, best.n, -best.width / 2);
+    block('frog', frogs, best.f, -best.width / 2 + best.n * tileWidth);
+  } else {
+    const count = frogs || numbers;
+    const columns = frogs ? frogColumns : numberColumns;
+    const w = frogs ? frogWidth : tileWidth;
+    if (count)
+      block(frogs ? 'frog' : 'number', count, columns, (-columns * w) / 2);
+  }
+  return kinds.map((kind) => {
+    const index = cells.findIndex((c) => c.kind === kind);
+    const cell = cells.splice(index, 1)[0]!;
+    return { x: cell.x, y: cell.y, width: cell.width, height: cell.height };
   });
 }
-
-export const PLACEMENT_HOP = 12;
-const tallestGrids = [
-  Array<ItemKind>(CONFIG.capacity.numbers).fill('number'),
-  Array<ItemKind>(CONFIG.capacity.frogs).fill('frog'),
-  [
-    ...Array<ItemKind>(CONFIG.capacity.mixedFrogs).fill('frog'),
-    ...Array<ItemKind>(CONFIG.capacity.mixedNumbers).fill('number'),
-  ],
-].flatMap((kinds) => getPanGrid(kinds));
-export const PAN_STACK_RISE =
-  Math.max(...tallestGrids.map((cell) => -cell.y + cell.height / 2)) +
-  PLACEMENT_HOP;
-export const PAN_STACK_HALF_WIDTH = Math.max(
-  ...tallestGrids.map((cell) => Math.abs(cell.x) + cell.width / 2),
-);
 
 /** Enumerate legal shapes, including the authored fixed pieces and child limits. */
 export function legalStacks(level: LevelState['level']): ItemKind[][] {

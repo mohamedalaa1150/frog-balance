@@ -231,7 +231,10 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
     this.itemHeight = h;
     this.image.setDisplaySize(w, h);
     this.setSize(Math.max(64, w), Math.max(64, h));
-    this.badge?.setPosition(w * 0.35, h * 0.35).setDisplaySize(28, 28);
+    const badgeSize = Math.min(28, w * 0.5, h * 0.5);
+    this.badge
+      ?.setPosition((w - badgeSize) / 2, (h - badgeSize) / 2)
+      .setDisplaySize(badgeSize, badgeSize);
     if (this.input)
       (this.input.hitArea as Phaser.Geom.Rectangle).setTo(
         0,

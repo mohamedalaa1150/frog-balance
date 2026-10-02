@@ -30,7 +30,12 @@ export interface FrogTestApi {
     height: number;
     interactive: boolean;
   }>;
+  getBeamGeometry(): {
+    shaft: Array<{ x: number; y: number }>;
+    rings: Array<{ x: number; y: number; width: number; height: number }>;
+  };
   setFastMode(on: boolean): void;
+  setResultNavigation(enabled: boolean): void;
   resetSave(): void;
   unlockAll(): void;
   gotoLevel(id: string): Promise<void>;
@@ -47,6 +52,8 @@ export interface FrogTestApi {
   toCssPoint(x: number, y: number): { x: number; y: number };
   getPointerTarget(name: string): { x: number; y: number } | null;
   getTextureHash(key: string): string | null;
+  getTextureKey(name: string): string | null;
+  getHitAreaSize(name: string): { width: number; height: number } | null;
   getText(name: string): string | null;
   isVisible(name: string): boolean;
   getBounds(
@@ -195,7 +202,47 @@ export function installTestApi(game: Phaser.Game): void {
   window.__FROG__ = {
     ready,
     version,
+    getBeamGeometry() {
+      const balance = activeGame()!.balance;
+      const matrix = balance.getWorldTransformMatrix();
+      const radians = (balance.angleDegrees * Math.PI) / 180;
+      const point = (x: number, y: number) => {
+        const p = matrix.transformPoint(
+          x * Math.cos(radians) - y * Math.sin(radians),
+          x * Math.sin(radians) + y * Math.cos(radians),
+        );
+        return toCssPoint(game, p.x, p.y);
+      };
+      const span = balance.span;
+      return {
+        shaft: [
+          point(-span, -13),
+          point(span, -13),
+          point(span, 13),
+          point(-span, 13),
+        ],
+        rings: [-span, span].map((x) => {
+          const center = point(x, 0),
+            edge = toCssPoint(
+              game,
+              matrix.tx + 20 * balance.scaleX,
+              matrix.ty + 20 * balance.scaleY,
+            );
+          const origin = toCssPoint(game, matrix.tx, matrix.ty);
+          const width = (edge.x - origin.x) * 2,
+            height = (edge.y - origin.y) * 2;
+          return {
+            x: center.x - width / 2,
+            y: center.y - height / 2,
+            width,
+            height,
+          };
+        }),
+      };
+    },
     getActualFps: () => game.loop.actualFps,
+    setResultNavigation: (enabled) =>
+      game.registry.set('hold-result-navigation', !enabled),
     getSceneBounds() {
       const result: Array<{
         name: string;
@@ -276,12 +323,18 @@ export function installTestApi(game: Phaser.Game): void {
     },
     getPointerTarget: pointerTarget,
     getBounds(name) {
-      const object = namedObject(name) as Phaser.GameObjects.Container | null;
+      const object = namedObject(
+        name === 'mascot-head' ? 'mascot' : name,
+      ) as Phaser.GameObjects.Container | null;
       if (!object || !('getBounds' in object)) return null;
       const bounds = object.getBounds();
       const top = toCssPoint(game, bounds.x, bounds.y);
       const bottom = toCssPoint(game, bounds.right, bounds.bottom);
-      return { ...top, width: bottom.x - top.x, height: bottom.y - top.y };
+      return {
+        ...top,
+        width: bottom.x - top.x,
+        height: (bottom.y - top.y) * (name === 'mascot-head' ? 0.35 : 1),
+      };
     },
     getText(name) {
       const object = namedObject(name);
@@ -290,6 +343,29 @@ export function installTestApi(game: Phaser.Game): void {
     isVisible(name) {
       const object = namedObject(name);
       return !!object && 'visible' in object && object.visible === true;
+    },
+    getHitAreaSize(name) {
+      const object = namedObject(name) as Phaser.GameObjects.Container | null;
+      if (
+        !object?.input ||
+        !(object.input.hitArea instanceof Phaser.Geom.Rectangle)
+      )
+        return null;
+      const matrix = object.getWorldTransformMatrix(),
+        area = object.input.hitArea;
+      const top = toCssPoint(game, 0, 0),
+        bottom = toCssPoint(
+          game,
+          area.width * Math.hypot(matrix.a, matrix.b),
+          area.height * Math.hypot(matrix.c, matrix.d),
+        );
+      return { width: bottom.x - top.x, height: bottom.y - top.y };
+    },
+    getTextureKey(name) {
+      const object = namedObject(name);
+      return object instanceof Phaser.GameObjects.Image
+        ? object.texture.key
+        : null;
     },
     getTextureHash(key) {
       if (!game.textures.exists(key)) return null;

@@ -45,8 +45,11 @@ for (const [width, height] of [
           ),
         };
       }, level);
-      if (level === 'w1-l3' && width! < height!)
-        expect(report.beam.width).toBeGreaterThanOrEqual(width! * 0.88);
+      expect(report.beam.width).toBeGreaterThanOrEqual(
+        width! * (width! < height! ? 0.6 : height! < 500 ? 0.45 : 0.62),
+      );
+      if (width! < height!)
+        expect(report.beam.width).toBeLessThanOrEqual(width! * 0.72);
       if (width! > height! && height! < 500) {
         expect(report.tray.height).toBeLessThanOrEqual(height! * 0.22 + 0.01);
       }
