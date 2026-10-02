@@ -107,7 +107,9 @@ export class GameScene extends BaseScene {
     this.tweens.setLagSmooth();
     this.input.dragDistanceThreshold = 8 * getRenderScale();
     this.background = this.add.image(0, 0, 'bg_world_1').setOrigin(0);
-    this.trayBackground = this.add.image(0, 0, 'tray_bg');
+    this.trayBackground = this.add
+      .image(0, 0, 'tray_bg')
+      .setName('tray-background');
     this.subtitlePill = this.add.graphics().setDepth(29);
     this.subtitle = this.add
       .text(
@@ -227,6 +229,13 @@ export class GameScene extends BaseScene {
     if (level.guideArrow) this.guide = this.add.image(0, 0, 'hint_hand');
     this.render(this.controller.state);
     this.relayout();
+    const resumed = (elapsed: number) => {
+      if (Number.isFinite(this.returnAt)) this.returnAt += elapsed;
+    };
+    this.events.on('visibility-resume', resumed);
+    this.events.once('shutdown', () =>
+      this.events.off('visibility-resume', resumed),
+    );
     this.scale.on(Phaser.Scale.Events.RESIZE, this.relayout, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.cachedTray?.destroy();
@@ -367,18 +376,19 @@ export class GameScene extends BaseScene {
       30,
     );
   }
-  private render(state: LevelState): void {
+  private render(state: LevelState, force = false): void {
+    const before = this.renderedState;
     for (const side of ['left', 'right'] as const) {
       this.balance.pans[side].setWorkActive(
         state.level.mode === 'sandbox' || side === state.level.workPan,
       );
-      this.balance.pans[side].render(
-        state.pans[side],
-        this.settings.numerals,
-        this.interactions,
-      );
+      if (force || before?.pans[side] !== state.pans[side])
+        this.balance.pans[side].render(
+          state.pans[side],
+          this.settings.numerals,
+          this.interactions,
+        );
     }
-    const before = this.renderedState;
     this.renderedState = state;
     const difference = diff(state.pans.left, state.pans.right);
     const compare = state.level.mode === 'compare';
@@ -390,11 +400,12 @@ export class GameScene extends BaseScene {
     }
     if (compare && state.prediction && !before?.prediction)
       void this.audio.play('sfx_unlock');
-    this.equation.render(
-      state,
-      this.settings.numerals,
-      this.reducedMotion || this.controller.fast,
-    );
+    if (force || !before || state.level.showEquation || compare)
+      this.equation.render(
+        state,
+        this.settings.numerals,
+        this.reducedMotion || this.controller.fast,
+      );
     if (
       compare &&
       (state.phase === 'success' || state.phase === 'revealing') &&
@@ -407,25 +418,28 @@ export class GameScene extends BaseScene {
           symbol: difference === 0 ? '=' : difference < 0 ? '>' : '<',
         },
       });
-    this.hints.render(state, this.balance, this.tray, this.settings.numerals);
+    if (state.hintLevel > 0 || this.lastHint > 0)
+      this.hints.render(state, this.balance, this.tray, this.settings.numerals);
     const number = (n: number) => formatNumber(n, this.settings.numerals);
     const target = state.level.workPan
       ? panWeight(
           state.level.fixed[state.level.workPan === 'left' ? 'right' : 'left'],
         )
       : 0;
-    this.board.setVisible(state.level.mode === 'bond').setText(
-      state.solutionsFound
-        .map(
-          (solution) =>
-            `${solution
-              .split('+')
-              .map((n) => number(Number(n)))
-              .reverse()
-              .join(' + ')} = ${number(target)}`,
-        )
-        .join('    '),
-    );
+    if (!before) this.board.setVisible(state.level.mode === 'bond');
+    if (state.level.mode === 'bond')
+      this.board.setText(
+        state.solutionsFound
+          .map(
+            (solution) =>
+              `${solution
+                .split('+')
+                .map((n) => number(Number(n)))
+                .reverse()
+                .join(' + ')} = ${number(target)}`,
+          )
+          .join('    '),
+      );
     if (
       state.outcome === 'solution' &&
       before?.solutionsFound.length !== state.solutionsFound.length
@@ -518,12 +532,14 @@ export class GameScene extends BaseScene {
     );
     for (const side of ['left', 'right'] as const)
       this.balance.pans[side].setPresentation(balance.scale);
-    this.render(this.controller.state);
+    this.render(this.controller.state, true);
     this.trayBackground
       .setPosition(centerX, (tray.top + height) / 2)
       .setDisplaySize(width - 12 * getRenderScale(), height - tray.top);
     this.tray.layout(tray, uiScale);
-    this.pile?.setPosition(pile.x, pile.y).setScale(uiScale);
+    this.pile
+      ?.setPosition(pile.x, pile.y)
+      .setScale(pile.width / 240, pile.height / 142);
     this.navigation.forEach((button, i) =>
       button
         .setDisplaySize(hud.buttonSize, hud.buttonSize)

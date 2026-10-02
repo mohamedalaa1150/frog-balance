@@ -15,7 +15,7 @@ for (const viewport of [
     await page.setViewportSize(viewport);
     const errors = consoleErrors(page);
     await boot(page);
-    const directory = resolve('docs/screens/phase-3');
+    const directory = resolve('docs/screens/phase-4');
     mkdirSync(directory, { recursive: true });
     const shot = async (mode: string, state: string) =>
       page.screenshot({

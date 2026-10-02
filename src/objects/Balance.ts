@@ -30,6 +30,11 @@ export class Balance extends Phaser.GameObjects.Container {
     };
     this.add([this.mascot, this.beam, this.pans.left, this.pans.right]);
     this.positionPans();
+    const resumed = (elapsed: number) => {
+      this.changedAt += elapsed;
+    };
+    scene.events.on('visibility-resume', resumed);
+    this.once('destroy', () => scene.events.off('visibility-resume', resumed));
   }
   setSpan(halfSpan: number): void {
     this.halfSpan = halfSpan;
@@ -47,12 +52,17 @@ export class Balance extends Phaser.GameObjects.Container {
     return this.rendered;
   }
   setDifference(d: number, reduced: boolean, fast: boolean): void {
+    const target = beamAngle(d);
+    if (
+      target === this.target &&
+      reduced === this.reduced &&
+      fast === this.fast
+    )
+      return;
     this.mascot.look(d);
     this.mascot.breathe(reduced || fast);
     this.reduced = reduced;
     this.fast = fast;
-    const target = beamAngle(d);
-    if (target === this.target && !fast) return;
     this.motion?.stop();
     this.target = target;
     this.changedAt = this.scene.time.now;

@@ -24,19 +24,23 @@ export function getGameplayLayout(
     height,
   );
   const portrait = orientation === 'portrait';
+  const short = !portrait && height / renderScale < 500;
   const margin = Math.max(8 * uiScale, 8 * renderScale);
   const gap = Math.max(6 * uiScale, 4 * renderScale);
-  const pileWidth = 240 * uiScale;
-  const pileHeight = 142 * uiScale;
+  const pileHeight =
+    short && level
+      ? Math.min(142 * uiScale, height * 0.22 - margin)
+      : 142 * uiScale;
+  const pileWidth = pileHeight * (240 / 142);
   const availableWidth = width - 2 * margin;
   const trayWidth =
     availableWidth - (!portrait && frogs ? pileWidth + 16 * uiScale : 0);
   const desiredTileWidth =
     level && !portrait && numberCount
       ? Math.max(
-          64 * renderScale,
+          short ? 64 * uiScale : 64 * renderScale,
           Math.min(
-            120 * uiScale,
+            short ? (height * 0.22 - margin) / 1.25 : 120 * uiScale,
             (trayWidth - (numberCount - 1) * gap) / numberCount,
           ),
         )
@@ -45,7 +49,10 @@ export function getGameplayLayout(
     numberCount,
     portrait
       ? 5
-      : Math.max(1, Math.floor((trayWidth + gap) / (desiredTileWidth + gap))),
+      : Math.max(
+          1,
+          Math.floor((trayWidth + gap) / (desiredTileWidth + gap) + 1e-6),
+        ),
   );
   let tileWidth = desiredTileWidth;
   if (portrait && columns) {
@@ -68,7 +75,7 @@ export function getGameplayLayout(
     sourceHeight = Math.max(
       sourceHeight,
       128 * uiScale,
-      64 * renderScale + 2 * margin,
+      64 * renderScale + (short ? margin : 2 * margin),
     );
   const sourceBottom = height - margin;
   const sourceTop = sourceBottom - sourceHeight;
@@ -83,7 +90,6 @@ export function getGameplayLayout(
       y: sourceTop + tileHeight / 2 + row * (tileHeight + gap),
     };
   });
-  const short = !portrait && height / renderScale < 500;
   const buttonSize = short ? 56 * renderScale : 88 * uiScale;
   const hudBottom = level ? buttonSize + 12 * renderScale : (70 + 44) * uiScale;
   const headerBottom = hudBottom + (short ? 10 : 40 + extraHeader) * uiScale;

@@ -27,6 +27,15 @@ for (const [width, height] of [
         await page.evaluate(() => {
           for (let i = 0; i < 10; i++) window.__FROG__!.place('frog', 'right');
         });
+      if (width! > height! && height! < 500) {
+        expect(
+          (
+            await page.evaluate(() =>
+              window.__FROG__!.getBounds('tray-background')!,
+            )
+          ).height,
+        ).toBeLessThanOrEqual(height! * 0.22 + 0.01);
+      }
       const report = await page.evaluate(() => {
         const api = window.__FROG__!,
           s = api.getLevelState()!;

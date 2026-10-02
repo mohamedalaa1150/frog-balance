@@ -59,7 +59,7 @@ export class PreloadScene extends BaseScene {
       const canvas = document.createElement('canvas');
       canvas.width = source.width;
       canvas.height = source.height;
-      const context = canvas.getContext('2d')!;
+      const context = canvas.getContext('2d', { willReadFrequently: true })!;
       context.drawImage(source as CanvasImageSource, 0, 0);
       const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
       for (let i = 0; i < pixels.data.length; i += 4) {
@@ -77,7 +77,7 @@ export class PreloadScene extends BaseScene {
       const canvas = document.createElement('canvas');
       canvas.width = 280;
       canvas.height = 220;
-      const context = canvas.getContext('2d')!;
+      const context = canvas.getContext('2d', { willReadFrequently: true })!;
       const glow = context.createRadialGradient(140, 110, 25, 140, 110, 140);
       glow.addColorStop(0, `${cssColor(THEME.gold)}a6`);
       glow.addColorStop(1, `${cssColor(THEME.gold)}00`);

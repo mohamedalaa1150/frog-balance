@@ -8,8 +8,12 @@ export class Mascot extends Phaser.GameObjects.Sprite {
   private presentation = 1;
   private expression = 'mascot_idle';
   setPresentation(scale: number): void {
+    const breathing = !!this.breathing;
+    this.breathing?.stop();
+    this.breathing = undefined;
     this.presentation = scale;
     this.paint();
+    if (breathing && !this.celebrating) this.breathe(false);
   }
   private paint(): void {
     sizedTexture(

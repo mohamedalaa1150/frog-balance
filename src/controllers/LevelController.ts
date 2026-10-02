@@ -22,6 +22,7 @@ export class LevelController {
   state: LevelState;
   private draggingItems = new Set<string>();
   private successFired = false;
+  private hiddenTime = 0;
   constructor(
     private scene: Phaser.Scene,
     id: string | LevelDefinition,
@@ -43,6 +44,13 @@ export class LevelController {
             idleHintSec: settings.idleHintSec,
           });
     this.emit('level-start', { id });
+    const resumed = (elapsed: number) => {
+      this.hiddenTime += elapsed;
+    };
+    scene.events.on('visibility-resume', resumed);
+    scene.events.once('shutdown', () =>
+      scene.events.off('visibility-resume', resumed),
+    );
   }
   fast = false;
   private emit(type: string, data?: unknown): void {
@@ -52,7 +60,7 @@ export class LevelController {
     const before = this.state;
     this.state = applyAction(
       before,
-      { ...action, at: this.scene.time.now },
+      { ...action, at: this.scene.time.now - this.hiddenTime },
       { settleMs: this.fast ? 0 : undefined },
     );
     if (before.pendingEvaluation && !this.state.pendingEvaluation)

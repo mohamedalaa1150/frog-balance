@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { getRenderScale } from '../layout/viewport';
 import { CONFIG } from '../config';
 import { diff, panWeight } from '../core/balance';
 import { enumerateSolutions } from '../core/levelLogic';
@@ -34,7 +35,11 @@ export class HintOverlay extends Phaser.GameObjects.Container {
     if (state.level.mode === 'count') {
       for (const panSide of ['left', 'right'] as const) {
         const items = state.pans[panSide];
-        const grid = getPanGrid(items.map((item) => item.kind));
+        const grid = getPanGrid(
+          items.map((item) => item.kind),
+          balance.scaleX / getRenderScale(),
+          this.scene.scale.width >= this.scene.scale.height,
+        );
         let count = 0;
         for (const [i, item] of items.entries())
           if (item.kind === 'frog') {
@@ -129,7 +134,11 @@ export class HintOverlay extends Phaser.GameObjects.Container {
         ...state.pans[side].map((item) => item.kind),
         ...Array<'frog'>(missing).fill('frog'),
       ];
-      const grid = getPanGrid(kinds);
+      const grid = getPanGrid(
+        kinds,
+        balance.scaleX / getRenderScale(),
+        this.scene.scale.width >= this.scene.scale.height,
+      );
       for (let i = 0; i < missing; i++) {
         const cell = grid[state.pans[side].length + i]!;
         const ghost = this.scene.add
