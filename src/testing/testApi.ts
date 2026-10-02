@@ -141,7 +141,11 @@ export function installTestApi(game: Phaser.Game): void {
       objects: Phaser.GameObjects.GameObject[],
     ): { x: number; y: number } | null => {
       for (const object of objects) {
-        if (object.name === name && 'getWorldTransformMatrix' in object) {
+        if (
+          object.name === name &&
+          object.getData('pointer-ready') !== false &&
+          'getWorldTransformMatrix' in object
+        ) {
           const matrix = (
             object as Phaser.GameObjects.Container
           ).getWorldTransformMatrix();

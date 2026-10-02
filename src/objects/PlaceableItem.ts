@@ -14,6 +14,7 @@ export interface ItemInteractions {
 /** Native Phaser dragging supports mouse, touch and pen through the same path. */
 export class PlaceableItem extends Phaser.GameObjects.Container {
   private dragged = false;
+  private pressedPointerId?: number;
   private lifted?: Phaser.GameObjects.Container;
   private shadow?: Phaser.GameObjects.Ellipse;
   readonly image: Phaser.GameObjects.Image;
@@ -65,7 +66,11 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
       Phaser.Geom.Rectangle.Contains,
     );
     scene.input.setDraggable(this);
-    this.on('pointerdown', () => {
+    this.setData('pointer-ready', false);
+    const rendered = () => this.setData('pointer-ready', true);
+    scene.game.events.once(Phaser.Core.Events.POST_RENDER, rendered);
+    this.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      this.pressedPointerId = pointer.id;
       this.dragged = false;
       if (this.fixed) this.lockFeedback();
     });
@@ -145,10 +150,22 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
         });
       }
     });
-    this.on('pointerup', () => {
+    // Keep the pressed token even if the spring carries it away from the finger.
+    const pointerUp = (pointer: Phaser.Input.Pointer) => {
+      if (pointer.id !== this.pressedPointerId) return;
+      this.pressedPointerId = undefined;
       if (!this.dragged && !this.fixed) interactions.tap(this);
-    });
+    };
+    const pointerUpOutside = (pointer: Phaser.Input.Pointer) => {
+      if (pointer.id === this.pressedPointerId)
+        this.pressedPointerId = undefined;
+    };
+    scene.input.on('pointerup', pointerUp);
+    scene.input.on('pointerupoutside', pointerUpOutside);
     this.once('destroy', () => {
+      scene.game.events.off(Phaser.Core.Events.POST_RENDER, rendered);
+      scene.input.off('pointerup', pointerUp);
+      scene.input.off('pointerupoutside', pointerUpOutside);
       this.lifted?.destroy();
       this.shadow?.destroy();
     });
