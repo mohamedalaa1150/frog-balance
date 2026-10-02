@@ -131,6 +131,7 @@ export function createLevelState(
     startedAt: now,
     now,
     lastChangedAt: now,
+    lastSettledGap: Math.abs(diff(copy.fixed.left, copy.fixed.right)),
     dragging: false,
     pendingEvaluation: false,
     nextUid: 0,
@@ -146,8 +147,6 @@ function hintEvent(state: LevelState, event: HintEvent): LevelState {
   return { ...state, hint, hintLevel: hint.level, hintsUsed: hint.used };
 }
 function changed(state: LevelState, pans: LevelState['pans']): LevelState {
-  const oldGap = Math.abs(diff(state.pans.left, state.pans.right));
-  const newGap = Math.abs(diff(pans.left, pans.right));
   return hintEvent(
     {
       ...state,
@@ -157,7 +156,7 @@ function changed(state: LevelState, pans: LevelState['pans']): LevelState {
       pendingEvaluation: true,
       outcome: undefined,
     },
-    newGap < oldGap ? 'progress' : 'activity',
+    'activity',
   );
 }
 function settle(state: LevelState): LevelState {
@@ -167,9 +166,11 @@ function settle(state: LevelState): LevelState {
     state.now - state.lastChangedAt < CONFIG.settleMs
   )
     return state;
+  const gap = Math.abs(diff(state.pans.left, state.pans.right));
   let next: LevelState = {
     ...state,
     pendingEvaluation: false,
+    lastSettledGap: gap,
     phase: 'playing',
   };
   const level = state.level;
@@ -212,6 +213,7 @@ function settle(state: LevelState): LevelState {
             ...state.pans,
             [side]: state.pans[side].filter((i) => i.fixed),
           },
+          lastSettledGap: Math.abs(levelNeed(level)),
           outcome: 'solution',
           phase:
             solutionsFound.length >= level.goal.requiredSolutions
@@ -222,6 +224,15 @@ function settle(state: LevelState): LevelState {
       );
     }
   }
+  // A smaller unfinished quantity is progress, regardless of counting speed.
+  // Overshoots and equality with invalid bond items remain incorrect answers.
+  const other = side === 'left' ? 'right' : 'left';
+  if (
+    gap > 0 &&
+    gap < state.lastSettledGap &&
+    panWeight(state.pans[side]) < panWeight(state.pans[other])
+  )
+    return hintEvent(next, 'progress');
   return hintEvent(
     {
       ...next,

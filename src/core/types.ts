@@ -37,6 +37,7 @@ export interface LevelState {
   idleHintSec: IdleHintSec;
   now: number;
   lastChangedAt: number;
+  lastSettledGap: number;
   dragging: boolean;
   pendingEvaluation: boolean;
   nextUid: number;

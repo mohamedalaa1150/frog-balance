@@ -154,9 +154,10 @@ it('settle requires a change and a full second without dragging; evaluates once'
   s = applyAction(s, { type: 'tick', at: 6000, dragging: false });
   expect(s.attempts).toBe(0);
   s = applyAction(s, { type: 'settle', at: 7000 });
-  expect(s.attempts).toBe(1);
+  expect(s.attempts).toBe(0);
+  expect(s.lastSettledGap).toBe(1);
   s = applyAction(s, { type: 'settle', at: 20000 });
-  expect(s.attempts).toBe(1);
+  expect(s.attempts).toBe(0);
   s = applyAction(s, { type: 'tick', at: 0 });
   expect(s.now).toBe(20000);
 });
@@ -198,19 +199,21 @@ it('remove is pure; UID/order is not reused; hint activity and progress fade', (
   s = applyAction(s, { type: 'requestHint', at: 100 });
   s = place(s, [{ kind: 'frog' }]);
   expect(s.hintsUsed).toBe(1);
+  expect(s.hintLevel).toBe(1);
+  s = applyAction(s, { type: 'settle', at: 1100 });
   expect(s.hintLevel).toBe(0);
   const before = structuredClone(s);
   const removed = applyAction(s, {
     type: 'remove',
     side: 'right',
     uid: 'child-0',
-    at: 200,
+    at: 1200,
   });
   expect(s).toEqual(before);
   expect(removed.pans.right).toEqual([]);
   s = place(removed, [{ kind: 'frog' }]);
   expect(s.pans.right[0]!.uid).toBe('child-1');
-  s = applyAction(s, { type: 'tick', at: 12200 });
+  s = applyAction(s, { type: 'tick', at: 13200 });
   expect(s.hintLevel).toBe(1);
 });
 it('bond records canonical solutions once, clears child items, preserves locks, and completes', () => {
@@ -278,7 +281,8 @@ it('three changed failures escalate hints; undercount and overcount classify on 
   let s = createLevelState(get('w1-l3'), { idleHintSec: 8 });
   s = place(s, [{ kind: 'frog' }]);
   s = applyAction(s, { type: 'settle', at: 8000 });
-  expect(s.errors).toEqual(['undercount']);
+  expect(s.errors).toEqual([]);
+  expect(s.attempts).toBe(0);
   s = place(
     s,
     Array.from({ length: 3 }, () => ({ kind: 'frog' })),
@@ -287,8 +291,7 @@ it('three changed failures escalate hints; undercount and overcount classify on 
   expect(s.errors.at(-1)).toBe('overcount');
   s = place(s, [{ kind: 'frog' }]);
   s = applyAction(s, { type: 'settle', at: 10000 });
-  expect(s.attempts).toBe(3);
-  // Moving from undercount to closer overcount reset the no-progress streak.
+  expect(s.attempts).toBe(2);
   expect(s.hintLevel).toBe(0);
   s = place(s, [{ kind: 'frog' }]);
   s = applyAction(s, { type: 'settle', at: 11000 });
@@ -300,4 +303,69 @@ it('settled success takes precedence over an idle hint and preserves independent
   s = applyAction(s, { type: 'tick', at: 12000 });
   expect(s.phase).toBe('success');
   expect(s.hintsUsed).toBe(0);
+});
+
+it('BUG-101: slow correct counting has no failed attempts, hints or errors', () => {
+  let s = createLevelState(get('w1-l5'));
+  for (let i = 0; i < 5; i++) {
+    s = applyAction(s, {
+      type: 'place',
+      side: 'right',
+      item: { kind: 'frog' },
+      at: i * 2700,
+    });
+    s = applyAction(s, { type: 'tick', at: i * 2700 + 1200 });
+    expect(s.lastSettledGap).toBe(4 - i);
+  }
+  expect(s).toMatchObject({
+    phase: 'success',
+    attempts: 0,
+    hintsUsed: 0,
+    errors: [],
+  });
+});
+it('BUG-101: overshooting by one is an attempt and removing it succeeds', () => {
+  let s = createLevelState(get('w1-l5'));
+  s = solve(
+    s,
+    Array.from({ length: 6 }, () => ({ kind: 'frog' })),
+  );
+  expect(s).toMatchObject({
+    attempts: 1,
+    errors: ['overcount'],
+    lastSettledGap: 1,
+  });
+  s = applyAction(s, {
+    type: 'remove',
+    side: 'right',
+    uid: s.pans.right.at(-1)!.uid,
+  });
+  s = applyAction(s, { type: 'settle', at: s.now + 1000 });
+  expect(s).toMatchObject({ phase: 'success', attempts: 1, lastSettledGap: 0 });
+});
+it('BUG-101: place/remove cycles without settled progress trigger a hint after three attempts', () => {
+  let s = createLevelState(get('w1-l5'));
+  for (let i = 1; i <= 3; i++) {
+    s = place(s, [{ kind: 'frog' }]);
+    s = applyAction(s, {
+      type: 'remove',
+      side: 'right',
+      uid: s.pans.right.at(-1)!.uid,
+    });
+    s = applyAction(s, { type: 'settle', at: s.now + 1200 });
+    expect(s.attempts).toBe(i);
+    expect(s.lastSettledGap).toBe(5);
+    expect(s.hintLevel).toBe(i === 3 ? 1 : 0);
+  }
+});
+it('BUG-101: partial bonds progress without failure; recorded solutions restore starting gap', () => {
+  let s = createLevelState(get('w4-l6'));
+  s = solve(s, [{ kind: 'number', value: 3 }]);
+  expect(s).toMatchObject({ attempts: 0, lastSettledGap: 4, errors: [] });
+  s = solve(s, [{ kind: 'number', value: 4 }]);
+  expect(s).toMatchObject({
+    attempts: 0,
+    lastSettledGap: 7,
+    outcome: 'solution',
+  });
 });
