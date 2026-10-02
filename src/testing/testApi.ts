@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { version } from '../../package.json';
+import { audioSnapshot } from '../services/audio';
 import type { ItemKind, LevelState, Side } from '../core/types';
 import type { SceneReadyEvent } from '../scenes/BaseScene';
 import { GameScene } from '../scenes/GameScene';
@@ -21,6 +22,7 @@ export interface TestEvent {
 export interface FrogTestApi {
   ready: Promise<void>;
   version: string;
+  getAudioState(): ReturnType<typeof audioSnapshot>;
   getActualFps(): number;
   getSceneBounds(): Array<{
     name: string;
@@ -240,6 +242,7 @@ export function installTestApi(game: Phaser.Game): void {
         }),
       };
     },
+    getAudioState: () => audioSnapshot(game),
     getActualFps: () => game.loop.actualFps,
     setResultNavigation: (enabled) =>
       game.registry.set('hold-result-navigation', !enabled),

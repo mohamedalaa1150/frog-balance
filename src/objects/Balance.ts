@@ -18,6 +18,8 @@ export class Balance extends Phaser.GameObjects.Container {
   private fast = false;
   private motion?: Phaser.Tweens.Tween;
   private rendered = 0;
+  private creaked = 0;
+  private levelPending = false;
   constructor(scene: Phaser.Scene) {
     super(scene, 0, 0);
     scene.add.existing(this);
@@ -63,6 +65,7 @@ export class Balance extends Phaser.GameObjects.Container {
     this.reduced = reduced;
     this.fast = fast;
     this.motion?.stop();
+    this.levelPending = this.target !== 0 && target === 0;
     this.target = target;
     this.changedAt = this.scene.time.now;
     if (fast) {
@@ -114,6 +117,14 @@ export class Balance extends Phaser.GameObjects.Container {
     this.positionPans();
   }
   positionPans(): void {
+    if (Math.abs(this.rendered - this.creaked) > 2) {
+      this.creaked = this.rendered;
+      this.scene.events.emit('beam-creak');
+    }
+    if (this.levelPending && this.rendered === 0 && this.velocity === 0) {
+      this.levelPending = false;
+      this.scene.events.emit('beam-level');
+    }
     const radians = Phaser.Math.DegToRad(this.rendered);
     this.beam.setAngle(this.rendered);
     this.pans.left.setPosition(

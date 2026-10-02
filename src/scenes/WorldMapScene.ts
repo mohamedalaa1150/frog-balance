@@ -119,6 +119,7 @@ export class WorldMapScene extends MenuScene {
       this.game.registry.remove('world-unlocked');
       const toast = this.text('world_unlocked', 'world-unlocked');
       toast.setPosition(f.width / 2, f.height * 0.5);
+      void this.audio.play('sfx_unlock');
       void this.audio.play('world_unlocked', 'vo');
       this.game.events.emit('gameplay-event', {
         type: 'world-unlocked',

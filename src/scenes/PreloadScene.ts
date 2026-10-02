@@ -3,6 +3,8 @@ import { RASTER_KEYS, VECTOR_KEYS } from '../assets';
 import { getRenderScale } from '../layout/viewport';
 import { generatePlaceholderArt } from '../placeholder/placeholderArt';
 import { BaseScene } from './BaseScene';
+import manifest from '../../public/assets/audio/vo/manifest.json';
+import { SFX_KEYS } from '../services/audio';
 
 export class PreloadScene extends BaseScene {
   constructor() {
@@ -24,18 +26,10 @@ export class PreloadScene extends BaseScene {
         this.load.svg(key, `assets/svg/${key}.svg`, {
           scale: getRenderScale(),
         });
-    const assets = import.meta.glob<string>(
-      '../../public/assets/audio/**/*.mp3',
-      { eager: true, query: '?url', import: 'default' },
-    );
-    for (const [path, url] of Object.entries(assets))
-      this.load.audio(
-        path
-          .split('/')
-          .at(-1)!
-          .replace(/\.mp3$/, ''),
-        url,
-      );
+    for (const { key } of manifest.lines)
+      this.load.audio(key, `assets/audio/vo/${key}.mp3`);
+    for (const key of SFX_KEYS)
+      this.load.audio(key, `assets/audio/sfx/${key}.mp3`);
   }
 
   create(): void {

@@ -144,8 +144,8 @@ export class ResultScene extends BaseScene {
       settings.reducedMotion === 'on' ||
       (settings.reducedMotion === 'system' &&
         matchMedia('(prefers-reduced-motion: reduce)').matches);
-    if (!reduced)
-      starImages.forEach((star, i) => {
+    starImages.forEach((star, i) => {
+      if (!reduced) {
         star.setAlpha(0);
         this.tweens.add({
           targets: star,
@@ -154,10 +154,11 @@ export class ResultScene extends BaseScene {
           delay: i * 250,
           ease: 'Sine.easeOut',
         });
-        this.time.delayedCall(i * 250, () => {
-          void audio.play(`sfx_star_${i + 1}`);
-        });
+      }
+      this.time.delayedCall(reduced ? 0 : i * 250, () => {
+        void audio.play(`sfx_star_${i + 1}`);
       });
+    });
     this.scale.on(Phaser.Scale.Events.RESIZE, layout);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.scale.off(Phaser.Scale.Events.RESIZE, layout);

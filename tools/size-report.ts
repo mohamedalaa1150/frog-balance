@@ -19,7 +19,9 @@ console.log(
 
 const assetFiles = (
   await readdir(join(dist, 'assets'), { recursive: true })
-).filter((f) => /\.(webp|svg|woff2?|mp3)$/.test(f));
+).filter(
+  (f) => /\.(webp|svg|woff2?|mp3)$/.test(f) && !f.startsWith('audio/music/'),
+);
 // Preload currently loads the complete local art pack; include it in the first-load budget.
 const assetBytes = (
   await Promise.all(

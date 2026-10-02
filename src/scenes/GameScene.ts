@@ -63,7 +63,6 @@ export class GameScene extends BaseScene {
   private definition?: LevelDefinition;
 
   private returnAt = Infinity;
-  private lastDiff?: number;
   private activeSide: Side = 'right';
   private interactions!: ItemInteractions;
   constructor(key = 'GameScene') {
@@ -81,7 +80,6 @@ export class GameScene extends BaseScene {
         : (data.definition?.id ?? data.levelId ?? 'w1-l1');
 
     this.returnAt = Infinity;
-    this.lastDiff = undefined;
     this.navigation = [];
     this.pile = undefined;
     this.guide = undefined;
@@ -149,6 +147,18 @@ export class GameScene extends BaseScene {
       this.game.registry.set('audio-unlocked', true);
       this.audio.unlock();
     });
+    this.events.on('beam-creak', () => void this.audio.play('sfx_beam_creak'));
+    this.events.on(
+      'beam-level',
+      () => void this.audio.play('sfx_balanced_ding'),
+    );
+    this.time.addEvent({
+      delay: 20000,
+      loop: true,
+      callback: () => {
+        if (!this.controller.state.dragging) void this.audio.play('sfx_ribbit');
+      },
+    });
     this.balance = new Balance(this);
     const draggingNames = new WeakMap<PlaceableItem, string>();
     this.interactions = {
@@ -176,7 +186,13 @@ export class GameScene extends BaseScene {
         this.feedback(key);
       },
       (key) => {
-        if (this.settings.voCount) void this.audio.play(key, 'vo', 'interrupt');
+        if (this.settings.voCount)
+          void this.audio.chain(
+            Array.from(
+              { length: Number(key.slice(-2)) },
+              (_, i) => `count_${String(i + 1).padStart(2, '0')}`,
+            ),
+          );
       },
       () => this.celebrate(),
     );
@@ -201,7 +217,7 @@ export class GameScene extends BaseScene {
         this.predictions.push(button);
       }
     }
-    void this.audio.play(`music_world_${level.world}`, 'music');
+
     this.background.setTexture(`bg_world_${level.world}`);
     if (level.tray.frogs)
       this.pile = new FrogPile(this, this.settings.numerals, this.interactions);
@@ -214,10 +230,16 @@ export class GameScene extends BaseScene {
     this.addButton('btn-home', 'btn_home', () =>
       this.scene.start('WorldMapScene'),
     );
-    this.addButton('btn-sound', 'btn_sound_on', () => {
-      if (hasString(level.vo.intro))
-        void this.audio.play(level.vo.intro, 'vo', 'interrupt');
-    });
+    this.addButton(
+      'btn-sound',
+      this.sound.mute ? 'btn_sound_off' : 'btn_sound_on',
+      () => {
+        this.sound.mute = !this.sound.mute;
+        (
+          this.children.getByName('btn-sound') as Phaser.GameObjects.Image
+        ).setTexture(this.sound.mute ? 'btn_sound_off' : 'btn_sound_on');
+      },
+    );
     if (level.mode === 'sandbox') {
       this.addButton('btn-read', 'btn_read', () => this.readEquation());
       for (const side of ['left', 'right'] as const)
@@ -285,6 +307,13 @@ export class GameScene extends BaseScene {
   ): void {
     this.subtitle.setText(t(key));
     this.paintSubtitle();
+    void this.audio.play(
+      key === 'feedback_locked'
+        ? 'sfx_lock_shake'
+        : key === 'feedback_pan_full'
+          ? 'sfx_pan_full'
+          : 'sfx_bounce_back',
+    );
     void this.audio.play(key, 'vo', 'interrupt');
     this.game.events.emit('gameplay-event', {
       type: 'feedback',
@@ -292,6 +321,7 @@ export class GameScene extends BaseScene {
     });
   }
   private tap(item: PlaceableItem): void {
+    if (item.source) void this.audio.play('sfx_pickup');
     if (item.source)
       this.controller.place(
         item.spec,
@@ -469,11 +499,7 @@ export class GameScene extends BaseScene {
       this.explanationPending = true;
       void this.explainPrediction(state);
     }
-    if (this.lastDiff !== undefined && difference !== this.lastDiff) {
-      void this.audio.play('sfx_beam_creak');
-      if (difference === 0) void this.audio.play('sfx_balanced_ding');
-    }
-    this.lastDiff = difference;
+
     this.balance.setDifference(
       locked ? 0 : difference,
       this.reducedMotion,
@@ -710,7 +736,18 @@ export class GameScene extends BaseScene {
   private playHint(state: LevelState): void {
     const mode = state.level.mode === 'equation' ? 'missing' : state.level.mode;
     const key = `hint_${mode}_${mode === 'compare' ? 1 : state.hintLevel}`;
-    void this.audio.play(key, 'vo', 'interrupt');
+    void this.audio.play('sfx_hint_chime');
+    const counts =
+      mode === 'missing' && state.hintLevel === 3 && state.level.workPan
+        ? Math.abs(diff(state.pans.left, state.pans.right))
+        : 0;
+    void this.audio.chain([
+      key,
+      ...Array.from(
+        { length: counts },
+        (_, i) => `count_${String(i + 1).padStart(2, '0')}`,
+      ),
+    ]);
     if (state.hintLevel !== 3 || !state.level.workPan) return;
     const side = state.level.workPan;
     const missing = Math.max(
@@ -732,9 +769,6 @@ export class GameScene extends BaseScene {
           });
         },
       );
-    } else if (mode === 'missing') {
-      for (let i = 1; i <= missing; i++)
-        void this.audio.play(`count_${String(i).padStart(2, '0')}`, 'vo');
     }
   }
   private async explainPrediction(state: LevelState): Promise<void> {
@@ -760,8 +794,7 @@ export class GameScene extends BaseScene {
         .setName('explanation-hand');
       pan.add(this.explanationHand);
     }
-    this.audio.stopVoice();
-    await Promise.all(keys.map((key) => this.audio.play(key, 'vo')));
+    await this.audio.chain(keys);
     if (!this.scene.isActive() || this.controller.state !== state) return;
     this.time.delayedCall(this.controller.fast ? 300 : 1200, () => {
       if (!this.scene.isActive() || this.controller.state !== state) return;
@@ -778,7 +811,6 @@ export class GameScene extends BaseScene {
       type: 'read',
       data: reading,
     });
-    this.audio.stopVoice();
-    for (const key of reading.keys) void this.audio.play(key, 'vo');
+    void this.audio.chain(reading.keys);
   }
 }
