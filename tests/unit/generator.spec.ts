@@ -27,7 +27,9 @@ it.each(modes)(
       if (mode === 'compare')
         expect(
           Math.abs(level.fixed.left[0]!.value! - level.fixed.right[0]!.value!),
-        ).toBeLessThanOrEqual(band);
+        ).toBeGreaterThanOrEqual(
+          band <= 3 ? 5 : band <= 6 ? 3 : band <= 8 ? 1 : 0,
+        );
       else expect(levelNeed(level)).toBeGreaterThan(0);
     }
   },
@@ -83,4 +85,37 @@ it('mulberry32 reference vector, reproducibility, uint32 wrap and range', () => 
       expect(n).toBeLessThan(1);
     }
   }
+});
+
+it('BUG-102: 500 seeds per band progress from large gaps to small/equal comparisons', () => {
+  const means: number[] = [];
+  for (let band = 1; band <= 10; band++) {
+    const gaps: number[] = [];
+    for (let seed = 0; seed < 500; seed++) {
+      const level = generateLevel(seed, ['compare'], band, seed);
+      const gap = Math.abs(
+        level.fixed.left[0]!.value! - level.fixed.right[0]!.value!,
+      );
+      gaps.push(gap);
+      const min = band <= 3 ? 5 : band <= 6 ? 3 : band <= 8 ? 1 : 0;
+      const max = band <= 3 ? 8 : band <= 6 ? 5 : band <= 8 ? 3 : 2;
+      expect(gap).toBeGreaterThanOrEqual(min);
+      expect(gap).toBeLessThanOrEqual(max);
+      // A sibling uses the same generator and the same difficulty band.
+      const sibling = generateLevel(seed + 1000, ['compare'], band, seed + 1);
+      const siblingGap = Math.abs(
+        sibling.fixed.left[0]!.value! - sibling.fixed.right[0]!.value!,
+      );
+      expect(siblingGap).toBeGreaterThanOrEqual(min);
+      expect(siblingGap).toBeLessThanOrEqual(max);
+    }
+    means.push(gaps.reduce((a, b) => a + b, 0) / gaps.length);
+    if (band >= 9) {
+      const equalCount = gaps.filter((d) => d === 0).length;
+      expect(equalCount).toBeGreaterThan(0);
+      expect(equalCount).toBeLessThanOrEqual(150);
+    }
+  }
+  for (let i = 1; i < means.length; i++)
+    expect(means[i]).toBeLessThanOrEqual(means[i - 1]!);
 });

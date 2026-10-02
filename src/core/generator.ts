@@ -56,12 +56,22 @@ export function generateLevel(
   };
   if (mode === 'compare') {
     level.world = 3;
-    // band also bounds the sibling's difference, including equality.
-    const left = pick(1, 10);
-    const right = pick(
-      Math.max(1, left - difficulty),
-      Math.min(10, left + difficulty),
-    );
+    // Large differences are easier. Siblings use this same difficulty mapping.
+    const sample = rng();
+    const gap =
+      difficulty <= 3
+        ? 5 + Math.floor(sample * 4)
+        : difficulty <= 6
+          ? 3 + Math.floor(sample * 3)
+          : difficulty <= 8
+            ? 1 + Math.floor(sample * 3)
+            : sample < 0.25
+              ? 0
+              : 1 + Math.floor(((sample - 0.25) / 0.75) * 2);
+    const lower = pick(1, 10 - gap);
+    const leftHeavier = rng() < 0.5;
+    const left = lower + (leftHeavier ? gap : 0);
+    const right = lower + (leftHeavier ? 0 : gap);
     level.fixed = { left: [number(left)], right: [number(right)] };
     level.workPan = null;
     level.tray.frogs = false;
