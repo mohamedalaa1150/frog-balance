@@ -1,15 +1,11 @@
+import { consoleErrors } from './helpers';
 import { expect, test } from '@playwright/test';
 import packageInfo from '../../package.json' with { type: 'json' };
 
 test('boots with the self-hosted Arabic title and no console errors', async ({
   page,
 }) => {
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
-  page.on('console', (message) => {
-    if (message.type() === 'error' || message.type() === 'warning')
-      errors.push(message.text());
-  });
+  const errors = consoleErrors(page);
   await page.goto('/?test=1');
   await page.waitForFunction(() => !!window.__FROG__);
   await page.evaluate(() => window.__FROG__!.ready);

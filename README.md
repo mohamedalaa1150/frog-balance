@@ -1,8 +1,8 @@
 # Frog Balance — Mizan Dofdou
 
 An Arabic educational math game for children aged 4–8, built with Phaser 3,
-strict TypeScript, and Vite. Phase 1 adds fully tested pure core logic to the Phase 0 title screen and tooling.
-Gameplay rendering, audio, storage adapters, and offline PWA support arrive in later phases.
+strict TypeScript, and Vite. Phase 2 adds playable Count levels and Sandbox, using the tested Phase 1 reducer as the single source of truth.
+The full menus, progress tracking, remaining game modes, and offline PWA packaging arrive in later phases.
 
 ## Setup
 
@@ -161,3 +161,35 @@ five intentionally broken levels, and 1,000 generator seeds per mode (5,000
 levels total). `python3 tools/build_levels.py --check` validates authored content
 without rewriting it; its original default invocation still builds the file.
 CI runs both validators and checks their exact solution-count agreement.
+
+## Vertical slice (Phase 2)
+
+In development, press the play icon on Title to open the temporary Count level list
+(`w1-l1`–`w2-l5`) and Sandbox. For a production preview, open `/?test=1`.
+The development list is hidden on the production Title without that query.
+
+Drag frogs or number tiles onto a pan, or tap a source to place a copy on the work
+pan. Tap a child token to remove it. Fixed tokens have locks and reject drag
+attempts. Count evaluates only after a full second without changes or dragging;
+success plays a small celebration and returns to the list. Sandbox accepts both
+pans, has no goal or stars, and reads their relation with the read icon. Tap a
+Sandbox pan to select the destination for source taps (right initially).
+
+The balance uses Phaser.AUTO (WebGL with Canvas fallback), a spring with stiffness
+120/damping 14, and a single 200 ms tween when reduced motion is enabled. Artwork
+uses all documented texture keys at the current render scale; numerals are Text
+objects over blank tile textures. Sprite frames and number labels can be replaced
+by the final atlas without changing the reducer.
+
+Audio loads only local mp3 files found at build time. Missing files use queued
+`ar-EG` speech synthesis, or subtitles when speech is unavailable. VO ducks music
+to 30%. Settings use the existing save defaults/migration with guarded storage.
+The authored VO scripts contain no `count_00`; zero uses the formatted numeral as
+the speech fallback. Totals above 20 are read as sums of existing number/plus keys.
+
+The test API navigates every new scene, exposes cloned reducer state and the
+rendered beam angle, returns CSS pointer coordinates, records actions/feedback/VO,
+and solves Count using `enumerateSolutions`. Fast mode passes a zero settle delay
+to the reducer without advancing or inventing action timestamps. Sandbox is a
+runtime core definition with a `none` goal; authored level schemas/content remain
+unchanged. Other authored modes stay in Phase 3.
