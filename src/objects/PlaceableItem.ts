@@ -74,12 +74,15 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
       this.dragged = true;
       interactions.dragging(this, true);
       const world = this.getWorldTransformMatrix();
+      const fromPile = source && spec.kind === 'frog';
+      const liftedWidth = fromPile ? 64 : this.image.displayWidth;
+      const liftedHeight = fromPile ? 64 : this.image.displayHeight;
       this.shadow = scene.add
         .ellipse(
           world.tx,
           world.ty + 20 * this.scaleY,
-          this.width * Math.hypot(world.a, world.b),
-          this.height * Math.hypot(world.c, world.d) * 0.25,
+          liftedWidth * Math.hypot(world.a, world.b),
+          liftedHeight * Math.hypot(world.c, world.d) * 0.25,
           0x174d52,
           0.2,
         )
@@ -93,15 +96,15 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
         );
       this.lifted.add(
         scene.add
-          .image(0, 0, this.image.texture.key)
-          .setDisplaySize(this.image.displayWidth, this.image.displayHeight),
+          .image(0, 0, fromPile ? 'frog_token' : this.image.texture.key)
+          .setDisplaySize(liftedWidth, liftedHeight),
       );
       if (this.digit)
         this.lifted.add(
           scene.add
             .text(0, 0, this.digit.text, {
               fontFamily: CONFIG.fontStack,
-              fontSize: 64 * r,
+              fontSize: this.digit.style.fontSize,
               fontStyle: '800',
               color: '#fff6e5',
             })
