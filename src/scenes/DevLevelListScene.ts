@@ -1,6 +1,7 @@
+import { THEME, cssColor } from '../theme';
 import Phaser from 'phaser';
 import { CONFIG } from '../config';
-import { countLevels } from '../controllers/LevelController';
+import { authoredLevels } from '../controllers/LevelController';
 import { formatNumber } from '../core/numerals';
 import { getLayout } from '../layout/layout';
 import { readSave } from '../services/storage';
@@ -16,11 +17,11 @@ export class DevLevelListScene extends BaseScene {
         fontFamily: CONFIG.fontStack,
         fontSize: 36,
         fontStyle: '700',
-        color: '#fff6e5',
+        color: cssColor(THEME.navy),
         rtl: true,
       })
       .setOrigin(0.5);
-    const buttons = countLevels.map((level, index) => {
+    const buttons = authoredLevels.map((level, index) => {
       const button = this.add
         .image(0, 0, 'lily_level')
         .setName(`level-${level.id}`)
@@ -33,7 +34,7 @@ export class DevLevelListScene extends BaseScene {
           fontFamily: CONFIG.fontStack,
           fontSize: 42,
           fontStyle: '800',
-          color: '#174d52',
+          color: cssColor(THEME.navy),
         })
         .setOrigin(0.5);
       return { button, text };
@@ -48,7 +49,7 @@ export class DevLevelListScene extends BaseScene {
         fontFamily: CONFIG.fontStack,
         fontSize: 28,
         fontStyle: '700',
-        color: '#fff6e5',
+        color: cssColor(THEME.navy),
         rtl: true,
       })
       .setOrigin(0.5);
@@ -60,13 +61,17 @@ export class DevLevelListScene extends BaseScene {
     const layout = () => {
       const { width, height } = this.scale.gameSize;
       const { uiScale, orientation, centerX } = getLayout(width, height);
-      const columns = orientation === 'portrait' ? 4 : 7;
+      const columns = orientation === 'portrait' ? 6 : 12;
+      const rows = Math.ceil(buttons.length / columns);
+      const stepX = Math.min(100 * uiScale, (width * 0.9) / columns);
+      const stepY = (height * 0.57) / rows;
+      const size = Math.min(stepX, stepY) * 0.9;
       heading.setPosition(centerX, height * 0.12).setFontSize(36 * uiScale);
       buttons.forEach(({ button, text }, i) => {
-        const x = centerX + ((i % columns) - (columns - 1) / 2) * 150 * uiScale,
-          y = height * 0.3 + Math.floor(i / columns) * 160 * uiScale;
-        button.setPosition(x, y).setDisplaySize(112 * uiScale, 112 * uiScale);
-        text.setPosition(x, y).setFontSize(42 * uiScale);
+        const x = centerX + ((i % columns) - (columns - 1) / 2) * stepX,
+          y = height * 0.24 + Math.floor(i / columns) * stepY;
+        button.setPosition(x, y).setDisplaySize(size, size);
+        text.setPosition(x, y).setFontSize(size * 0.44);
       });
       sandbox
         .setPosition(centerX, height * 0.83)

@@ -119,3 +119,29 @@ it('BUG-102: 500 seeds per band progress from large gaps to small/equal comparis
   for (let i = 1; i < means.length; i++)
     expect(means[i]).toBeLessThanOrEqual(means[i - 1]!);
 });
+
+// Preserve challenge size, including equal questions, after a wrong prediction.
+it('comparison siblings remain different and in the authored difference band', async () => {
+  const { generateSibling, comparisonBand } =
+    await import('../../src/core/generator');
+  for (const gap of [0, 1, 2, 3, 5, 6, 9]) {
+    const level = generateLevel(1, ['compare'], 5);
+    level.fixed = {
+      left: [{ kind: 'number', value: 10 }],
+      right: [{ kind: 'number', value: 10 - gap }],
+    };
+    for (let seed = 0; seed < 20; seed++) {
+      const sibling = generateSibling(level, seed);
+      expect(sibling.id).toBe(level.id);
+      expect(sibling.fixed).not.toEqual(level.fixed);
+      expect(
+        comparisonBand(
+          Math.abs(
+            sibling.fixed.left[0]!.value! - sibling.fixed.right[0]!.value!,
+          ),
+        ),
+      ).toBe(comparisonBand(gap));
+      expect(isSolvable(sibling)).toBe(true);
+    }
+  }
+});

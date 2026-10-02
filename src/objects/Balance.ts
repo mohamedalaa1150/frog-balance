@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
+import { BEAM_ANCHORS, PAN_HANG_OFFSET } from '../assets';
 import { beamAngle } from '../core/balance';
-import { getRenderScale } from '../layout/viewport';
 import { Pan } from './Pan';
 import { Mascot } from './Mascot';
 export class Balance extends Phaser.GameObjects.Container {
@@ -22,7 +22,7 @@ export class Balance extends Phaser.GameObjects.Container {
     this.mascot = new Mascot(scene);
     this.beam = scene.add
       .image(0, 0, 'beam')
-      .setScale(1 / getRenderScale())
+      .setDisplaySize(BEAM_ANCHORS.width, BEAM_ANCHORS.height)
       .setName('beam');
     this.pans = {
       left: new Pan(scene, 'left'),
@@ -33,14 +33,22 @@ export class Balance extends Phaser.GameObjects.Container {
   }
   setSpan(halfSpan: number): void {
     this.halfSpan = halfSpan;
-    this.beam.setDisplaySize(halfSpan * 2 + 120, 36);
+    const beamScale = halfSpan / (BEAM_ANCHORS.pivotX - BEAM_ANCHORS.leftX);
+    this.beam.setDisplaySize(
+      BEAM_ANCHORS.width * beamScale,
+      BEAM_ANCHORS.height * beamScale,
+    );
     this.positionPans();
+  }
+  get span(): number {
+    return this.halfSpan;
   }
   get angleDegrees(): number {
     return this.rendered;
   }
   setDifference(d: number, reduced: boolean, fast: boolean): void {
     this.mascot.look(d);
+    this.mascot.breathe(reduced || fast);
     this.reduced = reduced;
     this.fast = fast;
     const target = beamAngle(d);
@@ -94,11 +102,11 @@ export class Balance extends Phaser.GameObjects.Container {
     this.beam.setAngle(this.rendered);
     this.pans.left.setPosition(
       -this.halfSpan * Math.cos(radians),
-      -this.halfSpan * Math.sin(radians) - 70,
+      -this.halfSpan * Math.sin(radians) + PAN_HANG_OFFSET,
     );
     this.pans.right.setPosition(
       this.halfSpan * Math.cos(radians),
-      this.halfSpan * Math.sin(radians) - 70,
+      this.halfSpan * Math.sin(radians) + PAN_HANG_OFFSET,
     );
   }
 }

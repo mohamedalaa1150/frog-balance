@@ -18,6 +18,6 @@ export class FrogPile extends PlaceableItem {
       interactions,
     );
     this.image.setTexture('frog_pile').setScale(1 / getRenderScale());
-    this.setItemSize(240, 140);
+    this.setItemSize(240, 142);
   }
 }

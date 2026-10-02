@@ -125,3 +125,39 @@ export function generateLevel(
     throw new Error('Generated level violated solvability invariant');
   return parsed;
 }
+
+/** Wrong predictions get a different question in the same difference band. */
+export const comparisonBand = (gap: number): number =>
+  gap === 0 ? 0 : gap <= 2 ? 1 : gap <= 5 ? 2 : 3;
+export function generateSibling(
+  level: LevelDefinition,
+  seed: number,
+): LevelDefinition {
+  const left = level.fixed.left.reduce(
+    (sum, item) => sum + (item.kind === 'frog' ? 1 : item.value!),
+    0,
+  );
+  const right = level.fixed.right.reduce(
+    (sum, item) => sum + (item.kind === 'frog' ? 1 : item.value!),
+    0,
+  );
+  const band = comparisonBand(Math.abs(left - right));
+  for (let index = 0; index < 100; index++) {
+    const candidate = generateLevel(
+      seed + index,
+      ['compare'],
+      [10, 8, 6, 1][band]!,
+      index,
+    );
+    const l = candidate.fixed.left[0]!.value!,
+      r = candidate.fixed.right[0]!.value!;
+    if (comparisonBand(Math.abs(l - r)) === band && (l !== left || r !== right))
+      return {
+        ...candidate,
+        id: level.id,
+        world: level.world,
+        index: level.index,
+      };
+  }
+  throw new Error('Could not generate a comparison sibling');
+}

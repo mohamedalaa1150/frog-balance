@@ -1,3 +1,4 @@
+import { THEME } from '../theme';
 import Phaser from 'phaser';
 import { BaseScene } from '../scenes/BaseScene';
 
@@ -9,7 +10,7 @@ export class TestReadyScene extends BaseScene {
   create(): void {
     this.add
       .graphics()
-      .fillStyle(0x174d52)
+      .fillStyle(THEME.navy)
       .fillRect(0, 0, this.scale.width, this.scale.height);
   }
 }

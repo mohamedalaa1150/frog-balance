@@ -1,4 +1,6 @@
+import { THEME, cssColor } from '../theme';
 import Phaser from 'phaser';
+import { coverBackground } from '../layout/background';
 import { CONFIG } from '../config';
 import { formatNumber } from '../core/numerals';
 import { getLayout } from '../layout/layout';
@@ -6,7 +8,8 @@ import { t } from '../services/strings';
 import { BaseScene, type SceneReadyEvent } from './BaseScene';
 
 export class TitleScene extends BaseScene {
-  private pond!: Phaser.GameObjects.Graphics;
+  private pond!: Phaser.GameObjects.Image;
+  private mascot!: Phaser.GameObjects.Image;
   private title!: Phaser.GameObjects.Text;
   private play?: Phaser.GameObjects.Image;
   private numerals!: Phaser.GameObjects.Text;
@@ -16,13 +19,17 @@ export class TitleScene extends BaseScene {
   }
 
   create(): void {
-    this.pond = this.add.graphics().setName('title-pond');
+    this.pond = this.add
+      .image(0, 0, 'bg_title')
+      .setOrigin(0)
+      .setName('title-pond');
+    this.mascot = this.add.image(0, 0, 'mascot_base').setName('title-mascot');
     this.title = this.add
       .text(0, 0, t('game_title'), {
         fontFamily: CONFIG.fontStack,
         fontSize: '96px',
         fontStyle: '800',
-        color: '#fff6e5',
+        color: cssColor(THEME.navy),
         rtl: true,
         padding: { left: 16, right: 16, top: 16, bottom: 16 },
       })
@@ -39,7 +46,7 @@ export class TitleScene extends BaseScene {
           fontFamily: CONFIG.fontStack,
           fontSize: '64px',
           fontStyle: '700',
-          color: '#fff6e5',
+          color: cssColor(THEME.navy),
           rtl: false,
           padding: { left: 8, right: 8, top: 8, bottom: 8 },
         },
@@ -87,52 +94,14 @@ export class TitleScene extends BaseScene {
     const { width, height } = this.scale.gameSize;
     const { centerX, uiScale } = getLayout(width, height);
     // Rasterize text at the physical font size instead of enlarging a low-DPI texture.
-    this.title.setPosition(centerX, height * 0.38).setFontSize(96 * uiScale);
-    this.numerals.setPosition(centerX, height * 0.53).setFontSize(64 * uiScale);
+    this.title.setPosition(centerX, height * 0.27).setFontSize(96 * uiScale);
+    this.numerals.setPosition(centerX, height * 0.41).setFontSize(64 * uiScale);
     this.play
-      ?.setPosition(centerX, height * 0.68)
+      ?.setPosition(centerX, height * 0.56)
       .setDisplaySize(112 * uiScale, 112 * uiScale);
-    this.pond.clear();
-    // Solid strips provide a smooth gradient in both WebGL and Canvas renderers.
-    const top = Phaser.Display.Color.ValueToColor('#87c9be');
-    const bottom = Phaser.Display.Color.ValueToColor('#174d52');
-    for (let row = 0; row < 128; row += 1) {
-      const color = Phaser.Display.Color.Interpolate.ColorWithColor(
-        top,
-        bottom,
-        127,
-        row,
-      );
-      this.pond.fillStyle(
-        Phaser.Display.Color.GetColor(color.r, color.g, color.b),
-      );
-      this.pond.fillRect(0, (height * row) / 128, width, height / 128 + 1);
-    }
-    this.pond.lineStyle(2 * uiScale, 0xd0efdf, 0.2);
-    this.pond.strokeEllipse(
-      width * 0.5,
-      height * 0.78,
-      width * 0.6,
-      height * 0.13,
-    );
-    this.pond.strokeEllipse(
-      width * 0.5,
-      height * 0.78,
-      width * 0.8,
-      height * 0.22,
-    );
-    this.pond.fillStyle(0x5caa78, 0.7);
-    this.pond.fillEllipse(
-      width * 0.18,
-      height * 0.87,
-      160 * uiScale,
-      58 * uiScale,
-    );
-    this.pond.fillEllipse(
-      width * 0.85,
-      height * 0.71,
-      120 * uiScale,
-      42 * uiScale,
-    );
+    coverBackground(this.pond, width, height, 1);
+    this.mascot
+      .setPosition(centerX, height * 0.8)
+      .setDisplaySize(190 * uiScale, 200 * uiScale);
   }
 }

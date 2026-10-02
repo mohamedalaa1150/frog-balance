@@ -4,7 +4,7 @@ body {
   height: 100%;
   margin: 0;
   overflow: hidden;
-  background: #174d52;
+  background: var(--sky);
   overscroll-behavior: none;
 }
 

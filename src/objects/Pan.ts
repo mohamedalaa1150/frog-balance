@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { PlacedItem, Side } from '../core/types';
 import type { NumeralSystem } from '../core/numerals';
+import { PAN_ANCHORS } from '../assets';
 import { getRenderScale } from '../layout/viewport';
 import { PlaceableItem, type ItemInteractions } from './PlaceableItem';
 import { getPanGrid, PLACEMENT_HOP } from '../layout/panGrid';
@@ -8,7 +9,7 @@ export class Pan extends Phaser.GameObjects.Container {
   private glow: Phaser.GameObjects.Image;
   private surface: Phaser.GameObjects.Image;
   private items = new Map<string, PlaceableItem>();
-  private post: Phaser.GameObjects.Image;
+
   workActive = false;
   constructor(
     scene: Phaser.Scene,
@@ -19,12 +20,14 @@ export class Pan extends Phaser.GameObjects.Container {
     this.setName(`pan-${side}`);
     const r = getRenderScale();
     this.glow = scene.add.image(0, 0, 'pan_glow').setScale(1 / r);
-    this.post = scene.add.image(0, 35, 'pan_post').setScale(1 / r);
-    this.surface = scene.add.image(0, 0, 'pan').setScale(1 / r);
-    this.add([this.post, this.glow, this.surface]);
-    this.setSize(240, 56);
+    this.surface = scene.add
+      .image(0, 0, 'pan')
+      .setOrigin(0.5, PAN_ANCHORS.rimY / PAN_ANCHORS.height)
+      .setDisplaySize(PAN_ANCHORS.width, PAN_ANCHORS.height);
+    this.add([this.glow, this.surface]);
+    this.setSize(260, 64);
     this.setInteractive(
-      new Phaser.Geom.Rectangle(0, -4, 240, 64),
+      new Phaser.Geom.Rectangle(0, 0, 260, 64),
       Phaser.Geom.Rectangle.Contains,
     );
   }

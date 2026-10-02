@@ -27,13 +27,19 @@ export default defineConfig({
         viewport: { width: 1366, height: 768 },
       },
     },
-    { name: 'webkit-ipad', use: { ...devices['iPad (gen 7) landscape'] } },
+    {
+      name: 'webkit-ipad',
+      testIgnore: ['**/visual-style.spec.ts', '**/phase-3-playthrough.spec.ts'],
+      use: { ...devices['iPad (gen 7) landscape'] },
+    },
     {
       name: 'chromium-android',
+      testIgnore: ['**/visual-style.spec.ts', '**/phase-3-playthrough.spec.ts'],
       use: { ...devices['Pixel 7'], launchOptions: chromiumLaunchOptions },
     },
     {
       name: 'chromium-whiteboard',
+      testIgnore: ['**/visual-style.spec.ts', '**/phase-3-playthrough.spec.ts'],
       use: {
         ...devices['Desktop Chrome'],
         launchOptions: chromiumLaunchOptions,

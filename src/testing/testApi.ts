@@ -3,7 +3,7 @@ import { version } from '../../package.json';
 import type { ItemKind, LevelState, Side } from '../core/types';
 import type { SceneReadyEvent } from '../scenes/BaseScene';
 import { GameScene } from '../scenes/GameScene';
-import { getCountLevel } from '../controllers/LevelController';
+import { getLevel } from '../controllers/LevelController';
 import { defaults } from '../core/progress';
 import { resetSave, writeSave } from '../services/storage';
 import { TestReadyScene, TestSilentScene } from './scenes';
@@ -38,6 +38,8 @@ export interface FrogTestApi {
   toCssPoint(x: number, y: number): { x: number; y: number };
   getPointerTarget(name: string): { x: number; y: number } | null;
   getTextureHash(key: string): string | null;
+  getText(name: string): string | null;
+  isVisible(name: string): boolean;
   getBounds(
     name: string,
   ): { x: number; y: number; width: number; height: number } | null;
@@ -120,9 +122,10 @@ export function installTestApi(game: Phaser.Game): void {
           if (settled) return;
           started = true;
           record('gotoScene', { key });
-          for (const scene of game.scene.getScenes(true))
-            game.scene.stop(scene.scene.key);
-          game.scene.start(key, data);
+          // Queue after any pending automatic result transition, so stale starts
+          // cannot shut down the newly requested level before its first render.
+          for (const scene of game.scene.getScenes(false)) scene.scene.stop();
+          target.scene.start(key, data);
         })
         .catch((error: unknown) =>
           finish(error instanceof Error ? error : new Error(String(error))),
@@ -197,7 +200,7 @@ export function installTestApi(game: Phaser.Game): void {
       writeSave(save);
     },
     async gotoLevel(id) {
-      getCountLevel(id);
+      getLevel(id);
       await navigate('GameScene', { levelId: id });
     },
     getLevelState: () => {
@@ -228,11 +231,22 @@ export function installTestApi(game: Phaser.Game): void {
       const bottom = toCssPoint(game, bounds.right, bounds.bottom);
       return { ...top, width: bottom.x - top.x, height: bottom.y - top.y };
     },
+    getText(name) {
+      const object = namedObject(name);
+      return object instanceof Phaser.GameObjects.Text ? object.text : null;
+    },
+    isVisible(name) {
+      const object = namedObject(name);
+      return !!object && 'visible' in object && object.visible === true;
+    },
     getTextureHash(key) {
       if (!game.textures.exists(key)) return null;
       const source = game.textures.get(key).getSourceImage();
-      if (!(source instanceof HTMLCanvasElement)) return null;
-      const pixels = source
+      const canvas = document.createElement('canvas');
+      canvas.width = source.width;
+      canvas.height = source.height;
+      canvas.getContext('2d')!.drawImage(source as CanvasImageSource, 0, 0);
+      const pixels = canvas
         .getContext('2d')!
         .getImageData(0, 0, source.width, source.height).data;
       let hash = 2166136261;

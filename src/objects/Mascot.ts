@@ -1,25 +1,60 @@
 import Phaser from 'phaser';
-import { getRenderScale } from '../layout/viewport';
+import { MASCOT_ANCHORS } from '../assets';
+/** Delivered expression images share the fist/pivot anchor, at design resolution. */
 export class Mascot extends Phaser.GameObjects.Sprite {
+  private breathing?: Phaser.Tweens.Tween;
+  private celebrating = false;
   constructor(scene: Phaser.Scene) {
-    super(scene, 0, 85, 'mascot_sheet', 0);
+    super(scene, 0, 0, 'mascot_idle');
     scene.add.existing(this);
-    this.setName('mascot').setScale(0.5 / getRenderScale());
+    this.setName('mascot')
+      .setOrigin(0.5, MASCOT_ANCHORS.pivotY / MASCOT_ANCHORS.height)
+      .setDisplaySize(MASCOT_ANCHORS.width, MASCOT_ANCHORS.height);
+  }
+  breathe(reduced: boolean): void {
+    if (reduced || this.celebrating) {
+      this.breathing?.stop();
+      this.breathing = undefined;
+      this.setDisplaySize(MASCOT_ANCHORS.width, MASCOT_ANCHORS.height);
+    } else if (!this.breathing)
+      this.breathing = this.scene.tweens.add({
+        targets: this,
+        scaleY: this.scaleY * 1.02,
+        duration: 2000,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
   }
   look(difference: number): void {
-    this.setFrame(difference === 0 ? 5 : difference < 0 ? 1 : 2);
+    if (this.celebrating) return;
+    const side = difference < 0 ? 'left' : 'right';
+    this.setTexture(
+      difference === 0
+        ? 'mascot_idle'
+        : `mascot_${Math.abs(difference) >= 3 ? 'strain' : 'look'}_${side}`,
+    ).setDisplaySize(MASCOT_ANCHORS.width, MASCOT_ANCHORS.height);
   }
   jump(reduced: boolean): void {
-    this.setFrame(6);
-    if (!reduced)
+    this.celebrating = true;
+    this.breathe(true);
+    this.setTexture('mascot_happy').setDisplaySize(
+      MASCOT_ANCHORS.width,
+      MASCOT_ANCHORS.height,
+    );
+    const finish = () => {
+      this.celebrating = false;
+    };
+    if (reduced) finish();
+    else
       this.scene.tweens.add({
         targets: this,
-        y: this.y - 45,
+        y: this.y - 35,
         duration: 180,
         yoyo: true,
         repeat: 1,
         ease: 'Sine.easeOut',
-        onComplete: () => this.setFrame(7),
+        onComplete: finish,
       });
   }
 }

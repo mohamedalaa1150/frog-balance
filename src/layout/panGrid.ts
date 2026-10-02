@@ -7,25 +7,25 @@ export function getPanGrid(kinds: readonly ItemKind[]) {
   return kinds.map((kind, index) => {
     if (mixed)
       return {
-        width: 64,
-        height: kind === 'number' ? 80 : 64,
-        x: ((index % 4) - (Math.min(4, kinds.length) - 1) / 2) * 64,
-        y: -50 - Math.floor(index / 4) * 88,
+        width: 55,
+        height: kind === 'number' ? 69 : 60,
+        x: ((index % 4) - (Math.min(4, kinds.length) - 1) / 2) * 55,
+        y: -34.5 - Math.floor(index / 4) * 70,
       };
     if (kind === 'number') {
-      const width = kinds.length === 3 ? 72 : 88;
+      const width = kinds.length === 3 ? 70 : 88;
       return {
         width,
-        height: 96,
+        height: width * 1.25,
         x: (index - (kinds.length - 1) / 2) * width,
-        y: -65,
+        y: (-width * 1.25) / 2,
       };
     }
     return {
-      width: 64,
-      height: 64,
-      x: ((index % 5) - (Math.min(5, kinds.length) - 1) / 2) * 64,
-      y: -54 - Math.floor(index / 5) * 64,
+      width: 44,
+      height: 48,
+      x: ((index % 5) - (Math.min(5, kinds.length) - 1) / 2) * 44,
+      y: -24 - Math.floor(index / 5) * 48,
     };
   });
 }

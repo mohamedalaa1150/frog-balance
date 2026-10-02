@@ -1,3 +1,4 @@
+import { MASCOT_ANCHORS, PAN_ANCHORS, PAN_HANG_OFFSET } from '../assets';
 import { CONFIG } from '../config';
 import { getLayout } from './layout';
 import { PAN_STACK_HALF_WIDTH, PAN_STACK_RISE } from './panGrid';
@@ -9,6 +10,7 @@ export function getGameplayLayout(
   height: number,
   numberCount: number,
   frogs: boolean,
+  extraHeader = 0,
 ) {
   const { uiScale, renderScale, orientation, centerX } = getLayout(
     width,
@@ -18,7 +20,7 @@ export function getGameplayLayout(
   const margin = Math.max(8 * uiScale, 8 * renderScale);
   const gap = Math.max(6 * uiScale, 4 * renderScale);
   const pileWidth = 240 * uiScale;
-  const pileHeight = 140 * uiScale;
+  const pileHeight = 142 * uiScale;
   const availableWidth = width - 2 * margin;
   const trayWidth =
     availableWidth - (!portrait && frogs ? pileWidth + 16 * uiScale : 0);
@@ -60,19 +62,23 @@ export function getGameplayLayout(
     };
   });
   const hudBottom = (70 + 44) * uiScale;
-  const headerBottom = hudBottom + 40 * uiScale;
-  const upper = headerBottom + 8 * uiScale;
-  const lower = sourceTop - 8 * uiScale;
-  const halfSpan = portrait ? 200 : 350;
+  const headerBottom = hudBottom + (40 + extraHeader) * uiScale;
+  const upper = headerBottom + 8 * renderScale;
+  const lower = sourceTop - 8 * renderScale;
+  const halfSpan = portrait ? 260 : 396;
   // Reserve spring overshoot and the placement hop as well as the target angle.
   const endRise =
     halfSpan * Math.sin(((CONFIG.beam.maxAngle + 6) * Math.PI) / 180);
-  const topExtent = 70 + endRise + PAN_STACK_RISE;
-  const bottomExtent = Math.max(endRise, 180); // Includes the mascot below the pivot.
+  const topExtent = endRise + Math.max(14, PAN_STACK_RISE - PAN_HANG_OFFSET);
+  const bottomExtent = Math.max(
+    endRise + PAN_HANG_OFFSET + PAN_ANCHORS.bottom,
+    (MASCOT_ANCHORS.height - MASCOT_ANCHORS.pivotY) * 1.02,
+  ); // Includes the mascot below the pivot.
   const balanceScale = Math.min(
     uiScale,
     (lower - upper) / (topExtent + bottomExtent),
-    availableWidth / (2 * (halfSpan + PAN_STACK_HALF_WIDTH)),
+    availableWidth /
+      (2 * (halfSpan + Math.max(PAN_STACK_HALF_WIDTH, PAN_ANCHORS.width / 2))),
   );
   return {
     uiScale,

@@ -1,3 +1,4 @@
+import { THEME, cssColor, tileColor } from '../theme';
 import Phaser from 'phaser';
 import { CONFIG } from '../config';
 import { formatNumber, type NumeralSystem } from '../core/numerals';
@@ -49,11 +50,11 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
     this.add(this.image);
     if (spec.kind === 'number') {
       this.digit = scene.add
-        .text(0, 0, formatNumber(spec.value!, system), {
+        .text(0, -7, formatNumber(spec.value!, system), {
           fontFamily: CONFIG.fontStack,
           fontSize: 64 * r,
           fontStyle: '800',
-          color: '#fff6e5',
+          color: cssColor(tileColor(spec.value!)),
         })
         .setOrigin(0.5)
         .setScale(1 / r);
@@ -65,7 +66,7 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
     }
     this.setItemSize(
       spec.kind === 'frog' ? 64 : 120,
-      spec.kind === 'frog' ? 64 : 150,
+      spec.kind === 'frog' ? 70 : 150,
     );
     this.setInteractive(
       new Phaser.Geom.Rectangle(0, 0, this.width, this.height),
@@ -87,14 +88,14 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
       const world = this.getWorldTransformMatrix();
       const fromPile = source && spec.kind === 'frog';
       const liftedWidth = fromPile ? 64 : this.image.displayWidth;
-      const liftedHeight = fromPile ? 64 : this.image.displayHeight;
+      const liftedHeight = fromPile ? 70 : this.image.displayHeight;
       this.shadow = scene.add
         .ellipse(
           world.tx,
           world.ty + 20 * this.scaleY,
           liftedWidth * Math.hypot(world.a, world.b),
           liftedHeight * Math.hypot(world.c, world.d) * 0.25,
-          0x174d52,
+          THEME.shadow,
           0.2,
         )
         .setDepth(19);
@@ -102,8 +103,10 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
         .container(world.tx, world.ty)
         .setDepth(20)
         .setScale(
-          Math.hypot(world.a, world.b) * 1.12,
-          Math.hypot(world.c, world.d) * 1.12,
+          Math.hypot(world.a, world.b) *
+            (interactions.reduced() || interactions.fast() ? 1 : 1.1),
+          Math.hypot(world.c, world.d) *
+            (interactions.reduced() || interactions.fast() ? 1 : 0.95),
         );
       this.lifted.add(
         scene.add
@@ -117,7 +120,7 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
               fontFamily: CONFIG.fontStack,
               fontSize: this.digit.style.fontSize,
               fontStyle: '800',
-              color: '#fff6e5',
+              color: cssColor(tileColor(spec.value!)),
             })
             .setOrigin(0.5)
             .setScale(1 / r),
@@ -201,6 +204,7 @@ export class PlaceableItem extends Phaser.GameObjects.Container {
         this.width,
         this.height,
       );
+    this.digit?.setY((-7 * h) / 150);
     this.digit?.setFontSize(Math.min(w, h) * 0.58 * getRenderScale());
   }
   private lockFeedback(): void {
