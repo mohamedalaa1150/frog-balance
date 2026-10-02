@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { NumeralSystem } from '../core/numerals';
 import { PlaceableItem, type ItemInteractions } from './PlaceableItem';
+import type { getGameplayLayout } from '../layout/gameplayLayout';
 export class NumberTray {
   readonly items: PlaceableItem[];
   constructor(
@@ -23,23 +24,14 @@ export class NumberTray {
     );
   }
   layout(
-    width: number,
-    height: number,
+    tray: ReturnType<typeof getGameplayLayout>['tray'],
     scale: number,
-    portrait: boolean,
   ): void {
-    const columns = portrait ? 5 : 10;
     this.items.forEach((item, i) => {
-      item.setItemSize(portrait ? 88 : 72, portrait ? 110 : 96);
+      item.setItemSize(tray.itemWidth / scale, tray.itemHeight / scale);
       item.setScale(scale);
-      item.setPosition(
-        width * (portrait ? 0.5 : 0.4) +
-          ((i % columns) - (Math.min(columns, this.items.length) - 1) / 2) *
-            (portrait ? 110 : 88) *
-            scale,
-        height * (portrait ? 0.71 : 0.86) +
-          Math.floor(i / columns) * 130 * scale,
-      );
+      const point = tray.positions[i]!;
+      item.setPosition(point.x, point.y);
     });
   }
 }

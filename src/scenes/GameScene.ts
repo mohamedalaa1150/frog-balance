@@ -4,6 +4,7 @@ import { LevelController } from '../controllers/LevelController';
 import { diff, panWeight } from '../core/balance';
 import type { LevelState, Side } from '../core/types';
 import { getLayout } from '../layout/layout';
+import { getGameplayLayout } from '../layout/gameplayLayout';
 import { getRenderScale } from '../layout/viewport';
 import { Balance } from '../objects/Balance';
 import { FrogPile } from '../objects/FrogPile';
@@ -316,38 +317,26 @@ export class GameScene extends BaseScene {
   }
   private relayout(): void {
     const { width, height } = this.scale.gameSize;
-    const { uiScale, orientation, centerX } = getLayout(width, height);
-    const portrait = orientation === 'portrait';
-    const balanceScale = uiScale;
-    this.balance.setSpan(portrait ? 200 : 350);
+    const layout = getGameplayLayout(
+      width,
+      height,
+      this.tray.items.length,
+      !!this.pile,
+    );
+    const { uiScale, balance, tray, pile, hud } = layout;
+    const centerX = width / 2;
+    this.balance.setSpan(balance.halfSpan);
     this.background.setDisplaySize(width, height);
-    this.balance
-      .setPosition(
-        centerX,
-        height *
-          (this.levelId === 'sandbox'
-            ? portrait
-              ? 0.46
-              : 0.5
-            : portrait
-              ? 0.37
-              : 0.44),
-      )
-      .setScale(balanceScale);
-    this.tray.layout(width, height, uiScale, portrait);
-    this.pile
-      ?.setPosition(
-        this.tray.items.length && !portrait ? width * 0.9 : centerX,
-        height * (this.tray.items.length ? (portrait ? 0.94 : 0.88) : 0.9),
-      )
-      .setScale(uiScale);
+    this.balance.setPosition(balance.x, balance.y).setScale(balance.scale);
+    this.tray.layout(tray, uiScale);
+    this.pile?.setPosition(pile.x, pile.y).setScale(uiScale);
     this.navigation.forEach((button, i) =>
       button
         .setDisplaySize(88 * uiScale, 88 * uiScale)
         .setPosition((70 + i * 108) * uiScale, 70 * uiScale),
     );
     this.subtitle
-      .setPosition(centerX, height * 0.15)
+      .setPosition(centerX, hud.subtitleY)
       .setFontSize(24 * uiScale)
       .setWordWrapWidth(width * 0.88);
     this.hint.setPosition(centerX, height * 0.61).setFontSize(24 * uiScale);
@@ -355,8 +344,10 @@ export class GameScene extends BaseScene {
       const side = this.controller.state.level.workPan!;
       this.guide
         .setPosition(
-          centerX + (side === 'right' ? 320 : -320) * balanceScale,
-          height * 0.59,
+          balance.x +
+            (side === 'right' ? balance.halfSpan : -balance.halfSpan) *
+              balance.scale,
+          balance.y + 60 * balance.scale,
         )
         .setDisplaySize(64 * uiScale, 64 * uiScale);
     }

@@ -37,6 +37,10 @@ export interface FrogTestApi {
   events: TestEvent[];
   toCssPoint(x: number, y: number): { x: number; y: number };
   getPointerTarget(name: string): { x: number; y: number } | null;
+  getTextureHash(key: string): string | null;
+  getBounds(
+    name: string,
+  ): { x: number; y: number; width: number; height: number } | null;
 }
 
 declare global {
@@ -136,20 +140,17 @@ export function installTestApi(game: Phaser.Game): void {
   const activeGame = (): GameScene | undefined =>
     game.scene.getScenes(true).find((scene) => scene instanceof GameScene) as
       GameScene | undefined;
-  const pointerTarget = (name: string): { x: number; y: number } | null => {
+  const namedObject = (name: string): Phaser.GameObjects.GameObject | null => {
     const search = (
       objects: Phaser.GameObjects.GameObject[],
-    ): { x: number; y: number } | null => {
+    ): Phaser.GameObjects.GameObject | null => {
       for (const object of objects) {
         if (
           object.name === name &&
           object.getData('pointer-ready') !== false &&
           'getWorldTransformMatrix' in object
         ) {
-          const matrix = (
-            object as Phaser.GameObjects.Container
-          ).getWorldTransformMatrix();
-          return toCssPoint(game, matrix.tx, matrix.ty);
+          return object;
         }
         if (object instanceof Phaser.GameObjects.Container) {
           const found = search(object.list);
@@ -163,6 +164,12 @@ export function installTestApi(game: Phaser.Game): void {
       if (found) return found;
     }
     return null;
+  };
+  const pointerTarget = (name: string): { x: number; y: number } | null => {
+    const object = namedObject(name) as Phaser.GameObjects.Container | null;
+    if (!object) return null;
+    const matrix = object.getWorldTransformMatrix();
+    return toCssPoint(game, matrix.tx, matrix.ty);
   };
   window.__FROG__ = {
     ready,
@@ -213,6 +220,25 @@ export function installTestApi(game: Phaser.Game): void {
       await activeGame()?.controller.solve();
     },
     getPointerTarget: pointerTarget,
+    getBounds(name) {
+      const object = namedObject(name) as Phaser.GameObjects.Container | null;
+      if (!object || !('getBounds' in object)) return null;
+      const bounds = object.getBounds();
+      const top = toCssPoint(game, bounds.x, bounds.y);
+      const bottom = toCssPoint(game, bounds.right, bounds.bottom);
+      return { ...top, width: bottom.x - top.x, height: bottom.y - top.y };
+    },
+    getTextureHash(key) {
+      if (!game.textures.exists(key)) return null;
+      const source = game.textures.get(key).getSourceImage();
+      if (!(source instanceof HTMLCanvasElement)) return null;
+      const pixels = source
+        .getContext('2d')!
+        .getImageData(0, 0, source.width, source.height).data;
+      let hash = 2166136261;
+      for (const byte of pixels) hash = Math.imul(hash ^ byte, 16777619) >>> 0;
+      return hash.toString(16).padStart(8, '0');
+    },
   };
   game.events.on('scene-ready', (data: SceneReadyEvent) =>
     record('scene-ready', data),

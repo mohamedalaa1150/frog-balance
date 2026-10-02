@@ -3,6 +3,7 @@ import type { PlacedItem, Side } from '../core/types';
 import type { NumeralSystem } from '../core/numerals';
 import { getRenderScale } from '../layout/viewport';
 import { PlaceableItem, type ItemInteractions } from './PlaceableItem';
+import { getPanGrid, PLACEMENT_HOP } from '../layout/panGrid';
 export class Pan extends Phaser.GameObjects.Container {
   private glow: Phaser.GameObjects.Image;
   private surface: Phaser.GameObjects.Image;
@@ -47,9 +48,8 @@ export class Pan extends Phaser.GameObjects.Container {
         item.destroy();
         this.items.delete(uid);
       }
-    const numbers = items.filter((i) => i.kind === 'number');
-    const frogs = items.filter((i) => i.kind === 'frog');
-    for (const placed of items) {
+    const grid = getPanGrid(items.map((item) => item.kind));
+    for (const [index, placed] of items.entries()) {
       let item = this.items.get(placed.uid);
       const entering = !item && !placed.fixed;
       if (!item) {
@@ -65,33 +65,13 @@ export class Pan extends Phaser.GameObjects.Container {
         this.add(item);
         this.items.set(placed.uid, item);
       }
-      if (numbers.length && frogs.length) {
-        const index = items.indexOf(placed);
-        item.setItemSize(64, placed.kind === 'number' ? 80 : 64);
-        item.setPosition(
-          ((index % 4) - (Math.min(4, items.length) - 1) / 2) * 64,
-          -50 - Math.floor(index / 4) * 88,
-        );
-      } else if (placed.kind === 'number') {
-        const index = numbers.indexOf(placed),
-          w = numbers.length === 3 ? 72 : 88;
-        item.setItemSize(w, 96);
-        item.setPosition((index - (numbers.length - 1) / 2) * w, -65);
-      } else {
-        const index = frogs.indexOf(placed),
-          columns = numbers.length ? 3 : 5,
-          size = numbers.length ? 64 : 64;
-        item.setItemSize(size, size);
-        item.setPosition(
-          ((index % columns) - (Math.min(columns, frogs.length) - 1) / 2) *
-            size,
-          -54 - Math.floor(index / columns) * size - (numbers.length ? 100 : 0),
-        );
-      }
+      const cell = grid[index]!;
+      item.setItemSize(cell.width, cell.height);
+      item.setPosition(cell.x, cell.y);
       if (entering && !interactions.fast() && !interactions.reduced())
         this.scene.tweens.add({
           targets: item,
-          y: item.y - 12,
+          y: item.y - PLACEMENT_HOP,
           duration: 90,
           yoyo: true,
           ease: 'Sine.easeOut',
