@@ -118,6 +118,7 @@ export class Pan extends Phaser.GameObjects.Container {
   ): void {
     for (const [uid, item] of this.items)
       if (!items.some((i) => i.uid === uid)) {
+        this.scene.tweens.killTweensOf(item);
         this.remove(item);
         item
           .setName('')
@@ -166,6 +167,9 @@ export class Pan extends Phaser.GameObjects.Container {
         this.items.set(placed.uid, item);
       }
       const cell = grid[index]!;
+      // A resize/repack invalidates a hop's old grid coordinates. Released
+      // pooled tokens must not retain a tween from their previous placement.
+      this.scene.tweens.killTweensOf(item);
       item.setItemSize(cell.width, cell.height);
       if (Number.isFinite(scale))
         sizedTexture(

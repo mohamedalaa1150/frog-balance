@@ -254,3 +254,6 @@ while success still evaluates normally; `getBeamGeometry()` exposes the rotated
 shaft and rings for collision checks, and `getBounds('mascot-head')` returns the
 top 35% of the mascot. The Phase-0 numeral font probe is hidden on Title; its text
 and metrics remain in the ready event and test API.
+Animated weight reversals are sampled throughout 50 frames at the same seven
+sizes. The spring uses the layout's two-degree overshoot allowance; pan repacks
+and released pooled tokens cancel placement tweens tied to their previous grid.

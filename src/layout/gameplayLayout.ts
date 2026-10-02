@@ -122,7 +122,8 @@ export function getGameplayLayout(
       getPanGrid(kinds, grid).map((c) => -c.y + c.height / 2),
     ),
   );
-  const angle = ((CONFIG.beam.maxAngle + 2) * Math.PI) / 180;
+  const angle =
+    ((CONFIG.beam.maxAngle + CONFIG.beam.overshootAllowance) * Math.PI) / 180;
   // Rings retain their readable size while only the navy shaft stretches.
   const beamHeight = 56;
   const halfSpan = portrait
