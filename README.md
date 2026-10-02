@@ -86,8 +86,9 @@ Events are capped at 2,000 entries and stay local.
 including safe-area offsets, for future pointer tests. With `?test=1`, the
 regression fixtures `TestReadyScene` and `TestSilentScene` are also registered
 to check non-title readiness and timeout recovery.
-The remaining API methods throw `not implemented in phase 0` until their phases
-are implemented. Test mode is a local QA convenience, not an authentication gate.
+The gameplay API supports the Count and Sandbox flows described below; other
+authored modes arrive in Phase 3. Test mode is a local QA convenience, not an
+authentication gate.
 
 ## Structure and scope
 
