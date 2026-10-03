@@ -56,7 +56,6 @@ export function balanceArt(
       draw(60, 0, 300, 70, 20, 0, width - 40, height);
       draw(0, 0, 48, 70, 0, 0, 40, height);
       draw(792, 0, 48, 70, width - 40, 0, 40, height);
-      draw(385, 0, 70, 70, width / 2 - 28, 0, 56, height);
     } else draw(0, 156, 260, 64, 0, 0, width, height);
     scene.textures.addCanvas(key, canvas);
     keys.add(key);

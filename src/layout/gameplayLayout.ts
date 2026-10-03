@@ -163,12 +163,15 @@ export function getGameplayLayout(
     }
   }
   const pivotY = minPivot + Math.max(0, maxPivot - minPivot) / 2;
-  const innerGap = 2 * halfSpan * Math.cos(angle) - dishWidth;
-  const mascotWidth = Math.min(
-    innerGap,
-    portrait ? w * 0.25 : (h * 0.38 * 440) / 460,
-    ((lower - pivotY) * 440) / (460 - MASCOT_ANCHORS.pivotY),
-  );
+  // Mascot may sit behind dishes. Its size no longer depends on the narrow
+  // gap between portrait pans; preserve all independent pan/grid geometry.
+  const mascotHeight = portrait
+    ? Math.max(h * 0.22, Math.min(h * 0.3, lower - pivotY))
+    : Math.min(
+        h * 0.38,
+        ((lower - pivotY) * 460) / (460 - MASCOT_ANCHORS.pivotY),
+      );
+  const mascotWidth = (mascotHeight * 440) / 460;
   return {
     uiScale,
     orientation,

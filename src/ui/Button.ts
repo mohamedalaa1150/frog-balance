@@ -20,6 +20,9 @@ export function bindButton(
   };
   button.on('pointerdown', () => {
     cancel();
+    if (scene.game.registry.get('audio-unlocked')) audio.unlock();
+    audio.setFastMode(scene.game.registry.get('fast-mode') === true);
+    void audio.play('sfx_button');
     holding = true;
     spoken = false;
     timer = scene.time.delayedCall(700, () => {

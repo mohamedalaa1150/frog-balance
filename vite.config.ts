@@ -37,6 +37,18 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,woff,woff2,webp,svg,png,json,mp3}'],
         maximumFileSizeToCacheInBytes: 2_000_000,
         cleanupOutdatedCaches: true,
+        globIgnores: ['**/audio/music/**'],
+        runtimeCaching: [
+          {
+            urlPattern: /\/assets\/audio\/music\/.*\.(ogg|mp3)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'frog-music',
+              expiration: { maxEntries: 8 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+        ],
       },
     }),
   ],

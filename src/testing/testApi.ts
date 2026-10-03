@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { version } from '../../package.json';
+import { audioSnapshot } from '../services/audio';
 import type { ItemKind, LevelState, Side } from '../core/types';
 import type { SceneReadyEvent } from '../scenes/BaseScene';
 import { GameScene } from '../scenes/GameScene';
@@ -21,6 +22,8 @@ export interface TestEvent {
 export interface FrogTestApi {
   ready: Promise<void>;
   version: string;
+  getAudioState(): ReturnType<typeof audioSnapshot>;
+  isInFrontOf(name: string, other: string): boolean;
   getActualFps(): number;
   getSceneBounds(): Array<{
     name: string;
@@ -240,6 +243,26 @@ export function installTestApi(game: Phaser.Game): void {
         }),
       };
     },
+    isInFrontOf(name, other) {
+      const path = (name: string): number[] => {
+        const object = namedObject(name);
+        if (!object) return [];
+        const indexes: number[] = [];
+        let node = object;
+        while (node.parentContainer) {
+          indexes.unshift(node.parentContainer.getIndex(node));
+          node = node.parentContainer;
+        }
+        indexes.unshift(node.scene.children.getIndex(node));
+        return indexes;
+      };
+      const a = path(name),
+        b = path(other);
+      if (!a.length || !b.length) return false;
+      const different = a.findIndex((n, i) => n !== b[i]);
+      return different >= 0 && a[different]! > b[different]!;
+    },
+    getAudioState: () => audioSnapshot(game),
     getActualFps: () => game.loop.actualFps,
     setResultNavigation: (enabled) =>
       game.registry.set('hold-result-navigation', !enabled),

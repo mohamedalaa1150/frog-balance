@@ -2,7 +2,7 @@ name: Check
 
 on:
   push:
-    branches: [main, phase-4-meta]
+    branches: [main, phase-4-meta, phase-5-audio]
   pull_request:
 
 permissions:

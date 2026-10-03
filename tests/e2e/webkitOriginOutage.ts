@@ -10,7 +10,13 @@ import { readFile } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
 import type { AddressInfo } from 'node:net';
 
-export async function verifyWebkitOriginOutage(page: Page): Promise<void> {
+export async function verifyWebkitOriginOutage(
+  page: Page,
+  audioChecks?: {
+    before(page: Page): Promise<void>;
+    after(page: Page): Promise<void>;
+  },
+): Promise<void> {
   const root = resolve('dist');
   const contentTypes: Record<string, string> = {
     '.html': 'text/html',
@@ -24,6 +30,7 @@ export async function verifyWebkitOriginOutage(page: Page): Promise<void> {
     '.png': 'image/png',
     '.svg': 'image/svg+xml',
     '.mp3': 'audio/mpeg',
+    '.ogg': 'audio/ogg',
   };
   const origin = createServer(async (request, response) => {
     const pathname = decodeURIComponent(
@@ -83,6 +90,7 @@ export async function verifyWebkitOriginOutage(page: Page): Promise<void> {
     });
     expect(manifest.icons).toHaveLength(3);
 
+    await audioChecks?.before(page);
     await stop();
     expect(origin.listening).toBe(false);
     // Without a worker, this origin must be unreachable. HTTP caching is disabled
@@ -103,6 +111,7 @@ export async function verifyWebkitOriginOutage(page: Page): Promise<void> {
     expect(response?.fromServiceWorker()).toBe(true);
     await page.waitForFunction(() => !!window.__FROG__);
     await page.evaluate(() => window.__FROG__!.ready);
+    await audioChecks?.after(page);
     await page.evaluate(async () => {
       const api = window.__FROG__!;
       api.setFastMode(true);

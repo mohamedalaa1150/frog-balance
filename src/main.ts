@@ -72,7 +72,7 @@ const game = new Phaser.Game({
       : []),
   ],
   input: { activePointers: 2 },
-  audio: { disableWebAudio: true },
+  audio: { disableWebAudio: false },
 });
 
 document

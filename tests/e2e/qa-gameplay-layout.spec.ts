@@ -163,6 +163,7 @@ for (const [width, height] of [
           ].map((n) => api.getBounds(n)!),
           items: (['left', 'right'] as const).flatMap((side, i) =>
             s.pans[side].map((item) => ({
+              front: api.isInFrontOf(`item-${side}-${item.uid}`, 'mascot'),
               side: i,
               kind: item.kind,
               hit: api.getHitAreaSize(`item-${side}-${item.uid}`)!,
@@ -196,7 +197,7 @@ for (const [width, height] of [
         if (portrait)
           expect(dish.width).toBeGreaterThanOrEqual(width * 0.34 - 0.01);
       }
-      for (const { kind, b, side, hit } of report.items) {
+      for (const { kind, b, side, hit, front } of report.items) {
         expect(hit.width, `${id}: hit width`).toBeGreaterThanOrEqual(56 - 0.01);
         expect(hit.height, `${id}: hit height`).toBeGreaterThanOrEqual(
           56 - 0.01,
@@ -243,9 +244,9 @@ for (const [width, height] of [
         for (const ring of report.geometry.rings)
           expect(intersects(b, ring), `${id}: item touches ring`).toBe(false);
         expect(
-          intersects(b, report.head),
-          `${id}: item covers mascot head`,
-        ).toBe(false);
+          !intersects(b, report.head) || front,
+          `${id}: C-501 contents must paint in front of the mascot`,
+        ).toBe(true);
         for (const hud of report.hud)
           expect(intersects(b, hud), `${id}: item covers HUD`).toBe(false);
       }

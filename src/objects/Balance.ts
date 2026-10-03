@@ -10,6 +10,7 @@ export class Balance extends Phaser.GameObjects.Container {
   readonly pans: Record<'left' | 'right', Pan>;
   readonly mascot: Mascot;
   readonly beam: Phaser.GameObjects.Image;
+  readonly pivotCap: Phaser.GameObjects.Image;
   private halfSpan = 350;
   private target = 0;
   private velocity = 0;
@@ -18,6 +19,8 @@ export class Balance extends Phaser.GameObjects.Container {
   private fast = false;
   private motion?: Phaser.Tweens.Tween;
   private rendered = 0;
+  private creaked = 0;
+  private levelPending = false;
   constructor(scene: Phaser.Scene) {
     super(scene, 0, 0);
     scene.add.existing(this);
@@ -27,11 +30,38 @@ export class Balance extends Phaser.GameObjects.Container {
       .image(0, 0, 'beam')
       .setDisplaySize(BEAM_ANCHORS.width, BEAM_ANCHORS.height)
       .setName('beam');
+    if (!scene.textures.exists('pivot-cap')) {
+      const source = scene.textures.get('beam').getSourceImage();
+      const r = source.width / 840;
+      const cap = scene.textures.createCanvas('pivot-cap', 70 * r, 70 * r)!;
+      cap.context.drawImage(
+        source as CanvasImageSource,
+        385 * r,
+        0,
+        70 * r,
+        70 * r,
+        0,
+        0,
+        70 * r,
+        70 * r,
+      );
+      cap.refresh();
+    }
+    this.pivotCap = scene.add
+      .image(0, 0, 'pivot-cap')
+      .setDisplaySize(32, 20)
+      .setName('pivot-cap');
     this.pans = {
       left: new Pan(scene, 'left'),
       right: new Pan(scene, 'right'),
     };
-    this.add([this.mascot, this.beam, this.pans.left, this.pans.right]);
+    this.add([
+      this.mascot,
+      this.beam,
+      this.pivotCap,
+      this.pans.left,
+      this.pans.right,
+    ]);
     this.positionPans();
     const resumed = (elapsed: number) => {
       this.changedAt += elapsed;
@@ -63,6 +93,7 @@ export class Balance extends Phaser.GameObjects.Container {
     this.reduced = reduced;
     this.fast = fast;
     this.motion?.stop();
+    this.levelPending = this.target !== 0 && target === 0;
     this.target = target;
     this.changedAt = this.scene.time.now;
     if (fast) {
@@ -114,6 +145,14 @@ export class Balance extends Phaser.GameObjects.Container {
     this.positionPans();
   }
   positionPans(): void {
+    if (Math.abs(this.rendered - this.creaked) > 2) {
+      this.creaked = this.rendered;
+      this.scene.events.emit('beam-creak');
+    }
+    if (this.levelPending && this.rendered === 0 && this.velocity === 0) {
+      this.levelPending = false;
+      this.scene.events.emit('beam-level');
+    }
     const radians = Phaser.Math.DegToRad(this.rendered);
     this.beam.setAngle(this.rendered);
     this.pans.left.setPosition(

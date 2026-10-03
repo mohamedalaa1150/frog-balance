@@ -1,0 +1,575 @@
+{
+  "voice": "ElevenLabs \"Wiam – Confident\" (R5kMoWNNTn84ezIJA53m), model eleven_v3",
+  "processing": "silence trimmed (-45 dB) then 150 ms padding at start and end (docs/05-assets.md §4.3), loudness-normalised to -16 LUFS / -1.5 dBTP, mono 44.1 kHz 64 kbps MP3",
+  "lines": [
+    {
+      "key": "game_title",
+      "text": "ميزانُ ضَفْدوع.",
+      "delivery": "[warmly]",
+      "duration": 1.8
+    },
+    {
+      "key": "title_welcome",
+      "text": "أهلًا! أنا ضَفْدوع، وهذا ميزاني السحري. هيّا نلعب!",
+      "delivery": "[excited] [happy]",
+      "duration": 5.62
+    },
+    {
+      "key": "map_choose_world",
+      "text": "اختر جزيرة لنبدأ المغامرة.",
+      "delivery": "[warmly] [slowly]",
+      "duration": 3.19
+    },
+    {
+      "key": "map_choose_level",
+      "text": "اختر زهرة اللوتس لتبدأ.",
+      "delivery": "[warmly] [slowly]",
+      "duration": 2.72
+    },
+    {
+      "key": "intro_count_first",
+      "text": "انظر! على هذه الكفّة رقم. ضع ضفادع في الكفّة الأخرى حتى يتساوى الميزان.",
+      "delivery": "[warmly] [slowly]",
+      "duration": 6.79
+    },
+    {
+      "key": "intro_count",
+      "text": "ضع ضفادع حتى يتساوى الميزان.",
+      "delivery": "[warmly] [slowly]",
+      "duration": 3.42
+    },
+    {
+      "key": "intro_missing_frogs",
+      "text": "في الكفّة ضفادعُ ورقم. كم ضفدعًا ينقصُ لتتساوى الكفّتان؟",
+      "delivery": "[warmly] [slowly]",
+      "duration": 7.37
+    },
+    {
+      "key": "intro_compare",
+      "text": "أيّ كفّة ستنزل؟ اضغط على الكفّة الأثقل، أو اضغط على علامة يساوي إذا كانتا متساويتين.",
+      "delivery": "[warmly] [slowly]",
+      "duration": 8.57
+    },
+    {
+      "key": "intro_bond_single",
+      "text": "اختر رقمًا واحدًا يجعل الكفّتين متساويتين.",
+      "delivery": "[warmly] [slowly]",
+      "duration": 5.15
+    },
+    {
+      "key": "intro_bond_multi",
+      "text": "اختر رقمين يساويان الرقم الكبير. هل تجد أكثر من طريقة؟",
+      "delivery": "[warmly] [slowly]",
+      "duration": 5.2
+    },
+    {
+      "key": "intro_missing_number",
+      "text": "ما الرقم الناقص؟ ضعه في الكفّة ليتساوى الميزان.",
+      "delivery": "[warmly] [slowly]",
+      "duration": 5.64
+    },
+    {
+      "key": "intro_equation",
+      "text": "الميزان يحب العدل! أكمل الكفّة لتساوي الكفّة الأخرى.",
+      "delivery": "[warmly] [slowly]",
+      "duration": 5.93
+    },
+    {
+      "key": "count_01",
+      "text": "واحد.",
+      "delivery": "[cheerfully]",
+      "duration": 0.97
+    },
+    {
+      "key": "count_02",
+      "text": "اثنان.",
+      "delivery": "[cheerfully]",
+      "duration": 1.23
+    },
+    {
+      "key": "count_03",
+      "text": "ثلاثة.",
+      "delivery": "[cheerfully]",
+      "duration": 0.97
+    },
+    {
+      "key": "count_04",
+      "text": "أربعة.",
+      "delivery": "[cheerfully]",
+      "duration": 1.31
+    },
+    {
+      "key": "count_05",
+      "text": "خمسة.",
+      "delivery": "[cheerfully]",
+      "duration": 1.23
+    },
+    {
+      "key": "count_06",
+      "text": "ستة.",
+      "delivery": "[cheerfully]",
+      "duration": 0.97
+    },
+    {
+      "key": "count_07",
+      "text": "سبعة.",
+      "delivery": "[cheerfully]",
+      "duration": 0.97
+    },
+    {
+      "key": "count_08",
+      "text": "ثمانية.",
+      "delivery": "[cheerfully]",
+      "duration": 1.62
+    },
+    {
+      "key": "count_09",
+      "text": "تسعة.",
+      "delivery": "[cheerfully]",
+      "duration": 1.23
+    },
+    {
+      "key": "count_10",
+      "text": "عشرة.",
+      "delivery": "[cheerfully]",
+      "duration": 1.2
+    },
+    {
+      "key": "count_11",
+      "text": "أحد عشر.",
+      "delivery": "[cheerfully]",
+      "duration": 1.54
+    },
+    {
+      "key": "count_12",
+      "text": "اثنا عشر.",
+      "delivery": "[cheerfully]",
+      "duration": 1.41
+    },
+    {
+      "key": "count_13",
+      "text": "ثلاثة عشر.",
+      "delivery": "[cheerfully]",
+      "duration": 1.52
+    },
+    {
+      "key": "count_14",
+      "text": "أربعة عشر.",
+      "delivery": "[cheerfully]",
+      "duration": 1.36
+    },
+    {
+      "key": "count_15",
+      "text": "خمسة عشر.",
+      "delivery": "[cheerfully]",
+      "duration": 1.54
+    },
+    {
+      "key": "count_16",
+      "text": "ستة عشر.",
+      "delivery": "[cheerfully]",
+      "duration": 1.28
+    },
+    {
+      "key": "count_17",
+      "text": "سبعة عشر.",
+      "delivery": "[cheerfully]",
+      "duration": 1.41
+    },
+    {
+      "key": "count_18",
+      "text": "ثمانية عشر.",
+      "delivery": "[cheerfully]",
+      "duration": 1.8
+    },
+    {
+      "key": "count_19",
+      "text": "تسعة عشر.",
+      "delivery": "[cheerfully]",
+      "duration": 1.41
+    },
+    {
+      "key": "count_20",
+      "text": "عشرون.",
+      "delivery": "[cheerfully]",
+      "duration": 1.36
+    },
+    {
+      "key": "phrase_greater_than",
+      "text": "أكبر من",
+      "delivery": "[warmly]",
+      "duration": 1.46
+    },
+    {
+      "key": "phrase_less_than",
+      "text": "أصغر من",
+      "delivery": "[warmly]",
+      "duration": 1.12
+    },
+    {
+      "key": "phrase_equals",
+      "text": "يساوي",
+      "delivery": "[warmly]",
+      "duration": 1.2
+    },
+    {
+      "key": "phrase_plus",
+      "text": "زائد",
+      "delivery": "[warmly]",
+      "duration": 1.07
+    },
+    {
+      "key": "phrase_this_side_went_down_because",
+      "text": "انظر! هذه الكفّة نزلت لأنّ",
+      "delivery": "[warmly]",
+      "duration": 3.13
+    },
+    {
+      "key": "phrase_they_are_equal_because",
+      "text": "الكفّتان متساويتان لأنّ",
+      "delivery": "[warmly]",
+      "duration": 3.34
+    },
+    {
+      "key": "success_1",
+      "text": "أحسنت! الكفّتان متساويتان.",
+      "delivery": "[excited] [happy]",
+      "duration": 3.55
+    },
+    {
+      "key": "success_2",
+      "text": "رائع! الميزان مستقيم تمامًا.",
+      "delivery": "[excited] [happy]",
+      "duration": 3.5
+    },
+    {
+      "key": "success_3",
+      "text": "ممتاز! أنت بطل الأرقام.",
+      "delivery": "[excited] [happy]",
+      "duration": 2.93
+    },
+    {
+      "key": "success_4",
+      "text": "برافو! عددت بشكل صحيح.",
+      "delivery": "[excited] [happy]",
+      "duration": 2.9
+    },
+    {
+      "key": "success_5",
+      "text": "يا سلام! ضَفْدوع سعيدٌ جدًا.",
+      "delivery": "[excited] [happy]",
+      "duration": 3.37
+    },
+    {
+      "key": "success_6",
+      "text": "عمل عظيم! هيّا للمرحلة التالية.",
+      "delivery": "[excited] [happy]",
+      "duration": 3.79
+    },
+    {
+      "key": "bond_found_one",
+      "text": "وجدتها! هل هناك طريقة أخرى؟",
+      "delivery": "[excited] [happy]",
+      "duration": 3.0
+    },
+    {
+      "key": "bond_already_found",
+      "text": "وجدتَ هذه من قبل! جرّب طريقة مختلفة.",
+      "delivery": "[softly] [warmly]",
+      "duration": 3.68
+    },
+    {
+      "key": "compare_correct",
+      "text": "توقّع صحيح!",
+      "delivery": "[excited] [happy]",
+      "duration": 1.83
+    },
+    {
+      "key": "compare_try_another",
+      "text": "لنجرّب واحدة أخرى.",
+      "delivery": "[softly] [warmly]",
+      "duration": 1.72
+    },
+    {
+      "key": "hint_count_1",
+      "text": "انظر إلى الميزان. أيّ كفّة نازلة؟",
+      "delivery": "[warmly] [slowly]",
+      "duration": 3.66
+    },
+    {
+      "key": "hint_count_2",
+      "text": "هيّا نعدّ الضفادع معًا.",
+      "delivery": "[warmly] [slowly]",
+      "duration": 2.74
+    },
+    {
+      "key": "hint_count_3",
+      "text": "سأضع ضفدعًا معك. الآن دورك!",
+      "delivery": "[warmly] [slowly]",
+      "duration": 3.37
+    },
+    {
+      "key": "hint_bond_1",
+      "text": "جرّب رقمًا صغيرًا أولًا.",
+      "delivery": "[warmly] [slowly]",
+      "duration": 2.3
+    },
+    {
+      "key": "hint_bond_2",
+      "text": "انظر إلى خط الأعداد.",
+      "delivery": "[warmly] [slowly]",
+      "duration": 2.46
+    },
+    {
+      "key": "hint_bond_3",
+      "text": "هذان الرقمان يساعدانك!",
+      "delivery": "[warmly] [slowly]",
+      "duration": 3.29
+    },
+    {
+      "key": "hint_missing_1",
+      "text": "كم ينقص لتتساوى الكفّتان؟",
+      "delivery": "[warmly] [slowly]",
+      "duration": 3.37
+    },
+    {
+      "key": "hint_missing_2",
+      "text": "الضفادع الشفافة تُريك ما ينقص.",
+      "delivery": "[warmly] [slowly]",
+      "duration": 4.23
+    },
+    {
+      "key": "hint_missing_3",
+      "text": "هيّا نعدّ الضفادع الشفافة معًا.",
+      "delivery": "[warmly] [slowly]",
+      "duration": 3.24
+    },
+    {
+      "key": "hint_compare_1",
+      "text": "الرقم الأكبر أثقل!",
+      "delivery": "[warmly] [slowly]",
+      "duration": 2.61
+    },
+    {
+      "key": "feedback_pan_full",
+      "text": "الكفّة امتلأت!",
+      "delivery": "[softly] [warmly]",
+      "duration": 2.17
+    },
+    {
+      "key": "feedback_locked",
+      "text": "هذا ثابت لا يتحرّك.",
+      "delivery": "[softly] [warmly]",
+      "duration": 3.03
+    },
+    {
+      "key": "feedback_wrong_pan",
+      "text": "ضع العناصر في الكفّة المضيئة.",
+      "delivery": "[softly] [warmly]",
+      "duration": 2.61
+    },
+    {
+      "key": "feedback_heavier",
+      "text": "هذه الكفّة أثقل الآن.",
+      "delivery": "[softly] [warmly]",
+      "duration": 2.32
+    },
+    {
+      "key": "feedback_lighter",
+      "text": "هذه الكفّة أخفّ. أضف المزيد!",
+      "delivery": "[softly] [warmly]",
+      "duration": 3.03
+    },
+    {
+      "key": "result_stars_3",
+      "text": "ثلاث نجوم! فعلتها وحدك.",
+      "delivery": "[excited] [happy]",
+      "duration": 2.82
+    },
+    {
+      "key": "result_stars_2",
+      "text": "نجمتان! أحسنت.",
+      "delivery": "[softly] [warmly]",
+      "duration": 2.61
+    },
+    {
+      "key": "result_stars_1",
+      "text": "نجمة! سنتدرّب أكثر معًا.",
+      "delivery": "[softly] [warmly]",
+      "duration": 3.66
+    },
+    {
+      "key": "world_unlocked",
+      "text": "فتحتَ جزيرة جديدة!",
+      "delivery": "[excited] [happy]",
+      "duration": 2.46
+    },
+    {
+      "key": "ui_home",
+      "text": "الرئيسية.",
+      "delivery": "[warmly]",
+      "duration": 1.36
+    },
+    {
+      "key": "ui_replay",
+      "text": "أَعِدْ.",
+      "delivery": "[warmly]",
+      "duration": 1.31
+    },
+    {
+      "key": "ui_next",
+      "text": "التالي.",
+      "delivery": "[warmly]",
+      "duration": 1.07
+    },
+    {
+      "key": "ui_hint",
+      "text": "مساعدة.",
+      "delivery": "[warmly]",
+      "duration": 1.18
+    },
+    {
+      "key": "ui_repeat_instruction",
+      "text": "أَعِدِ التعليمات.",
+      "delivery": "[warmly]",
+      "duration": 1.67
+    },
+    {
+      "key": "ui_sandbox",
+      "text": "لعب حر.",
+      "delivery": "[warmly]",
+      "duration": 1.46
+    },
+    {
+      "key": "ui_practice",
+      "text": "تدريب.",
+      "delivery": "[warmly]",
+      "duration": 0.89
+    },
+    {
+      "key": "ui_read_equation",
+      "text": "اقرأ لي.",
+      "delivery": "[warmly]",
+      "duration": 2.01
+    },
+    {
+      "key": "gate_hold",
+      "text": "للكبار: اضغط مطوّلًا ثلاث ثوانٍ",
+      "delivery": "[warmly]",
+      "duration": 3.63
+    },
+    {
+      "key": "ui_settings",
+      "text": "الإعدادات.",
+      "delivery": "[warmly]",
+      "duration": 1.54
+    },
+    {
+      "key": "ui_dashboard",
+      "text": "لوحة المتابعة.",
+      "delivery": "[warmly]",
+      "duration": 1.65
+    },
+    {
+      "key": "world_1",
+      "text": "بركة الفجر.",
+      "delivery": "[warmly]",
+      "duration": 1.7
+    },
+    {
+      "key": "world_2",
+      "text": "جزيرة الزهور.",
+      "delivery": "[warmly]",
+      "duration": 1.75
+    },
+    {
+      "key": "world_3",
+      "text": "الغابة.",
+      "delivery": "[warmly]",
+      "duration": 1.12
+    },
+    {
+      "key": "world_4",
+      "text": "الشلال.",
+      "delivery": "[warmly]",
+      "duration": 2.74
+    },
+    {
+      "key": "world_5",
+      "text": "الكهف المضيء.",
+      "delivery": "[warmly]",
+      "duration": 1.91
+    },
+    {
+      "key": "world_6",
+      "text": "سماء النجوم.",
+      "delivery": "[warmly]",
+      "duration": 1.99
+    },
+    {
+      "key": "ui_play",
+      "text": "ابدأ اللعب.",
+      "delivery": "[warmly]",
+      "duration": 2.01
+    },
+    {
+      "key": "ui_predict_left",
+      "text": "الكفّة اليسرى أثقل.",
+      "delivery": "[warmly]",
+      "duration": 1.99
+    },
+    {
+      "key": "ui_predict_equal",
+      "text": "الكفّتان متساويتان.",
+      "delivery": "[warmly]",
+      "duration": 2.66
+    },
+    {
+      "key": "ui_predict_right",
+      "text": "الكفّة اليمنى أثقل.",
+      "delivery": "[warmly]",
+      "duration": 2.09
+    }
+  ],
+  "no_vo_by_design": [
+    "settings_numerals",
+    "settings_equationDirection",
+    "settings_voCount",
+    "settings_reducedMotion",
+    "settings_idleHintSec",
+    "settings_music",
+    "settings_sfx",
+    "settings_vo",
+    "settings_reset",
+    "settings_reset_confirm",
+    "numerals_arabic",
+    "numerals_western",
+    "direction_rtl",
+    "direction_ltr",
+    "setting_on",
+    "setting_off",
+    "setting_system",
+    "idle_8",
+    "idle_12",
+    "idle_20",
+    "dashboard_mastery",
+    "dashboard_hints",
+    "dashboard_csv",
+    "error_overcount",
+    "error_undercount",
+    "error_compareFlip",
+    "error_equalsAsResult",
+    "error_capacity",
+    "error_wrongPrediction",
+    "recommend_equation",
+    "recommend_compare",
+    "recommend_count",
+    "csv_level",
+    "csv_stars",
+    "csv_plays",
+    "csv_attempts",
+    "csv_hints",
+    "csv_errors",
+    "update_available"
+  ]
+}

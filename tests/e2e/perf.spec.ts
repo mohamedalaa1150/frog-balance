@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { boot, drag } from './helpers';
+import { boot, drag, tap } from './helpers';
 test('30 seconds of continuous native drags at CPU x4 average at least 55 FPS', async ({
   page,
   browserName,
@@ -10,7 +10,16 @@ test('30 seconds of continuous native drags at CPU x4 average at least 55 FPS', 
   );
   test.setTimeout(60000);
   await boot(page);
+  await tap(page, 'btn-play');
   await page.evaluate(() => window.__FROG__!.gotoScene('SandboxScene'));
+  await expect
+    .poll(() => page.evaluate(() => window.__FROG__!.getAudioState()?.musicKey))
+    .toBe('music_worlds_1_2');
+  await expect
+    .poll(() =>
+      page.evaluate(() => window.__FROG__!.getAudioState()?.musicPlaying),
+    )
+    .toBe(true);
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
   // Asset decoding and first-frame raster uploads are outside the sustained

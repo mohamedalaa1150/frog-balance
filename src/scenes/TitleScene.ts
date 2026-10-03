@@ -9,6 +9,7 @@ import { getRenderScale } from '../layout/viewport';
 import { bindButton } from '../ui/Button';
 import { readSave } from '../services/storage';
 import { t } from '../services/strings';
+import { AudioManager } from '../services/audio';
 import { BaseScene, type SceneReadyEvent } from './BaseScene';
 
 export class TitleScene extends BaseScene {
@@ -24,6 +25,8 @@ export class TitleScene extends BaseScene {
   }
 
   create(): void {
+    const audio = new AudioManager(this, readSave().settings, () => {});
+    this.events.once('shutdown', () => audio.destroy());
     this.pond = this.add
       .image(0, 0, 'bg_title')
       .setOrigin(0)
@@ -65,6 +68,10 @@ export class TitleScene extends BaseScene {
       .image(0, 0, 'btn_play')
       .setName('btn-play')
       .setInteractive({ useHandCursor: true });
+    this.play.on('pointerdown', () => {
+      audio.unlock();
+      this.sound.unlock();
+    });
     bindButton(this, this.play, 'ui_play', () => {
       this.game.registry.set('audio-unlocked', true);
       this.sound.unlock();
