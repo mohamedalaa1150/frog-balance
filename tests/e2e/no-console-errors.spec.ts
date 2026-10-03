@@ -13,7 +13,18 @@ test('full Count level played by real pointer has no console errors or warnings'
   await expect
     .poll(() => page.evaluate(() => window.__FROG__!.getLevelState()!.phase))
     .toBe('success');
-  await page.waitForTimeout(1850);
+  // Result has Home / Replay / Next only; free play is reached from the map.
+  await expect
+    .poll(() =>
+      page.evaluate(() => window.__FROG__!.getPointerTarget('btn-home')),
+    )
+    .not.toBeNull();
+  await tap(page, 'btn-home');
+  await expect
+    .poll(() =>
+      page.evaluate(() => window.__FROG__!.getPointerTarget('btn-sandbox')),
+    )
+    .not.toBeNull();
   await tap(page, 'btn-sandbox');
   await tap(page, 'btn-read');
   expect(errors).toEqual([]);

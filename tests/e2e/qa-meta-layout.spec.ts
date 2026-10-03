@@ -6,8 +6,8 @@ import { mkdirSync } from 'node:fs';
 test.use({ deviceScaleFactor: 2 });
 for (const [width, height] of [
   [1366, 768],
-  [844, 390],
-  [390, 844],
+  [693, 390],
+  [640, 360],
 ] as const) {
   test(`BUG-403/404/405: Title and Map at ${width}x${height}`, async ({
     page,
@@ -152,7 +152,12 @@ test('BUG-404: each menu action uses the matching delivered icon', async ({
         : scene === 'DashboardScene'
           ? [['btn-export', 'btn_download']]
           : scene === 'ResultScene'
-            ? [['btn-sandbox', 'btn_sandbox']]
+            ? // Result keeps exactly three actions (owner request, 2026-10).
+              [
+                ['btn-home', 'btn_home'],
+                ['btn-replay', 'btn_replay'],
+                ['btn-next', 'btn_next'],
+              ]
             : [
                 ['btn-sandbox', 'btn_sandbox'],
                 ['btn-practice', 'btn_practice'],

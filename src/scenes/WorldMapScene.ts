@@ -185,7 +185,7 @@ export class WorldMapScene extends MenuScene {
       for (const child of island.list) {
         if (child instanceof Phaser.GameObjects.Text)
           child
-            .setFontSize(16 * f.r)
+            .setFontSize(Math.max(16 * f.r, 21 * f.scale))
             .setWordWrapWidth(islandWidth - 8 * f.r)
             .setPadding(4 * f.r, 0, 4 * f.r, 0)
             .setPosition(
@@ -206,6 +206,7 @@ export class WorldMapScene extends MenuScene {
       this.header
         .setOrigin(0.5, 0)
         .setFontSize(18 * f.r)
+        .setStroke('#FFF6DC', 3)
         .setWordWrapWidth(f.width - 2 * f.button - 24 * f.r)
         .setPosition(f.width / 2, 8 * f.r);
     // Readable islands can have intersecting corner bounds even when their
