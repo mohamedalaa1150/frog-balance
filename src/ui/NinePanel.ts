@@ -107,8 +107,23 @@ export class NinePanel extends Phaser.GameObjects.Container {
     const extraLeft =
       this.key === 'panel_banner' ? ((l - r) * height) / this.sourceHeight : 0;
     const width = bounds.width + padX * 2 + extraLeft;
+    // Never wider than the screen; slide back inside the edges.
+    const screen = this.scene.scale.width;
+    const fitted = Math.min(width, screen - 8);
+    const x = Phaser.Math.Clamp(
+      bounds.centerX - extraLeft / 2,
+      fitted / 2 + 4,
+      screen - fitted / 2 - 4,
+    );
     return this.setVisible(true)
-      .setPosition(bounds.centerX - extraLeft / 2, bounds.centerY)
-      .resize(width, height);
+      .setPosition(
+        x,
+        Phaser.Math.Clamp(
+          bounds.centerY,
+          height / 2 + 2,
+          this.scene.scale.height - height / 2 - 2,
+        ),
+      )
+      .resize(fitted, height);
   }
 }

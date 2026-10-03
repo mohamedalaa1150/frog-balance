@@ -66,11 +66,12 @@ export class MenuScene extends BaseScene {
         .setFontSize(Math.min(40 * f.scale, 28 * f.r))
         .setWordWrapWidth(f.width * 0.6);
       this.header.setY(Math.max(30 * f.r, this.header.height / 2 + 14 * f.r));
-      this.headerSign?.fitText(this.header, 30 * f.scale, 12 * f.r);
       home
         .setPosition(f.width - f.button / 2 - 8 * f.r, f.button / 2 + 8 * f.r)
         .setDisplaySize(f.button, f.button);
       this.layout();
+      // After the scene's own layout, which may move or restyle the header.
+      this.headerSign?.fitText(this.header, 30 * f.scale, 12 * f.r);
     };
     layout();
     this.scale.on(Phaser.Scale.Events.RESIZE, layout);

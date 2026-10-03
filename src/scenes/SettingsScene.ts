@@ -84,7 +84,7 @@ export class SettingsScene extends MenuScene {
       const row = this.add
         .container(0, 0, [
           this.add.zone(0, 0, 340, 112),
-          rowCard(this, 360, 118),
+          rowCard(this, 400, 118),
           valueChip(this, 230, 44).setPosition(0, 22),
           title,
           value,
@@ -144,7 +144,7 @@ export class SettingsScene extends MenuScene {
             save.settings.numerals,
           ),
         )
-        .setPosition(150, 14);
+        .setPosition(165, 14);
       const slider = new Slider(
         this,
         `setting-${channel}`,
@@ -156,10 +156,10 @@ export class SettingsScene extends MenuScene {
           );
         },
       );
-      slider.setPosition(-22, 16).setScale(0.82);
+      slider.setPosition(-26, 16);
       this.rows.push(
         this.add
-          .container(0, 0, [rowCard(this, 360, 118), label, slider, number])
+          .container(0, 0, [rowCard(this, 400, 118), label, slider, number])
           .setName(`row-${channel}`),
       );
     }
@@ -197,7 +197,7 @@ export class SettingsScene extends MenuScene {
       available / (rows * 140),
     );
     // Pack the columns together (no empty gutter in the middle of the board).
-    const step = Math.min(f.width / columns, 380 * scale + 24 * f.r);
+    const step = Math.min(f.width / columns, 420 * scale + 20 * f.r);
     const boardTop = f.button * 1.25 - 12 * f.r,
       boardBottom = f.button * 1.45 + available;
     this.board
@@ -205,7 +205,7 @@ export class SettingsScene extends MenuScene {
       .resize(
         Math.min(
           f.width - 16 * f.r,
-          (columns - 1) * step + 360 * scale + 70 * f.r,
+          (columns - 1) * step + 400 * scale + 70 * f.r,
         ),
         boardBottom - boardTop,
         0.6 * f.scale,

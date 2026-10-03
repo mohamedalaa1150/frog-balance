@@ -1,4 +1,5 @@
 import { consoleErrors } from './helpers';
+import { CONFIG } from '../../src/config';
 import { expect, test, type Page } from '@playwright/test';
 
 async function assertResolution(page: Page, dpr: number) {
@@ -12,10 +13,16 @@ async function assertResolution(page: Page, dpr: number) {
     };
   });
   expect(
-    Math.abs(size.width - Math.round(size.cssWidth * Math.min(dpr, 2))),
+    Math.abs(
+      size.width -
+        Math.round(size.cssWidth * Math.min(dpr, CONFIG.maxRenderScale)),
+    ),
   ).toBeLessThanOrEqual(1);
   expect(
-    Math.abs(size.height - Math.round(size.cssHeight * Math.min(dpr, 2))),
+    Math.abs(
+      size.height -
+        Math.round(size.cssHeight * Math.min(dpr, CONFIG.maxRenderScale)),
+    ),
   ).toBeLessThanOrEqual(1);
   expect(size.cssWidth).toBe(page.viewportSize()!.width);
   expect(size.cssHeight).toBe(page.viewportSize()!.height);
@@ -49,7 +56,7 @@ async function assertResolution(page: Page, dpr: number) {
 for (const dpr of [1, 2, 3]) {
   test.describe(`DPR ${dpr}`, () => {
     test.use({ deviceScaleFactor: dpr, viewport: { width: 390, height: 844 } });
-    test('caps physical rendering at 2x and preserves CSS coordinates on rotation', async ({
+    test('caps physical rendering at the configured scale and preserves CSS coordinates on rotation', async ({
       page,
     }) => {
       const errors = consoleErrors(page);

@@ -169,13 +169,22 @@ export class TitleScene extends BaseScene {
     const titleAt = portrait ? at(0.5, 0.15) : at(0.29, 0.25);
     const playAt = portrait ? at(0.5, 0.36) : at(0.29, 0.6);
     // Rasterize text at the physical font size instead of enlarging a low-DPI texture.
+    // Shrink-to-fit: the stroked, shadowed title must stay fully on screen.
+    const maxTitleW = portrait ? width * 0.9 : width * 0.5;
     this.title
-      .setPosition(titleAt.x, titleAt.y)
-      .setFontSize(
-        Math.min(104 * uiScale, (portrait ? width : width * 0.5) / 4.2),
-      )
+      .setWordWrapWidth(null)
       .setStroke('#2E6B1F', 14 * uiScale)
-      .setWordWrapWidth(portrait ? width * 0.9 : width * 0.52);
+      .setFontSize(104 * uiScale);
+    if (this.title.width > maxTitleW)
+      this.title.setFontSize((104 * uiScale * maxTitleW) / this.title.width);
+    this.title.setPosition(
+      Phaser.Math.Clamp(
+        titleAt.x,
+        this.title.width / 2 + 4,
+        width - this.title.width / 2 - 4,
+      ),
+      Math.max(titleAt.y, this.title.height / 2 + 4),
+    );
     this.numerals
       .setPosition(width / 2, height * 0.41)
       .setFontSize(64 * uiScale);
@@ -185,7 +194,13 @@ export class TitleScene extends BaseScene {
       Math.min(200 * uiScale, (portrait ? height : width) * 0.16),
     );
     this.play
-      ?.setPosition(playAt.x, playAt.y)
+      ?.setPosition(
+        playAt.x,
+        Math.max(
+          playAt.y,
+          this.title.y + this.title.height / 2 + playSize * 0.6,
+        ),
+      )
       .setDisplaySize(playSize, playSize);
     const motion = readSave().settings.reducedMotion;
     if (

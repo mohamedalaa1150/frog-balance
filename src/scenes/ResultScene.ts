@@ -78,11 +78,10 @@ export class ResultScene extends BaseScene {
         action: () =>
           state.levelId.startsWith('practice-')
             ? this.scene.start('PracticeScene')
-            : next && next.world === state.level.world
-              ? this.scene.start('GameScene', { levelId: next.id })
-              : // Last level of an island: back to the map so the child sees the
-                // next island open (unlock celebration + current-island glow).
-                this.scene.start('WorldMapScene'),
+            : next
+              ? // The last level of an island continues on the next island.
+                this.scene.start('GameScene', { levelId: next.id })
+              : this.scene.start('WorldMapScene'),
       },
     ];
     const buttons = actions.map(({ name, texture, action }) => {
