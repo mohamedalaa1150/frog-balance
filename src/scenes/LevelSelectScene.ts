@@ -16,17 +16,37 @@ export class LevelSelectScene extends MenuScene {
   create(): void {
     this.pads = [];
     const save = readSave();
+    // The first unlocked level without stars glows as "play me next".
+    let currentIndex = 0;
+    for (let index = 1; index <= 8; index++)
+      if (
+        isLevelUnlocked(save, this.world, index) &&
+        !save.levels[`w${this.world}-l${index}`]?.bestStars
+      ) {
+        currentIndex = index;
+        break;
+      }
     for (let index = 1; index <= 8; index++) {
       const id = `w${this.world}-l${index}`,
         unlocked = isLevelUnlocked(save, this.world, index);
-      const image = this.add
-        .image(0, 0, unlocked ? 'lily_level' : 'lily_level_locked')
-        .setDisplaySize(150, 150);
-      const digit = this.text(
-        'map_choose_level',
-        `level-${id}-number`,
-        54,
-      ).setText(formatNumber(index, save.settings.numerals));
+      // Generated lily-pad art: plain, glowing "current", or stone + padlock.
+      const image = this.add.image(
+        0,
+        0,
+        !unlocked
+          ? 'lily_level_locked'
+          : index === currentIndex
+            ? 'lily_level_current'
+            : 'lily_level',
+      );
+      const source = image.texture.getSourceImage();
+      const fit = 150 / Math.max(source.width, source.height);
+      image.setDisplaySize(source.width * fit, source.height * fit);
+      const digit = this.text('map_choose_level', `level-${id}-number`, 58)
+        .setText(formatNumber(index, save.settings.numerals))
+        .setColor('#FFFFFF')
+        .setStroke(unlocked ? '#2F6B1F' : '#5B6670', 10)
+        .setY(12);
       const pad = this.add
         .container(0, 0, [image, digit])
         .setName(`level-${id}`)
@@ -36,7 +56,7 @@ export class LevelSelectScene extends MenuScene {
           this.add
             .image(
               (i - 1) * 38,
-              85,
+              92,
               i < (save.levels[id]?.bestStars ?? 0)
                 ? 'star_full'
                 : 'star_empty',
@@ -61,7 +81,7 @@ export class LevelSelectScene extends MenuScene {
       columns = f.portrait ? 2 : 4,
       rows = 8 / columns;
     const size = Math.min(
-      140 * f.scale,
+      185 * f.scale,
       ((f.width - 40 * f.r) / columns) * 0.8,
       (f.height - f.button * 2) / (rows * 1.5),
     );

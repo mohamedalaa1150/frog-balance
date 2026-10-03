@@ -101,14 +101,6 @@ export class ResultScene extends BaseScene {
       );
       return button;
     });
-    // Keep free play one tap away after completing a level.
-    const sandbox = this.add
-      .image(0, 0, 'btn_sandbox')
-      .setName('btn-sandbox')
-      .setInteractive();
-    bindButton(this, sandbox, 'ui_sandbox', () =>
-      this.scene.start('SandboxScene'),
-    );
     const audio = new AudioManager(this, readSave().settings, () => {});
     if (this.game.registry.get('audio-unlocked')) audio.unlock();
     audio.setFastMode(this.game.registry.get('fast-mode') === true);
@@ -118,58 +110,46 @@ export class ResultScene extends BaseScene {
       type: 'result',
       data: { levelId: state.levelId, stars: rating, errors: state.errors },
     });
+    // Star sizes: the middle star is the hero. Stars and buttons read
+    // right-to-left (RTL): star 1 and Home sit on the right, Next on the left.
+    const starSize = (i: number) => (i === 1 ? 168 : 128);
     const layout = () => {
       const { width, height } = this.scale.gameSize,
         { uiScale, centerX } = getLayout(width, height);
-      const portrait = height > width;
       coverBackground(background, width, height, state.level.world);
-      const boardW = Math.min(width * 0.9, 640 * uiScale),
-        boardH = Math.min(height * (portrait ? 0.56 : 0.66), 470 * uiScale),
-        boardY = height * (portrait ? 0.38 : 0.47),
+      const boardW = Math.min(width * 0.62, 760 * uiScale),
+        boardH = Math.min(height * 0.74, 540 * uiScale),
+        boardY = height * 0.53,
         top = boardY - boardH / 2;
-      board.setPosition(centerX, boardY).resize(boardW, boardH, 0.55 * uiScale);
+      board.setPosition(centerX, boardY).resize(boardW, boardH, 0.6 * uiScale);
       label
-        .setPosition(centerX, top + 8 * uiScale)
-        .setFontSize(40 * uiScale)
-        .setWordWrapWidth(boardW * 0.7);
-      pill.fitText(label, 44 * uiScale, 20 * uiScale);
+        .setPosition(centerX, top + 6 * uiScale)
+        .setFontSize(44 * uiScale)
+        .setWordWrapWidth(boardW * 0.72);
+      pill.fitText(label, 48 * uiScale, 22 * uiScale);
       starImages.forEach((star, i) =>
         star
           .setPosition(
-            centerX + (i - 1) * 130 * uiScale,
-            top + boardH * 0.4 - (i === 1 ? 14 * uiScale : 0),
+            centerX + (1 - i) * 170 * uiScale,
+            top + boardH * 0.4 - (i === 1 ? 22 * uiScale : 0),
           )
-          .setDisplaySize(
-            (i === 1 ? 128 : 108) * uiScale,
-            (i === 1 ? 128 : 108) * uiScale,
-          ),
+          .setDisplaySize(starSize(i) * uiScale, starSize(i) * uiScale),
       );
       buttons.forEach((button, i) =>
         button
-          .setPosition(centerX + (i - 1) * 150 * uiScale, top + boardH * 0.76)
-          .setDisplaySize(112 * uiScale, 112 * uiScale),
+          .setPosition(centerX + (1 - i) * 170 * uiScale, top + boardH * 0.77)
+          .setDisplaySize(128 * uiScale, 128 * uiScale),
       );
-      const mascotH = portrait
-        ? Math.min(260 * uiScale * 1.5, height - (top + boardH) - 40 * uiScale)
-        : Math.min(198 * uiScale, height - (top + boardH) + 60 * uiScale);
+      const mascotH = Math.min(250 * uiScale, height * 0.38);
       mascot
         .setPosition(
-          portrait
-            ? centerX - 90 * uiScale
-            : centerX - boardW / 2 - 20 * uiScale,
-          portrait
-            ? height - mascotH / 2 - 8 * uiScale
-            : boardY + boardH / 2 - mascotH / 2 + 30 * uiScale,
+          Math.max(
+            mascotH * 0.48 + 8 * uiScale,
+            centerX - boardW / 2 - mascotH * 0.32,
+          ),
+          height - mascotH / 2 - 12 * uiScale,
         )
         .setDisplaySize((mascotH * 190) / 198, mascotH);
-      sandbox
-        .setPosition(
-          portrait
-            ? centerX + 110 * uiScale
-            : centerX + boardW / 2 + 10 * uiScale,
-          portrait ? height - 70 * uiScale : boardY + boardH / 2 - 30 * uiScale,
-        )
-        .setDisplaySize(96 * uiScale, 96 * uiScale);
     };
     layout();
     const settings = readSave().settings;
@@ -178,18 +158,21 @@ export class ResultScene extends BaseScene {
       settings.reducedMotion === 'on' ||
       (settings.reducedMotion === 'system' &&
         matchMedia('(prefers-reduced-motion: reduce)').matches);
+    // Fill right-to-left: each star pops in with its own chime.
     starImages.forEach((star, i) => {
       if (!reduced) {
-        star.setAlpha(0);
+        const { scaleX, scaleY } = star;
+        star.setScale(0);
         this.tweens.add({
           targets: star,
-          alpha: 1,
-          duration: 300,
-          delay: i * 250,
-          ease: 'Sine.easeOut',
+          scaleX,
+          scaleY,
+          duration: 380,
+          delay: 200 + i * 320,
+          ease: 'Back.easeOut',
         });
       }
-      this.time.delayedCall(reduced ? 0 : i * 250, () => {
+      this.time.delayedCall(reduced ? 0 : 200 + i * 320, () => {
         void audio.play(`sfx_star_${i + 1}`);
       });
     });

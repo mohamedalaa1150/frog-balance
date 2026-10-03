@@ -47,6 +47,9 @@ export const RASTER_KEYS = [
   'panel_bubble',
   'cover_land',
   'cover_port',
+  'lily_level',
+  'lily_level_current',
+  'lily_level_locked',
 ];
 export const VECTOR_KEYS = [
   'beam',
@@ -61,8 +64,6 @@ export const VECTOR_KEYS = [
   'symbol_gt',
   'symbol_lt',
   'symbol_eq',
-  'lily_level',
-  'lily_level_locked',
 ];
 export const PAN_ANCHORS = {
   width: 260,

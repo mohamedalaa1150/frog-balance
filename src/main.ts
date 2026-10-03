@@ -1,4 +1,5 @@
 /// <reference types="vite-plugin-pwa/client" />
+import { installArabicTextMetrics } from './ui/arabicText';
 import { registerSW } from 'virtual:pwa-register';
 import { installVisibility } from './services/visibility';
 import { SettingsScene } from './scenes/SettingsScene';
@@ -36,6 +37,7 @@ if (import.meta.env.DEV) {
   validateVoKeys(LevelsFile.parse(levels).levels);
 }
 
+installArabicTextMetrics();
 const parent = document.getElementById('game');
 if (!parent) throw new Error('Missing game container');
 const viewport = getViewport(parent);
