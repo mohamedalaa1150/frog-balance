@@ -7,7 +7,7 @@ import { THEME, cssColor, tileColor } from '../theme';
 import Phaser from 'phaser';
 import { CONFIG } from '../config';
 import { LevelController } from '../controllers/LevelController';
-import { drawTextPill } from '../ui/textPill';
+import { NinePanel } from '../ui/NinePanel';
 import { coverBackground } from '../layout/background';
 import { EquationBar } from '../objects/EquationBar';
 import { HintOverlay, hintPanKinds } from '../objects/HintOverlay';
@@ -38,7 +38,7 @@ export class GameScene extends BaseScene {
   balance!: Balance;
   private pile?: FrogPile;
   private tray!: NumberTray;
-  private subtitlePill!: Phaser.GameObjects.Graphics;
+  private subtitlePill!: NinePanel;
   private subtitle!: Phaser.GameObjects.Text;
   private equation!: EquationBar;
   private hints!: HintOverlay;
@@ -107,7 +107,7 @@ export class GameScene extends BaseScene {
     this.trayBackground = this.add
       .image(0, 0, 'tray_bg')
       .setName('tray-background');
-    this.subtitlePill = this.add.graphics().setDepth(29);
+    this.subtitlePill = new NinePanel(this, 'panel_banner').setDepth(29);
     this.subtitle = this.add
       .text(
         0,
@@ -116,8 +116,8 @@ export class GameScene extends BaseScene {
         {
           fontFamily: CONFIG.fontStack,
           fontSize: 24,
-          fontStyle: '700',
-          color: cssColor(THEME.navy),
+          fontStyle: '800',
+          color: '#4A2A12',
           rtl: true,
           align: 'center',
         },
@@ -213,12 +213,21 @@ export class GameScene extends BaseScene {
         const button = this.add
           .image(0, 0, `predict_${choice}`)
           .setName(`predict-${choice}`)
+          // Above the cached tray snapshot (depth 1), which used to hide them.
+          .setDepth(6)
           .setInteractive({ useHandCursor: true });
         bindButton(this, button, `ui_predict_${choice}`, () =>
           this.controller.dispatch({ type: 'predict', choice }),
         );
         this.predictions.push(button);
       }
+      // The intro asks the child to tap the heavier pan, so the pans
+      // themselves are prediction targets too (design §5.2).
+      for (const side of ['left', 'right'] as const)
+        this.balance.pans[side].on('pointerdown', () => {
+          if (!this.controller.state.prediction)
+            this.controller.dispatch({ type: 'predict', choice: side });
+        });
     }
 
     this.background.setTexture(`bg_world_${level.world}`);
@@ -398,9 +407,11 @@ export class GameScene extends BaseScene {
   private paintSubtitle(): void {
     this.cachedSubtitle?.destroy();
     const scale = getLayout(this.scale.width, this.scale.height).uiScale;
-    drawTextPill(this.subtitlePill, this.subtitle, scale);
-    const bounds = this.subtitle.getBounds();
-    const pad = Math.ceil(20 * scale);
+    this.subtitlePill.fitText(this.subtitle, 34 * scale, 16 * scale);
+    const bounds = this.subtitlePill.visible
+      ? this.subtitlePill.getBounds()
+      : this.subtitle.getBounds();
+    const pad = Math.ceil(10 * scale);
     this.cachedSubtitle = new CachedLayer(
       this,
       [this.subtitlePill, this.subtitle],
@@ -591,7 +602,7 @@ export class GameScene extends BaseScene {
     this.subtitle
       .setPosition(centerX, hud.subtitleY)
       .setFontSize(24 * uiScale)
-      .setWordWrapWidth(width * 0.88);
+      .setWordWrapWidth(width * 0.74);
     this.paintSubtitle();
     this.equation.layout(this.balance, 178 * uiScale, uiScale);
     this.board
@@ -684,14 +695,26 @@ export class GameScene extends BaseScene {
       emitter.explode(20);
       this.time.delayedCall(700, () => emitter.destroy());
     }
-    void this.audio.play(
-      this.controller.state.level.mode === 'compare'
-        ? 'compare_correct'
-        : `success_${Phaser.Math.Between(1, 6)}`,
-      'vo',
-      'interrupt',
-    );
-    this.returnAt = this.time.now + (this.controller.fast ? 300 : 1700);
+    // Let the praise line finish before leaving: wait for the VO to end (+ a short
+    // beat), never less than the celebration time, and never more than 6 s.
+    const started = this.time.now;
+    const minimum = this.controller.fast ? 300 : 1700;
+    this.returnAt = started + (this.controller.fast ? 300 : 6000);
+    void this.audio
+      .play(
+        this.controller.state.level.mode === 'compare'
+          ? 'compare_correct'
+          : `success_${Phaser.Math.Between(1, 6)}`,
+        'vo',
+        'interrupt',
+      )
+      .then(() => {
+        if (this.returnAt === Infinity) return;
+        this.returnAt = Math.min(
+          this.returnAt,
+          Math.max(started + minimum, this.time.now + 500),
+        );
+      });
   }
   private returnBondTiles(before?: LevelState): void {
     if (!before?.level.workPan) return;

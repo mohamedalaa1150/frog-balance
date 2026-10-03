@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from 'vitest';
 import { getGameplayLayout } from '../../src/layout/gameplayLayout';
 import { getPanGrid } from '../../src/layout/panGrid';
 import type { ItemKind } from '../../src/core/types';
+import { CONFIG } from '../../src/config';
 
 afterEach(() => vi.unstubAllGlobals());
 const viewports = [
@@ -21,7 +22,7 @@ const stacks: ItemKind[][] = [
 test('BUG-401/402/205: width-bounded grids, beam spans and sources across viewport and DPR changes', () => {
   for (const dpr of [1, 2, 3]) {
     vi.stubGlobal('window', { devicePixelRatio: dpr });
-    const r = Math.min(dpr, 2);
+    const r = Math.min(dpr, CONFIG.maxRenderScale);
     for (const [w, h] of viewports) {
       for (const numbers of [0, 10]) {
         const layout = getGameplayLayout(w * r, h * r, numbers, true);

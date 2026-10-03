@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { THEME } from '../theme';
 export class Slider extends Phaser.GameObjects.Container {
   private track: Phaser.GameObjects.Graphics;
+  private knob: Phaser.GameObjects.Image;
   constructor(
     scene: Phaser.Scene,
     name: string,
@@ -12,7 +13,9 @@ export class Slider extends Phaser.GameObjects.Container {
     scene.add.existing(this);
     this.setName(name).setSize(320, 112);
     this.track = scene.add.graphics();
-    this.add([scene.add.zone(0, 0, 320, 112), this.track]);
+    // Generated star as the thumb, matching the result-screen stars.
+    this.knob = scene.add.image(0, 0, 'star_full').setDisplaySize(64, 64);
+    this.add([scene.add.zone(0, 0, 320, 112), this.track, this.knob]);
     this.paint();
     this.setInteractive(
       new Phaser.Geom.Rectangle(0, 0, 320, 112),
@@ -32,11 +35,15 @@ export class Slider extends Phaser.GameObjects.Container {
     this.on('drag', set);
   }
   private paint() {
+    const x = -150 + this.value * 300;
     this.track
       .clear()
-      .lineStyle(12, THEME.navy)
-      .lineBetween(-150, 0, 150, 0)
-      .fillStyle(THEME.gold)
-      .fillCircle(-150 + this.value * 300, 0, 22);
+      .fillStyle(0x6b3f17, 1)
+      .fillRoundedRect(-160, -13, 320, 26, 13)
+      .fillStyle(0xe9d7ae, 1)
+      .fillRoundedRect(-156, -9, 312, 18, 9)
+      .fillStyle(THEME.green, 1)
+      .fillRoundedRect(-156, -9, Math.max(18, x + 156), 18, 9);
+    this.knob.setPosition(x, 0);
   }
 }
