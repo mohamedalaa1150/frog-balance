@@ -5,17 +5,43 @@ import { defaults, type SaveV1 } from '../core/progress';
 import { Slider } from '../ui/Slider';
 import { bindButton } from '../ui/Button';
 import { formatNumber } from '../core/numerals';
+import { NinePanel } from '../ui/NinePanel';
+
+/** Game-style row card: parchment with a wooden rim and soft drop shadow. */
+function rowCard(scene: Phaser.Scene, w: number, h: number) {
+  return scene.add
+    .graphics()
+    .fillStyle(0x5a3414, 0.28)
+    .fillRoundedRect(-w / 2, -h / 2 + 6, w, h, 24)
+    .fillStyle(0xfff6dc, 1)
+    .fillRoundedRect(-w / 2, -h / 2, w, h, 24)
+    .lineStyle(5, 0xb7864a, 1)
+    .strokeRoundedRect(-w / 2, -h / 2, w, h, 24);
+}
+/** Green "chip" behind the current value, so it reads as a tappable toggle. */
+function valueChip(scene: Phaser.Scene, w: number, h: number) {
+  return scene.add
+    .graphics()
+    .fillStyle(0x2e7d32, 1)
+    .fillRoundedRect(-w / 2, -h / 2 + 4, w, h, h / 2)
+    .fillStyle(0x5cb85c, 1)
+    .fillRoundedRect(-w / 2, -h / 2, w, h, h / 2)
+    .fillStyle(0xffffff, 0.25)
+    .fillRoundedRect(-w / 2 + 10, -h / 2 + 4, w - 20, h * 0.35, h * 0.17);
+}
 
 export class SettingsScene extends MenuScene {
   private rows: Phaser.GameObjects.Container[] = [];
   private footer: Phaser.GameObjects.Image[] = [];
   private confirmed = false;
+  private board?: NinePanel;
   constructor() {
     super('SettingsScene');
   }
   create(): void {
     this.rows = [];
     this.footer = [];
+    this.board = undefined;
     if (
       !this.game.registry.get('grown-up-unlocked') &&
       new URLSearchParams(location.search).get('test') !== '1'
@@ -45,15 +71,24 @@ export class SettingsScene extends MenuScene {
       const title = this.text(
         `settings_${key}`,
         `setting-${key}-label`,
-        28,
-      ).setPosition(0, -24);
+        26,
+      ).setPosition(0, -26);
       const value = this.text(
         labels[Math.max(0, values.indexOf(save.settings[key]))]!,
         `setting-${key}-value`,
-        25,
-      ).setPosition(0, 18);
+        24,
+      )
+        .setColor('#FFFFFF')
+        .setStroke('#2E7D32', 5)
+        .setPosition(0, 22);
       const row = this.add
-        .container(0, 0, [this.add.zone(0, 0, 340, 112), title, value])
+        .container(0, 0, [
+          this.add.zone(0, 0, 340, 112),
+          rowCard(this, 400, 118),
+          valueChip(this, 230, 44).setPosition(0, 22),
+          title,
+          value,
+        ])
         .setName(`setting-${key}`)
         .setSize(340, 112)
         .setInteractive(
@@ -97,7 +132,7 @@ export class SettingsScene extends MenuScene {
         `settings_${channel}`,
         `setting-${channel}-label`,
         28,
-      ).setPosition(0, -30);
+      ).setPosition(0, -32);
       const number = this.text(
         `settings_${channel}`,
         `setting-${channel}-value`,
@@ -109,7 +144,7 @@ export class SettingsScene extends MenuScene {
             save.settings.numerals,
           ),
         )
-        .setPosition(185, 12);
+        .setPosition(165, 14);
       const slider = new Slider(
         this,
         `setting-${channel}`,
@@ -121,10 +156,10 @@ export class SettingsScene extends MenuScene {
           );
         },
       );
-      slider.setPosition(-20, 15);
+      slider.setPosition(-26, 16);
       this.rows.push(
         this.add
-          .container(0, 0, [label, slider, number])
+          .container(0, 0, [rowCard(this, 400, 118), label, slider, number])
           .setName(`row-${channel}`),
       );
     }
@@ -147,6 +182,9 @@ export class SettingsScene extends MenuScene {
       () => this.scene.start('DashboardScene'),
     );
     this.footer = [reset, dashboard];
+    this.board = new NinePanel(this, 'panel_board')
+      .setDepth(-5)
+      .setName('settings-board');
     this.setup('ui_settings', 'TitleScene');
   }
   protected override layout(): void {
@@ -158,11 +196,24 @@ export class SettingsScene extends MenuScene {
       (f.width / columns - 24 * f.r) / 420,
       available / (rows * 140),
     );
+    // Pack the columns together (no empty gutter in the middle of the board).
+    const step = Math.min(f.width / columns, 420 * scale + 20 * f.r);
+    const boardTop = f.button * 1.25 - 12 * f.r,
+      boardBottom = f.button * 1.45 + available;
+    this.board
+      ?.setPosition(f.width / 2, (boardTop + boardBottom) / 2)
+      .resize(
+        Math.min(
+          f.width - 16 * f.r,
+          (columns - 1) * step + 400 * scale + 70 * f.r,
+        ),
+        boardBottom - boardTop,
+        0.6 * f.scale,
+      );
     this.rows.forEach((row, i) =>
       row
         .setPosition(
-          f.width / 2 +
-            (((columns - 1) / 2 - (i % columns)) * f.width) / columns,
+          f.width / 2 + ((columns - 1) / 2 - (i % columns)) * step,
           f.button * 1.35 +
             ((Math.floor(i / columns) + 0.5) * available) / rows,
         )

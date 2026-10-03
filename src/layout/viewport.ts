@@ -1,8 +1,16 @@
 import type Phaser from 'phaser';
 import { CONFIG } from '../config';
 
+/**
+ * Physical render scale. 3× screens render natively (sharp text and art);
+ * fractional ratios between 2 and 3 snap to 2 so every texture keeps whole
+ * pixel dimensions.
+ */
 export function getRenderScale(): number {
-  return Math.min(window.devicePixelRatio || 1, CONFIG.maxRenderScale);
+  const dpr = window.devicePixelRatio || 1;
+  return dpr >= CONFIG.maxRenderScale
+    ? CONFIG.maxRenderScale
+    : Math.min(dpr, 2);
 }
 
 export function getViewport(parent: HTMLElement) {

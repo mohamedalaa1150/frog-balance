@@ -26,15 +26,15 @@ export function sizedTexture(
     const canvas = document.createElement('canvas');
     canvas.width = w;
     canvas.height = h;
-    canvas
-      .getContext('2d')!
-      .drawImage(
-        scene.textures.get(sourceKey).getSourceImage() as CanvasImageSource,
-        0,
-        0,
-        w,
-        h,
-      );
+    const context = canvas.getContext('2d')!;
+    context.imageSmoothingQuality = 'high';
+    context.drawImage(
+      scene.textures.get(sourceKey).getSourceImage() as CanvasImageSource,
+      0,
+      0,
+      w,
+      h,
+    );
     scene.textures.addCanvas(key, canvas);
     keys.add(key);
   }

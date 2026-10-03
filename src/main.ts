@@ -80,6 +80,16 @@ document
   ?.addEventListener('contextmenu', (event) => event.preventDefault());
 installTestApi(game);
 installViewportController(game, parent);
+// Canvas 2D defaults to low-quality resampling, which makes large art (and
+// cached text layers) look jagged when drawn smaller. A resize resets the
+// context state, so re-apply before every frame.
+game.events.on(Phaser.Core.Events.PRE_RENDER, () => {
+  const renderer = game.renderer;
+  if (renderer instanceof Phaser.Renderer.Canvas.CanvasRenderer) {
+    renderer.gameContext.imageSmoothingEnabled = true;
+    renderer.gameContext.imageSmoothingQuality = 'high';
+  }
+});
 
 installVisibility(game);
 registerSW({

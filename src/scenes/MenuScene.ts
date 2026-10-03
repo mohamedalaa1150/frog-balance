@@ -1,19 +1,20 @@
 import Phaser from 'phaser';
 import { BaseScene } from './BaseScene';
 import { CONFIG } from '../config';
-import { THEME, cssColor } from '../theme';
 import { readSave } from '../services/storage';
 import { AudioManager } from '../services/audio';
 import { t, type StringKey } from '../services/strings';
 import { getRenderScale } from '../layout/viewport';
 import { coverBackground } from '../layout/background';
 import { bindButton } from '../ui/Button';
+import { NinePanel } from '../ui/NinePanel';
 
 export const menuLabel = (key: string): string => t(key as StringKey);
 export class MenuScene extends BaseScene {
   protected audio!: AudioManager;
   protected background!: Phaser.GameObjects.Image;
   protected header!: Phaser.GameObjects.Text;
+  protected headerSign?: NinePanel;
   protected world = 2;
   protected frame() {
     const { width, height } = this.scale.gameSize;
@@ -46,7 +47,11 @@ export class MenuScene extends BaseScene {
       .image(0, 0, `bg_world_${this.world}`)
       .setOrigin(0)
       .setDepth(-10);
-    this.header = this.text(title, 'menu-title', 40);
+    this.header = this.text(title, 'menu-title', 40).setDepth(2);
+    // Wooden sign behind the screen title (generated panel kit).
+    this.headerSign = new NinePanel(this, 'panel_banner')
+      .setDepth(1)
+      .setName('menu-title-sign');
     this.audio = new AudioManager(this, readSave().settings, () => {});
     if (this.game.registry.get('audio-unlocked')) this.audio.unlock();
     this.audio.setFastMode(this.game.registry.get('fast-mode') === true);
@@ -59,11 +64,14 @@ export class MenuScene extends BaseScene {
       this.header
         .setPosition(f.width / 2, 30 * f.r)
         .setFontSize(Math.min(40 * f.scale, 28 * f.r))
-        .setWordWrapWidth(f.width * 0.65);
+        .setWordWrapWidth(f.width * 0.6);
+      this.header.setY(Math.max(30 * f.r, this.header.height / 2 + 14 * f.r));
       home
         .setPosition(f.width - f.button / 2 - 8 * f.r, f.button / 2 + 8 * f.r)
         .setDisplaySize(f.button, f.button);
       this.layout();
+      // After the scene's own layout, which may move or restyle the header.
+      this.headerSign?.fitText(this.header, 30 * f.scale, 12 * f.r);
     };
     layout();
     this.scale.on(Phaser.Scale.Events.RESIZE, layout);
@@ -83,10 +91,11 @@ export class MenuScene extends BaseScene {
         fontFamily: CONFIG.fontStack,
         fontStyle: '800',
         fontSize: size,
-        color: cssColor(THEME.navy),
+        color: '#4A2A12',
+        stroke: '#FFF6DC',
+        strokeThickness: 6,
         rtl: true,
         align: 'center',
-        backgroundColor: cssColor(THEME.sky),
         padding: { left: 8, right: 8, top: 2, bottom: 2 },
       })
       .setOrigin(0.5)

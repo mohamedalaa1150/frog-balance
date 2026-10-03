@@ -38,6 +38,9 @@ export class CachedLayer {
   refresh(): void {
     for (const [object, render] of this.originals)
       Object.assign(object, render);
+    const canvas = this.texture.texture.getSourceImage();
+    if (canvas instanceof HTMLCanvasElement)
+      canvas.getContext('2d')!.imageSmoothingQuality = 'high';
     this.texture.clear().draw([...this.originals.keys()]);
     for (const object of this.originals.keys()) {
       object.renderCanvas = skipDraw;
