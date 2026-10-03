@@ -1,5 +1,7 @@
 # Frog Balance — Mizan Dofdou
 
+▶ **Play:** https://mohamedalaa1150.github.io/frog-balance/ (deployed automatically from `main` by `.github/workflows/pages.yml`; installable and playable offline as a PWA).
+
 An Arabic educational math game for children aged 4–8, built with Phaser 3,
 strict TypeScript, and Vite. Phase 2 adds playable Count levels and Sandbox, using the tested Phase 1 reducer as the single source of truth.
 The full menus, progress tracking, remaining game modes, and offline PWA packaging arrive in later phases.
