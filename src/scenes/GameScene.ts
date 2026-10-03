@@ -195,13 +195,7 @@ export class GameScene extends BaseScene {
         this.feedback(key);
       },
       (key) => {
-        if (this.settings.voCount)
-          void this.audio.chain(
-            Array.from(
-              { length: Number(key.slice(-2)) },
-              (_, i) => `count_${String(i + 1).padStart(2, '0')}`,
-            ),
-          );
+        if (this.settings.voCount) void this.audio.play(key, 'vo', 'interrupt');
       },
       () => this.celebrate(),
     );

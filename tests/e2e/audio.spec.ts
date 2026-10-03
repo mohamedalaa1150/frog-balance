@@ -33,28 +33,13 @@ test('three frogs schedule counts 01→03; exact wrong 9|2 explanation; music ch
     a.events.length = 0;
     for (let i = 0; i < 3; i++) a.place('frog', 'right');
   });
-  const scheduled = await page.evaluate(() =>
-    window
-      .__FROG__!.events.filter((e) => e.type === 'audio-vo')
-      .map(
-        (e) =>
-          e.data as {
-            key: string;
-            scheduledStart: number;
-            scheduledEnd: number;
-          },
-      ),
-  );
-  expect(scheduled.slice(-3).map((e) => e.key)).toEqual([
-    'count_01',
-    'count_02',
-    'count_03',
-  ]);
-  for (let i = scheduled.length - 2; i < scheduled.length; i++) {
-    const gap = scheduled[i]!.scheduledStart - scheduled[i - 1]!.scheduledEnd;
-    expect(gap).toBeGreaterThanOrEqual(0);
-    expect(gap).toBeLessThanOrEqual(0.06);
-  }
+  expect(
+    await page.evaluate(() =>
+      window
+        .__FROG__!.events.filter((e) => e.type === 'audio-vo')
+        .map((e) => (e.data as { key: string }).key),
+    ),
+  ).toEqual(['count_01', 'count_02', 'count_03']);
   await page.waitForTimeout(200);
   const mix = await page.evaluate(() => window.__FROG__!.getAudioState()!);
   expect(mix.voPlaying).toBe(true);
@@ -93,6 +78,36 @@ test('three frogs schedule counts 01→03; exact wrong 9|2 explanation; music ch
   await expect
     .poll(() => page.evaluate(() => window.__FROG__!.getAudioState()!.musicKey))
     .toBe('music_worlds_3_4');
+  await page.evaluate(async () => {
+    const a = window.__FROG__!;
+    await a.gotoScene('SandboxScene');
+    a.place('number', 'left', 9);
+    a.place('number', 'right', 2);
+    a.events.length = 0;
+  });
+  await tap(page, 'btn-read');
+  const scheduled = await page.evaluate(() =>
+    window
+      .__FROG__!.events.filter((e) => e.type === 'audio-vo')
+      .map(
+        (e) =>
+          e.data as {
+            key: string;
+            scheduledStart: number;
+            scheduledEnd: number;
+          },
+      ),
+  );
+  expect(scheduled.map((e) => e.key)).toEqual([
+    'count_02',
+    'phrase_less_than',
+    'count_09',
+  ]);
+  for (let i = 1; i < scheduled.length; i++) {
+    const gap = scheduled[i]!.scheduledStart - scheduled[i - 1]!.scheduledEnd;
+    expect(gap).toBeGreaterThanOrEqual(0);
+    expect(gap).toBeLessThanOrEqual(0.06);
+  }
   expect(errors).toEqual([]);
 });
 
